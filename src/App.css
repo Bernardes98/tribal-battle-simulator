@@ -1,0 +1,1012 @@
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.simulator-page {
+  min-height: 100vh;
+}
+
+.header {
+  border-bottom: 1px solid #263244;
+  background: rgba(17, 24, 39, 0.96);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.header-content {
+  width: min(1400px, calc(100% - 48px));
+  margin: 0 auto;
+  min-height: 82px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 22px;
+  color: #f8fafc;
+}
+
+.header p {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.header nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.header nav a {
+  text-decoration: none;
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.header nav a:hover {
+  color: #ffffff;
+}
+
+.main-content {
+  width: min(1400px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 54px 0 100px;
+}
+
+.hero {
+  max-width: 720px;
+  margin-bottom: 42px;
+}
+
+.hero-badge,
+.section-label,
+.army-label {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-badge {
+  padding: 7px 12px;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  color: #cbd5e1;
+  background: #1e293b;
+}
+
+.hero h2 {
+  margin: 16px 0 10px;
+  color: #f8fafc;
+  font-size: clamp(32px, 5vw, 50px);
+  line-height: 1.05;
+}
+
+.hero p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.battle-container {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    70px
+    minmax(0, 1fr);
+  align-items: start;
+}
+
+.army-card,
+.modifiers-card {
+  border: 1px solid #263244;
+  border-radius: 12px;
+  background: #111827;
+  overflow: hidden;
+}
+
+.army-card-header {
+  min-height: 92px;
+  padding: 22px 24px;
+
+  border-bottom: 1px solid #263244;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.army-card-header h3 {
+  margin: 7px 0 0;
+  color: #f8fafc;
+  font-size: 22px;
+}
+
+.attacker-card .army-label {
+  color: #f87171;
+}
+
+.defender-card .army-label {
+  color: #60a5fa;
+}
+
+.clear-army-button {
+  padding: 8px 13px;
+
+  border: 1px solid #334155;
+  border-radius: 6px;
+
+  background: transparent;
+  color: #94a3b8;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.clear-army-button:hover {
+  color: #f8fafc;
+  background: #1e293b;
+  border-color: #475569;
+}
+
+.unit-list-header {
+  min-height: 38px;
+  padding: 0 20px;
+
+  display: grid;
+  grid-template-columns:
+    minmax(190px, 1fr)
+    110px
+    120px;
+  align-items: center;
+  gap: 14px;
+
+  background: #0f172a;
+
+  color: #64748b;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.unit-list-header span:last-child {
+  text-align: right;
+}
+
+.unit-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.unit-row {
+  min-height: 68px;
+  padding: 8px 20px;
+
+  display: grid;
+  grid-template-columns:
+    minmax(190px, 1fr)
+    110px
+    120px;
+  align-items: center;
+  gap: 14px;
+
+  border-bottom: 1px solid #1e293b;
+
+  transition: background 0.15s ease;
+}
+
+.unit-row:hover {
+  background: rgba(30, 41, 59, 0.45);
+}
+
+.unit-info {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.unit-info > div:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.unit-info strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: #e2e8f0;
+  font-size: 13px;
+}
+
+.unit-info span {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.unit-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #334155;
+  border-radius: 8px;
+
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.unit-icon-infantry {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+.unit-icon-cavalry {
+  background: #172554;
+  color: #93c5fd;
+  border-color: #1e3a8a;
+}
+
+.unit-icon-siege {
+  background: #422006;
+  color: #fcd34d;
+  border-color: #713f12;
+}
+
+.unit-icon-special {
+  background: #3b0764;
+  color: #d8b4fe;
+  border-color: #581c87;
+}
+
+.unit-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.unit-stats span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  color: #64748b;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.unit-stats strong {
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.unit-input {
+  width: 100%;
+  height: 40px;
+
+  padding: 0 11px;
+
+  border: 1px solid #334155;
+  border-radius: 7px;
+
+  outline: none;
+
+  background: #0f172a;
+  color: #f8fafc;
+
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.unit-input::placeholder {
+  color: #475569;
+}
+
+.unit-input:focus {
+  border-color: #64748b;
+  box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.15);
+}
+
+.attacker-card .unit-input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
+}
+
+.defender-card .unit-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
+}
+
+.army-summary {
+  min-height: 72px;
+  padding: 14px 20px;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  background: #0f172a;
+}
+
+.army-summary div {
+  padding: 8px 12px;
+
+  border: 1px solid #1e293b;
+  border-radius: 7px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.army-summary span {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.army-summary strong {
+  color: #e2e8f0;
+  font-size: 14px;
+}
+
+.versus {
+  min-height: 92px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.versus span {
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #334155;
+  border-radius: 50%;
+
+  background: #1e293b;
+
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.modifiers-card {
+  margin-top: 32px;
+  padding: 24px;
+}
+
+.section-label {
+  color: #f59e0b;
+}
+
+.modifiers-card h3 {
+  margin: 7px 0 0;
+  color: #f8fafc;
+  font-size: 22px;
+}
+
+.modifiers-placeholder {
+  margin-top: 24px;
+  padding: 28px;
+
+  border: 1px dashed #334155;
+  border-radius: 8px;
+
+  color: #64748b;
+  text-align: center;
+}
+
+.simulate-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.simulate-button {
+  min-width: 230px;
+  min-height: 52px;
+
+  padding: 0 28px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #dc2626;
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+.simulate-button:hover {
+  background: #ef4444;
+  transform: translateY(-1px);
+}
+
+.simulate-button:active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   BATTLE SETTINGS
+   ========================================================= */
+
+.battle-settings-card,
+.paladin-card {
+  margin-top: 32px;
+
+  border: 1px solid #263244;
+  border-radius: 12px;
+
+  background: #111827;
+
+  overflow: hidden;
+}
+
+.settings-title {
+  padding: 24px;
+
+  border-bottom: 1px solid #263244;
+}
+
+.settings-title h3 {
+  margin: 7px 0 0;
+
+  color: #f8fafc;
+
+  font-size: 22px;
+}
+
+.settings-title p {
+  margin: 7px 0 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.settings-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.settings-side {
+  padding: 24px;
+}
+
+.settings-side:first-child {
+  border-right: 1px solid #263244;
+}
+
+.settings-side-header {
+  margin-bottom: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.settings-side-header h4 {
+  margin: 5px 0 0;
+
+  color: #f8fafc;
+
+  font-size: 17px;
+}
+
+.attacker-settings .army-label {
+  color: #f87171;
+}
+
+.defender-settings .army-label {
+  color: #60a5fa;
+}
+
+.modifier-result {
+  min-width: 88px;
+
+  padding: 9px 12px;
+
+  border: 1px solid #334155;
+  border-radius: 8px;
+
+  display: flex;
+  flex-direction: column;
+
+  text-align: right;
+}
+
+.modifier-result span {
+  color: #64748b;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+.modifier-result strong {
+  margin-top: 2px;
+
+  font-size: 18px;
+}
+
+.modifier-result-attacker strong {
+  color: #f87171;
+}
+
+.modifier-result-defender strong {
+  color: #60a5fa;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 18px;
+}
+
+.setting-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.setting-field label {
+  color: #cbd5e1;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.setting-field select,
+.setting-field input,
+.paladin-row select {
+  width: 100%;
+  height: 42px;
+
+  padding: 0 12px;
+
+  border: 1px solid #334155;
+  border-radius: 7px;
+
+  outline: none;
+
+  background: #0f172a;
+  color: #e2e8f0;
+
+  font-size: 13px;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.setting-field select:focus,
+.setting-field input:focus,
+.paladin-row select:focus {
+  border-color: #64748b;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(100, 116, 139, 0.15);
+}
+
+.input-suffix {
+  position: relative;
+}
+
+.input-suffix input {
+  padding-right: 38px;
+}
+
+.input-suffix > span {
+  position: absolute;
+
+  top: 50%;
+  right: 13px;
+
+  transform: translateY(-50%);
+
+  color: #64748b;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  pointer-events: none;
+}
+
+.field-help {
+  color: #64748b;
+
+  font-size: 10px;
+}
+
+.toggle-setting {
+  margin-top: 20px;
+
+  min-height: 62px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #263244;
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+
+  position: relative;
+
+  cursor: pointer;
+}
+
+.toggle-setting > div {
+  padding-right: 60px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.toggle-setting strong {
+  color: #e2e8f0;
+
+  font-size: 13px;
+}
+
+.toggle-setting div span {
+  margin-top: 3px;
+
+  color: #64748b;
+
+  font-size: 11px;
+}
+
+.toggle-setting input {
+  position: absolute;
+
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+.toggle-switch {
+  position: absolute;
+
+  right: 14px;
+
+  width: 42px;
+  height: 23px;
+
+  border-radius: 20px;
+
+  background: #334155;
+
+  transition:
+    background 0.2s ease;
+}
+
+.toggle-switch::after {
+  content: "";
+
+  position: absolute;
+
+  width: 17px;
+  height: 17px;
+
+  top: 3px;
+  left: 3px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  transition:
+    transform 0.2s ease;
+}
+
+.toggle-setting
+  input:checked
+  + .toggle-switch {
+  background: #dc2626;
+}
+
+.toggle-setting
+  input:checked
+  + .toggle-switch::after {
+  transform: translateX(19px);
+}
+
+/* =========================================================
+   PALADIN
+   ========================================================= */
+
+.paladin-table {
+  width: 100%;
+}
+
+.paladin-table-header,
+.paladin-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(200px, 1fr)
+    180px
+    180px;
+
+  gap: 16px;
+
+  align-items: center;
+}
+
+.paladin-table-header {
+  min-height: 40px;
+
+  padding: 0 24px;
+
+  background: #0f172a;
+
+  color: #64748b;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.paladin-table-header span:not(:first-child) {
+  text-align: center;
+}
+
+.paladin-row {
+  min-height: 62px;
+
+  padding: 9px 24px;
+
+  border-bottom: 1px solid #1e293b;
+}
+
+.paladin-row:last-child {
+  border-bottom: none;
+}
+
+.paladin-row:hover {
+  background: rgba(30, 41, 59, 0.35);
+}
+
+.paladin-unit {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.paladin-unit strong {
+  color: #e2e8f0;
+
+  font-size: 13px;
+}
+
+.paladin-unit-icon {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #581c87;
+  border-radius: 7px;
+
+  background: #3b0764;
+  color: #d8b4fe;
+
+  font-size: 9px;
+  font-weight: 900;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .unit-list-header,
+  .unit-row {
+    grid-template-columns:
+      minmax(160px, 1fr)
+      90px
+      100px;
+  }
+}
+
+@media (max-width: 900px) {
+  .header-content {
+    min-height: auto;
+    padding: 20px 0;
+
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header nav {
+    width: 100%;
+    gap: 18px;
+  }
+
+  .battle-container {
+    grid-template-columns: 1fr;
+  }
+
+  .versus {
+    min-height: 70px;
+  }
+
+  .settings-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-side:first-child {
+    border-right: none;
+    border-bottom: 1px solid #263244;
+  }
+}
+
+@media (max-width: 650px) {
+  .settings-side,
+  .settings-title {
+    padding: 18px;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .paladin-table-header,
+  .paladin-row {
+    grid-template-columns:
+      minmax(120px, 1fr)
+      90px
+      90px;
+
+    gap: 8px;
+  }
+
+  .paladin-table-header,
+  .paladin-row {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .paladin-unit strong {
+    font-size: 11px;
+  }
+
+  .paladin-unit-icon {
+    display: none;
+  }
+
+  .paladin-row select {
+    padding: 0 6px;
+
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 600px) {
+  .header-content,
+  .main-content {
+    width: min(
+      100% - 28px,
+      1400px
+    );
+  }
+
+  .main-content {
+    padding-top: 36px;
+  }
+
+  .header nav {
+    overflow-x: auto;
+  }
+
+  .unit-list-header {
+    display: none;
+  }
+
+  .unit-row {
+    grid-template-columns:
+      minmax(0, 1fr)
+      95px;
+
+    min-height: 66px;
+
+    padding: 9px 14px;
+  }
+
+  .unit-stats {
+    display: none;
+  }
+
+  .unit-input {
+    height: 42px;
+  }
+
+  .army-card-header {
+    padding: 18px;
+  }
+
+  .army-summary {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+
+  .army-summary div {
+    padding: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .simulate-button {
+    width: 100%;
+  }
+}
