@@ -1,6 +1,7 @@
 import { units } from '../../data/units'
 
 import type {
+  ArmyValueSummary,
   BattleResult,
 } from '../../types/Battle'
 
@@ -10,13 +11,22 @@ interface BattleResultPanelProps {
   result: BattleResult
 }
 
-const numberFormatter =
-  new Intl.NumberFormat(
-    'en-US',
-    {
-      maximumFractionDigits: 2,
-    },
-  )
+interface ArmyValueTableProps {
+  title: string
+  side: 'attacker' | 'defender'
+
+  initial: ArmyValueSummary
+  lost: ArmyValueSummary
+  revived: ArmyValueSummary
+  final: ArmyValueSummary
+}
+
+const numberFormatter = new Intl.NumberFormat(
+  'en-US',
+  {
+    maximumFractionDigits: 2,
+  },
+)
 
 const percentageFormatter =
   new Intl.NumberFormat(
@@ -27,24 +37,126 @@ const percentageFormatter =
     },
   )
 
+function ArmyValueTable({
+  title,
+  side,
+  initial,
+  lost,
+  revived,
+  final,
+}: ArmyValueTableProps) {
+  const rows = [
+    {
+      label: 'Initial',
+      className: 'value-row-initial',
+      value: initial,
+    },
+    {
+      label: 'Lost',
+      className: 'value-row-lost',
+      value: lost,
+    },
+    {
+      label: 'Revived',
+      className: 'value-row-revived',
+      value: revived,
+    },
+    {
+      label: 'Final',
+      className: 'value-row-final',
+      value: final,
+    },
+  ]
+
+  return (
+    <div className="army-value-side">
+      <div
+        className={`army-value-side-heading ${
+          side === 'attacker'
+            ? 'army-value-attacker-heading'
+            : 'army-value-defender-heading'
+        }`}
+      >
+        {title}
+      </div>
+
+      <div className="army-value-table-wrapper">
+        <table className="army-value-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Provisions</th>
+              <th>Bash</th>
+              <th>Wood</th>
+              <th>Clay</th>
+              <th>Iron</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {rows.map((row) => (
+              <tr
+                key={row.label}
+                className={row.className}
+              >
+                <td>
+                  <strong>
+                    {row.label}
+                  </strong>
+                </td>
+
+                <td>
+                  {numberFormatter.format(
+                    row.value.provisions,
+                  )}
+                </td>
+
+                <td>
+                  {numberFormatter.format(
+                    row.value.bashPoints,
+                  )}
+                </td>
+
+                <td>
+                  {numberFormatter.format(
+                    row.value.resources.wood,
+                  )}
+                </td>
+
+                <td>
+                  {numberFormatter.format(
+                    row.value.resources.clay,
+                  )}
+                </td>
+
+                <td>
+                  {numberFormatter.format(
+                    row.value.resources.iron,
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function BattleResultPanel({
   result,
 }: BattleResultPanelProps) {
   const winnerText =
-    result.winner ===
-    'attacker'
+    result.winner === 'attacker'
       ? 'Attacker Victory'
-      : result.winner ===
-          'defender'
+      : result.winner === 'defender'
         ? 'Defender Victory'
         : 'Draw'
 
   const winnerClass =
-    result.winner ===
-    'attacker'
+    result.winner === 'attacker'
       ? 'result-attacker-win'
-      : result.winner ===
-          'defender'
+      : result.winner === 'defender'
         ? 'result-defender-win'
         : 'result-draw'
 
@@ -64,8 +176,9 @@ function BattleResultPanel({
           </h3>
 
           <p>
-            Combat, revival and
-            siege result.
+            Combat, siege, troop
+            recovery and resource
+            results.
           </p>
         </div>
 
@@ -107,7 +220,7 @@ function BattleResultPanel({
       </div>
 
       <div className="siege-result-section">
-        <div className="siege-result-header">
+        <div className="result-section-heading">
           <span className="section-label">
             SIEGE RESULT
           </span>
@@ -115,13 +228,18 @@ function BattleResultPanel({
           <h4>
             Wall & Catapult
           </h4>
+
+          <p>
+            Result of the siege
+            equipment after combat.
+          </p>
         </div>
 
         <div className="siege-result-grid">
           <div className="siege-result-card">
-            <span className="siege-result-label">
+            <div className="siege-card-title">
               Wall
-            </span>
+            </div>
 
             <div className="level-flow">
               <div>
@@ -131,8 +249,7 @@ function BattleResultPanel({
 
                 <strong>
                   {
-                    result.siege
-                      .wall
+                    result.siege.wall
                       .startingLevel
                   }
                 </strong>
@@ -147,8 +264,7 @@ function BattleResultPanel({
 
                 <strong>
                   {
-                    result.siege
-                      .wall
+                    result.siege.wall
                       .preBattleLevel
                   }
                 </strong>
@@ -163,8 +279,7 @@ function BattleResultPanel({
 
                 <strong>
                   {
-                    result.siege
-                      .wall
+                    result.siege.wall
                       .postBattleLevel
                   }
                 </strong>
@@ -179,8 +294,7 @@ function BattleResultPanel({
 
                 <strong>
                   {
-                    result.siege
-                      .wall
+                    result.siege.wall
                       .finalLevel
                   }
                 </strong>
@@ -189,14 +303,13 @@ function BattleResultPanel({
           </div>
 
           <div className="siege-result-card">
-            <span className="siege-result-label">
+            <div className="siege-card-title">
               Catapult
-            </span>
+            </div>
 
             <strong className="siege-building-name">
               {
-                result.siege
-                  .catapult
+                result.siege.catapult
                   .targetName
               }
             </strong>
@@ -209,8 +322,7 @@ function BattleResultPanel({
 
                 <strong>
                   {
-                    result.siege
-                      .catapult
+                    result.siege.catapult
                       .startingLevel
                   }
                 </strong>
@@ -225,8 +337,7 @@ function BattleResultPanel({
 
                 <strong>
                   {
-                    result.siege
-                      .catapult
+                    result.siege.catapult
                       .postLevel
                   }
                 </strong>
@@ -235,7 +346,7 @@ function BattleResultPanel({
 
             <div className="siege-calculation-details">
               <span>
-                Catapult power:{' '}
+                Catapult Power
                 <strong>
                   {numberFormatter.format(
                     result.siege
@@ -246,7 +357,7 @@ function BattleResultPanel({
               </span>
 
               <span>
-                Damage:{' '}
+                Damage
                 <strong>
                   {numberFormatter.format(
                     result.siege
@@ -260,6 +371,68 @@ function BattleResultPanel({
         </div>
       </div>
 
+      <div className="army-value-section">
+        <div className="result-section-heading">
+          <span className="section-label">
+            ARMY VALUE
+          </span>
+
+          <h4>
+            Resources & Bash Points
+          </h4>
+
+          <p>
+            Resource value and bash
+            points for each stage of
+            the battle.
+          </p>
+        </div>
+
+        <div className="army-value-columns">
+          <ArmyValueTable
+            title="ATTACKER"
+            side="attacker"
+            initial={
+              result.attacker
+                .initialValue
+            }
+            lost={
+              result.attacker
+                .lostValue
+            }
+            revived={
+              result.attacker
+                .revivedValue
+            }
+            final={
+              result.attacker
+                .survivingValue
+            }
+          />
+
+          <ArmyValueTable
+            title="DEFENDER"
+            side="defender"
+            initial={
+              result.defender
+                .initialValue
+            }
+            lost={
+              result.defender
+                .lostValue
+            }
+            revived={
+              result.defender
+                .revivedValue
+            }
+            final={
+              result.defender
+                .survivingValue
+            }
+          />
+        </div>
+      </div>
+
       <div className="result-sides">
         <div className="result-side">
           <div className="result-side-title attacker-result-title">
@@ -269,7 +442,7 @@ function BattleResultPanel({
           <div className="result-stat-grid">
             <div>
               <span>
-                Initial troops
+                Initial Troops
               </span>
 
               <strong>
@@ -282,7 +455,7 @@ function BattleResultPanel({
 
             <div>
               <span>
-                Troops lost
+                Troops Lost
               </span>
 
               <strong className="loss-value">
@@ -308,7 +481,7 @@ function BattleResultPanel({
 
             <div>
               <span>
-                Final survivors
+                Final Survivors
               </span>
 
               <strong>
@@ -323,7 +496,7 @@ function BattleResultPanel({
           <div className="provision-summary">
             <div>
               <span>
-                Initial provisions
+                Initial Provisions
               </span>
 
               <strong>
@@ -336,7 +509,7 @@ function BattleResultPanel({
 
             <div>
               <span>
-                Provisions lost
+                Provisions Lost
               </span>
 
               <strong className="loss-value">
@@ -349,7 +522,7 @@ function BattleResultPanel({
 
             <div>
               <span>
-                Revived provisions
+                Revived Provisions
               </span>
 
               <strong className="revived-value">
@@ -362,7 +535,7 @@ function BattleResultPanel({
 
             <div>
               <span>
-                Final provisions
+                Final Provisions
               </span>
 
               <strong>
@@ -438,7 +611,7 @@ function BattleResultPanel({
           <div className="result-stat-grid">
             <div>
               <span>
-                Initial troops
+                Initial Troops
               </span>
 
               <strong>
@@ -451,7 +624,7 @@ function BattleResultPanel({
 
             <div>
               <span>
-                Troops lost
+                Troops Lost
               </span>
 
               <strong className="loss-value">
@@ -477,7 +650,7 @@ function BattleResultPanel({
 
             <div>
               <span>
-                Final survivors
+                Final Survivors
               </span>
 
               <strong>
@@ -492,7 +665,7 @@ function BattleResultPanel({
           <div className="provision-summary">
             <div>
               <span>
-                Initial provisions
+                Initial Provisions
               </span>
 
               <strong>
@@ -505,7 +678,7 @@ function BattleResultPanel({
 
             <div>
               <span>
-                Provisions lost
+                Provisions Lost
               </span>
 
               <strong className="loss-value">
@@ -518,7 +691,7 @@ function BattleResultPanel({
 
             <div>
               <span>
-                Revived provisions
+                Revived Provisions
               </span>
 
               <strong className="revived-value">
@@ -531,7 +704,7 @@ function BattleResultPanel({
 
             <div>
               <span>
-                Final provisions
+                Final Provisions
               </span>
 
               <strong>
@@ -601,9 +774,20 @@ function BattleResultPanel({
       </div>
 
       <div className="combat-groups">
-        <h4>
-          Combat groups
-        </h4>
+        <div className="result-section-heading">
+          <span className="section-label">
+            COMBAT DETAILS
+          </span>
+
+          <h4>
+            Combat groups
+          </h4>
+
+          <p>
+            Strength and casualty
+            rate by attack group.
+          </p>
+        </div>
 
         <div className="combat-group-grid">
           {result.groups.map(
@@ -648,7 +832,7 @@ function BattleResultPanel({
 
                 <div>
                   <span>
-                    Attacker loss rate
+                    Attacker Loss Rate
                   </span>
 
                   <b>
@@ -660,7 +844,7 @@ function BattleResultPanel({
 
                 <div>
                   <span>
-                    Defender loss rate
+                    Defender Loss Rate
                   </span>
 
                   <b>
@@ -674,6 +858,22 @@ function BattleResultPanel({
           )}
         </div>
       </div>
+
+      {result.warnings.length > 0 && (
+        <div className="result-warning">
+          <strong>
+            Simulation Notes
+          </strong>
+
+          {result.warnings.map(
+            (warning) => (
+              <p key={warning}>
+                {warning}
+              </p>
+            ),
+          )}
+        </div>
+      )}
     </section>
   )
 }

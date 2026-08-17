@@ -320,6 +320,93 @@ const calculateArmyProvisions = (
   )
 }
 
+type BattleSide =
+  | 'attacker'
+  | 'defender'
+
+const calculateBashPoints = (
+  army: Army,
+  side: BattleSide,
+): number => {
+  return units.reduce(
+    (
+      total,
+      unit,
+    ) => {
+      const quantity =
+        army[unit.id]
+
+      const bashPoints =
+        side === 'attacker'
+          ? unit.defensiveBashPoints
+          : unit.offensiveBashPoints
+
+      return (
+        total +
+        quantity *
+          bashPoints
+      )
+    },
+    0,
+  )
+}
+
+const calculateArmyValue = (
+  army: Army,
+  side: BattleSide,
+): ArmyValueSummary => {
+  return {
+    provisions:
+      calculateArmyProvisions(
+        army,
+      ),
+
+    bashPoints:
+      calculateBashPoints(
+        army,
+        side,
+      ),
+
+    resources: {
+      wood:
+        units.reduce(
+          (
+            total,
+            unit,
+          ) =>
+            total +
+            army[unit.id] *
+              unit.resources.wood,
+          0,
+        ),
+
+      clay:
+        units.reduce(
+          (
+            total,
+            unit,
+          ) =>
+            total +
+            army[unit.id] *
+              unit.resources.clay,
+          0,
+        ),
+
+      iron:
+        units.reduce(
+          (
+            total,
+            unit,
+          ) =>
+            total +
+            army[unit.id] *
+              unit.resources.iron,
+          0,
+        ),
+    },
+  }
+}
+
 const calculateBaseDefense = (
   wallLevel: number,
 ): number => {
@@ -1329,6 +1416,7 @@ const buildSideResult = (
   initialArmy: Army,
   combatSurvivors: Army,
   revived: Army,
+  side: BattleSide,
 ): BattleSideResult => {
   const losses =
     calculateLosses(
@@ -1340,6 +1428,30 @@ const buildSideResult = (
     addArmies(
       combatSurvivors,
       revived,
+    )
+
+  const initialValue =
+    calculateArmyValue(
+      initialArmy,
+      side,
+    )
+
+  const lostValue =
+    calculateArmyValue(
+      losses,
+      side,
+    )
+
+  const revivedValue =
+    calculateArmyValue(
+      revived,
+      side,
+    )
+
+  const survivingValue =
+    calculateArmyValue(
+      finalSurvivors,
+      side,
     )
 
   return {
@@ -1381,24 +1493,24 @@ const buildSideResult = (
       ),
 
     initialProvisions:
-      calculateArmyProvisions(
-        initialArmy,
-      ),
+      initialValue.provisions,
 
     lostProvisions:
-      calculateArmyProvisions(
-        losses,
-      ),
+      lostValue.provisions,
 
     revivedProvisions:
-      calculateArmyProvisions(
-        revived,
-      ),
+      revivedValue.provisions,
 
     survivingProvisions:
-      calculateArmyProvisions(
-        finalSurvivors,
-      ),
+      survivingValue.provisions,
+
+    initialValue,
+
+    lostValue,
+
+    revivedValue,
+
+    survivingValue,
   }
 }
 
@@ -1794,4 +1906,6 @@ export const simulateBattle = (
 
     warnings: [],
   }
+  
+  
 }

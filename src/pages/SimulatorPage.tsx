@@ -2,22 +2,51 @@ import {
   useState,
 } from 'react'
 
+import AdvancedArmyOptimizerPanel from '../components/battle/AdvancedArmyOptimizerPanel'
+import ArmyOptimizerPanel from '../components/battle/ArmyOptimizerPanel'
 import ArmyPanel from '../components/battle/ArmyPanel'
 import BattleResultPanel from '../components/battle/BattleResultPanel'
 import BattleSettingsPanel from '../components/battle/BattleSettingsPanel'
+import LuckAnalysisPanel from '../components/battle/LuckAnalysisPanel'
 import PaladinWeaponsPanel from '../components/battle/PaladinWeaponsPanel'
 import SiegeSettingsPanel from '../components/battle/SiegeSettingsPanel'
 
 import { units } from '../data/units'
 
 import {
+  optimizeArmyComposition,
+} from '../domain/battle/advancedArmyOptimizer'
+
+import type {
+  AdvancedArmyOptimizerResult,
+} from '../domain/battle/advancedArmyOptimizer'
+
+import {
+  optimizeArmy,
+} from '../domain/battle/armyOptimizer'
+
+import type {
+  ArmyOptimizerMode,
+  ArmyOptimizerResult,
+} from '../domain/battle/armyOptimizer'
+
+import {
   simulateBattle,
 } from '../domain/battle/battleEngine'
+
+import {
+  analyzeLuckScenarios,
+} from '../domain/battle/luckAnalysis'
+
+import type {
+  LuckAnalysisResult,
+} from '../domain/battle/luckAnalysis'
 
 import type {
   Army,
   AttackerModifiers,
   BattleResult,
+  BattleSimulationInput,
   DefenderModifiers,
   PaladinWeaponLevels,
   SiegeSettings,
@@ -119,6 +148,7 @@ function SimulatorPage() {
     useState<PaladinWeaponLevels>(
       () => ({
         ...createEmptyPaladinWeapons(),
+
         axe: 1,
       }),
     )
@@ -147,9 +177,57 @@ function SimulatorPage() {
       null,
     )
 
-  const clearResult = () => {
+  const [
+    luckAnalysis,
+    setLuckAnalysis,
+  ] =
+    useState<LuckAnalysisResult | null>(
+      null,
+    )
+
+  const [
+    optimizerResult,
+    setOptimizerResult,
+  ] =
+    useState<ArmyOptimizerResult | null>(
+      null,
+    )
+
+  const [
+    advancedOptimizerResult,
+    setAdvancedOptimizerResult,
+  ] =
+    useState<AdvancedArmyOptimizerResult | null>(
+      null,
+    )
+
+  const clearResults = () => {
     setBattleResult(null)
+
+    setLuckAnalysis(null)
+
+    setOptimizerResult(null)
+
+    setAdvancedOptimizerResult(
+      null,
+    )
   }
+
+  const buildSimulationInput =
+    (): BattleSimulationInput => {
+      return {
+        attacker,
+        defender,
+
+        attackerModifiers,
+        defenderModifiers,
+
+        attackerPaladinWeapons,
+        defenderPaladinWeapons,
+
+        siegeSettings,
+      }
+    }
 
   const updateAttacker = (
     unitId: UnitId,
@@ -158,11 +236,13 @@ function SimulatorPage() {
     setAttacker(
       (currentArmy) => ({
         ...currentArmy,
-        [unitId]: quantity,
+
+        [unitId]:
+          quantity,
       }),
     )
 
-    clearResult()
+    clearResults()
   }
 
   const updateDefender = (
@@ -172,11 +252,13 @@ function SimulatorPage() {
     setDefender(
       (currentArmy) => ({
         ...currentArmy,
-        [unitId]: quantity,
+
+        [unitId]:
+          quantity,
       }),
     )
 
-    clearResult()
+    clearResults()
   }
 
   const clearAttacker = () => {
@@ -184,7 +266,7 @@ function SimulatorPage() {
       createEmptyArmy(),
     )
 
-    clearResult()
+    clearResults()
   }
 
   const clearDefender = () => {
@@ -192,7 +274,7 @@ function SimulatorPage() {
       createEmptyArmy(),
     )
 
-    clearResult()
+    clearResults()
   }
 
   const handleAttackerModifiers = (
@@ -203,7 +285,7 @@ function SimulatorPage() {
       modifiers,
     )
 
-    clearResult()
+    clearResults()
   }
 
   const handleDefenderModifiers = (
@@ -214,7 +296,7 @@ function SimulatorPage() {
       modifiers,
     )
 
-    clearResult()
+    clearResults()
   }
 
   const handleAttackerWeapons = (
@@ -225,7 +307,7 @@ function SimulatorPage() {
       weapons,
     )
 
-    clearResult()
+    clearResults()
   }
 
   const handleDefenderWeapons = (
@@ -236,7 +318,7 @@ function SimulatorPage() {
       weapons,
     )
 
-    clearResult()
+    clearResults()
   }
 
   const handleSiegeSettings = (
@@ -247,27 +329,26 @@ function SimulatorPage() {
       settings,
     )
 
-    clearResult()
+    clearResults()
   }
 
   const handleSimulation =
     () => {
       const result =
-        simulateBattle({
-          attacker,
-          defender,
-
-          attackerModifiers,
-          defenderModifiers,
-
-          attackerPaladinWeapons,
-          defenderPaladinWeapons,
-
-          siegeSettings,
-        })
+        simulateBattle(
+          buildSimulationInput(),
+        )
 
       setBattleResult(
         result,
+      )
+
+      setLuckAnalysis(null)
+
+      setOptimizerResult(null)
+
+      setAdvancedOptimizerResult(
+        null,
       )
 
       window.setTimeout(
@@ -287,6 +368,120 @@ function SimulatorPage() {
         50,
       )
     }
+
+  const handleLuckAnalysis =
+    () => {
+      const analysis =
+        analyzeLuckScenarios(
+          buildSimulationInput(),
+        )
+
+      setLuckAnalysis(
+        analysis,
+      )
+
+      setBattleResult(null)
+
+      setOptimizerResult(null)
+
+      setAdvancedOptimizerResult(
+        null,
+      )
+
+      window.setTimeout(
+        () => {
+          document
+            .getElementById(
+              'luck-analysis',
+            )
+            ?.scrollIntoView({
+              behavior:
+                'smooth',
+
+              block:
+                'start',
+            })
+        },
+        50,
+      )
+    }
+
+  const handleArmyOptimization = (
+    mode:
+      ArmyOptimizerMode,
+  ) => {
+    const result =
+      optimizeArmy(
+        buildSimulationInput(),
+        mode,
+      )
+
+    setOptimizerResult(
+      result,
+    )
+
+    setBattleResult(null)
+
+    setLuckAnalysis(null)
+
+    setAdvancedOptimizerResult(
+      null,
+    )
+  }
+
+  const handleAdvancedArmyOptimization = (
+    mode:
+      ArmyOptimizerMode,
+
+    unitIds:
+      UnitId[],
+  ) => {
+    const result =
+      optimizeArmyComposition(
+        buildSimulationInput(),
+        {
+          mode,
+          unitIds,
+        },
+      )
+
+    setAdvancedOptimizerResult(
+      result,
+    )
+
+    setBattleResult(null)
+
+    setLuckAnalysis(null)
+
+    setOptimizerResult(null)
+  }
+
+  const applyArmy = (
+    army: Army,
+  ) => {
+    setAttacker({
+      ...army,
+    })
+
+    clearResults()
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById(
+            'simulator',
+          )
+          ?.scrollIntoView({
+            behavior:
+              'smooth',
+
+            block:
+              'start',
+          })
+      },
+      50,
+    )
+  }
 
   const loadExcelExample =
     () => {
@@ -350,6 +545,7 @@ function SimulatorPage() {
 
       setAttackerPaladinWeapons({
         ...createEmptyPaladinWeapons(),
+
         axe: 1,
       })
 
@@ -361,7 +557,7 @@ function SimulatorPage() {
         createInitialSiegeSettings(),
       )
 
-      setBattleResult(null)
+      clearResults()
     }
 
   return (
@@ -374,8 +570,8 @@ function SimulatorPage() {
             </h1>
 
             <p>
-              Battle simulation
-              and strategy tools
+              Battle simulation and
+              strategy tools
             </p>
           </div>
 
@@ -496,6 +692,32 @@ function SimulatorPage() {
           }
         />
 
+        <div id="tools">
+          <ArmyOptimizerPanel
+            result={
+              optimizerResult
+            }
+            onOptimize={
+              handleArmyOptimization
+            }
+            onApply={
+              applyArmy
+            }
+          />
+
+          <AdvancedArmyOptimizerPanel
+            result={
+              advancedOptimizerResult
+            }
+            onOptimize={
+              handleAdvancedArmyOptimization
+            }
+            onApply={
+              applyArmy
+            }
+          />
+        </div>
+
         <div className="simulation-actions">
           <button
             className="example-button"
@@ -516,12 +738,30 @@ function SimulatorPage() {
           >
             Simulate Battle
           </button>
+
+          <button
+            className="luck-analysis-button"
+            type="button"
+            onClick={
+              handleLuckAnalysis
+            }
+          >
+            Analyze Luck
+          </button>
         </div>
 
         {battleResult && (
           <BattleResultPanel
             result={
               battleResult
+            }
+          />
+        )}
+
+        {luckAnalysis && (
+          <LuckAnalysisPanel
+            analysis={
+              luckAnalysis
             }
           />
         )}

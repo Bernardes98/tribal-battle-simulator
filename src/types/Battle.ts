@@ -80,6 +80,18 @@ export interface CombatGroupResult {
   defenderLossRate: number
 }
 
+export interface ResourceTotals {
+  wood: number
+  clay: number
+  iron: number
+}
+
+export interface ArmyValueSummary {
+  provisions: number
+  bashPoints: number
+  resources: ResourceTotals
+}
+
 export interface BattleSideResult {
   initialArmy: Army
 
@@ -98,15 +110,17 @@ export interface BattleSideResult {
   lostProvisions: number
   revivedProvisions: number
   survivingProvisions: number
+
+  initialValue: ArmyValueSummary
+  lostValue: ArmyValueSummary
+  revivedValue: ArmyValueSummary
+  survivingValue: ArmyValueSummary
 }
 
 export interface WallResult {
   startingLevel: number
-
   preBattleLevel: number
-
   postBattleLevel: number
-
   finalLevel: number
 }
 

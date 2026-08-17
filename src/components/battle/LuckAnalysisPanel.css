@@ -1,0 +1,555 @@
+.luck-analysis-card {
+  margin-top: 32px;
+
+  border: 1px solid #263244;
+  border-radius: 12px;
+
+  overflow: hidden;
+
+  background: #111827;
+}
+
+.luck-analysis-header {
+  padding: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  border-bottom: 1px solid #263244;
+}
+
+.luck-analysis-header h3 {
+  margin: 7px 0 0;
+
+  color: #f8fafc;
+
+  font-size: 22px;
+}
+
+.luck-analysis-header p {
+  margin: 7px 0 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.luck-range-badge {
+  padding: 10px 16px;
+
+  border: 1px solid #92400e;
+  border-radius: 8px;
+
+  background: rgba(
+    146,
+    64,
+    14,
+    0.15
+  );
+
+  color: #fbbf24;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   SUMMARY
+   ========================================================= */
+
+.luck-summary {
+  padding: 20px 24px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      6,
+      minmax(0, 1fr)
+    );
+
+  gap: 10px;
+
+  background: #0f172a;
+
+  border-bottom: 1px solid #263244;
+}
+
+.luck-summary-card {
+  min-width: 0;
+
+  padding: 14px;
+
+  border: 1px solid #263244;
+  border-radius: 8px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  background: #111827;
+}
+
+.luck-summary-card span {
+  color: #64748b;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+}
+
+.luck-summary-card strong {
+  color: #f8fafc;
+
+  font-size: 18px;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.luck-summary-success strong {
+  color: #4ade80;
+}
+
+.luck-summary-danger strong {
+  color: #f87171;
+}
+
+/* =========================================================
+   BEST / WORST CASE
+   ========================================================= */
+
+.luck-extremes {
+  padding: 24px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 16px;
+
+  border-bottom:
+    1px solid #263244;
+}
+
+.luck-extreme-card {
+  min-width: 0;
+
+  padding: 18px;
+
+  border: 1px solid #263244;
+  border-radius: 9px;
+
+  background: #0f172a;
+}
+
+.worst-case-card {
+  border-color: rgba(
+    239,
+    68,
+    68,
+    0.35
+  );
+}
+
+.best-case-card {
+  border-color: rgba(
+    34,
+    197,
+    94,
+    0.35
+  );
+}
+
+.luck-extreme-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  margin-bottom: 16px;
+}
+
+.luck-extreme-heading > div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.luck-extreme-heading div span {
+  color: #64748b;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 0.07em;
+}
+
+.worst-case-card
+  .luck-extreme-heading
+  div strong {
+  color: #f87171;
+}
+
+.best-case-card
+  .luck-extreme-heading
+  div strong {
+  color: #4ade80;
+}
+
+.luck-extreme-heading div strong {
+  font-size: 25px;
+}
+
+.luck-extreme-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 9px;
+}
+
+.luck-extreme-stats div {
+  min-width: 0;
+
+  padding: 11px;
+
+  border: 1px solid #263244;
+  border-radius: 7px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+
+  background: #111827;
+}
+
+.luck-extreme-stats span {
+  color: #64748b;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+.luck-extreme-stats strong {
+  color: #e2e8f0;
+
+  font-size: 15px;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+/* =========================================================
+   RESULT BADGE
+   ========================================================= */
+
+.luck-result-badge {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 70px;
+
+  padding: 5px 8px;
+
+  border: 1px solid;
+  border-radius: 5px;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+.luck-victory {
+  border-color: #166534;
+
+  background: rgba(
+    22,
+    101,
+    52,
+    0.2
+  );
+
+  color: #4ade80;
+}
+
+.luck-defeat {
+  border-color: #7f1d1d;
+
+  background: rgba(
+    127,
+    29,
+    29,
+    0.2
+  );
+
+  color: #f87171;
+}
+
+.luck-draw {
+  border-color: #475569;
+
+  background: #1e293b;
+
+  color: #cbd5e1;
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.luck-table-section {
+  padding: 24px;
+}
+
+.luck-table-title {
+  margin-bottom: 16px;
+}
+
+.luck-table-title h4 {
+  margin: 0;
+
+  color: #f8fafc;
+
+  font-size: 16px;
+}
+
+.luck-table-title p {
+  margin: 5px 0 0;
+
+  color: #64748b;
+
+  font-size: 11px;
+}
+
+.luck-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+
+  border: 1px solid #263244;
+  border-radius: 9px;
+}
+
+.luck-table {
+  width: 100%;
+
+  min-width: 850px;
+
+  border-collapse: collapse;
+
+  background: #111827;
+}
+
+.luck-table thead {
+  background: #0f172a;
+}
+
+.luck-table th {
+  height: 42px;
+
+  padding: 0 12px;
+
+  color: #64748b;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  text-align: right;
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  border-bottom:
+    1px solid #263244;
+}
+
+.luck-table th:first-child,
+.luck-table th:nth-child(2) {
+  text-align: left;
+}
+
+.luck-table td {
+  height: 45px;
+
+  padding: 0 12px;
+
+  color: #cbd5e1;
+
+  font-size: 11px;
+
+  text-align: right;
+
+  font-variant-numeric:
+    tabular-nums;
+
+  border-bottom:
+    1px solid #1e293b;
+}
+
+.luck-table td:first-child,
+.luck-table td:nth-child(2) {
+  text-align: left;
+}
+
+.luck-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.luck-table tbody tr:hover {
+  background: rgba(
+    30,
+    41,
+    59,
+    0.5
+  );
+}
+
+.luck-value-cell {
+  color: #f8fafc !important;
+
+  font-weight: 800;
+}
+
+.luck-table-victory {
+  background: rgba(
+    22,
+    101,
+    52,
+    0.035
+  );
+}
+
+.luck-table-defeat {
+  background: rgba(
+    127,
+    29,
+    29,
+    0.035
+  );
+}
+
+/* =========================================================
+   ANALYZE BUTTON
+   ========================================================= */
+
+.luck-analysis-button {
+  min-height: 52px;
+
+  padding: 0 22px;
+
+  border: 1px solid #92400e;
+  border-radius: 8px;
+
+  background: rgba(
+    120,
+    53,
+    15,
+    0.3
+  );
+
+  color: #fbbf24;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.luck-analysis-button:hover {
+  border-color: #d97706;
+
+  background: rgba(
+    146,
+    64,
+    14,
+    0.45
+  );
+
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .luck-summary {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 800px) {
+  .luck-extremes {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .luck-analysis-header {
+    padding: 18px;
+
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .luck-range-badge {
+    width: 100%;
+
+    text-align: center;
+  }
+
+  .luck-summary {
+    padding: 18px;
+
+    grid-template-columns:
+      1fr
+      1fr;
+  }
+
+  .luck-extremes,
+  .luck-table-section {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 450px) {
+  .luck-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .luck-extreme-stats {
+    grid-template-columns: 1fr;
+  }
+}
