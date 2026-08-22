@@ -1009,4 +1009,40 @@
   .simulate-button {
     width: 100%;
   }
+
+  .shared-simulation-message {
+  margin-bottom: 20px;
+  padding: 13px 16px;
+
+  border: 1px solid #075985;
+  border-radius: 8px;
+
+  background:
+    rgba(
+      3,
+      105,
+      161,
+      0.12
+    );
+
+  color: #7dd3fc;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.shared-simulation-error {
+  border-color: #7f1d1d;
+
+  background:
+    rgba(
+      127,
+      29,
+      29,
+      0.12
+    );
+
+  color: #f87171;
+ }
+
 }

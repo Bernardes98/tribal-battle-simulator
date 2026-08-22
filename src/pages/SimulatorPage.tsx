@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useState,
 } from 'react'
 
@@ -10,6 +11,7 @@ import BattleSettingsPanel from '../components/battle/BattleSettingsPanel'
 import LuckAnalysisPanel from '../components/battle/LuckAnalysisPanel'
 import PaladinWeaponsPanel from '../components/battle/PaladinWeaponsPanel'
 import SiegeSettingsPanel from '../components/battle/SiegeSettingsPanel'
+import SimulationToolsPanel from '../components/battle/SimulationToolsPanel'
 
 import { units } from '../data/units'
 
@@ -41,6 +43,15 @@ import {
 import type {
   LuckAnalysisResult,
 } from '../domain/battle/luckAnalysis'
+
+import {
+  readLegacySimulationFromUrl,
+  readSharedSimulationCodeFromUrl,
+} from '../domain/simulation/simulationShare'
+
+import {
+  getSharedSimulation,
+} from '../services/sharedSimulationApi'
 
 import type {
   Army,
@@ -201,6 +212,20 @@ function SimulatorPage() {
       null,
     )
 
+  const [
+    sharedSimulationLoading,
+    setSharedSimulationLoading,
+  ] =
+    useState(false)
+
+  const [
+    sharedSimulationError,
+    setSharedSimulationError,
+  ] =
+    useState<string | null>(
+      null,
+    )
+
   const clearResults = () => {
     setBattleResult(null)
 
@@ -213,25 +238,224 @@ function SimulatorPage() {
     )
   }
 
+  useEffect(() => {
+    let cancelled =
+      false
+
+    const loadSharedSimulation =
+      async () => {
+        const code =
+          readSharedSimulationCodeFromUrl()
+
+        /*
+         * Novo formato:
+         *
+         * ?s=K8QD3A7X
+         */
+        if (code) {
+          try {
+            setSharedSimulationLoading(
+              true,
+            )
+
+            setSharedSimulationError(
+              null,
+            )
+
+            const input =
+              await getSharedSimulation(
+                code,
+              )
+
+            if (cancelled) {
+              return
+            }
+
+            setAttacker({
+              ...input.attacker,
+            })
+
+            setDefender({
+              ...input.defender,
+            })
+
+            setAttackerModifiers({
+              ...input.attackerModifiers,
+            })
+
+            setDefenderModifiers({
+              ...input.defenderModifiers,
+            })
+
+            setAttackerPaladinWeapons({
+              ...input.attackerPaladinWeapons,
+            })
+
+            setDefenderPaladinWeapons({
+              ...input.defenderPaladinWeapons,
+            })
+
+            setSiegeSettings({
+              ...input.siegeSettings,
+            })
+
+            return
+          } catch (error) {
+            if (cancelled) {
+              return
+            }
+
+            console.error(
+              'Could not load shared simulation:',
+              error,
+            )
+
+            setSharedSimulationError(
+              error instanceof Error
+                ? error.message
+                : 'Could not load shared simulation.',
+            )
+          } finally {
+            if (
+              !cancelled
+            ) {
+              setSharedSimulationLoading(
+                false,
+              )
+            }
+          }
+        }
+
+        /*
+         * Compatibilidade com os
+         * links antigos:
+         *
+         * ?battle=eyJ...
+         */
+        const legacyInput =
+          readLegacySimulationFromUrl()
+
+        if (
+          !legacyInput ||
+          cancelled
+        ) {
+          return
+        }
+
+        setAttacker({
+          ...legacyInput.attacker,
+        })
+
+        setDefender({
+          ...legacyInput.defender,
+        })
+
+        setAttackerModifiers({
+          ...legacyInput.attackerModifiers,
+        })
+
+        setDefenderModifiers({
+          ...legacyInput.defenderModifiers,
+        })
+
+        setAttackerPaladinWeapons({
+          ...legacyInput.attackerPaladinWeapons,
+        })
+
+        setDefenderPaladinWeapons({
+          ...legacyInput.defenderPaladinWeapons,
+        })
+
+        setSiegeSettings({
+          ...legacyInput.siegeSettings,
+        })
+      }
+
+    void loadSharedSimulation()
+
+    return () => {
+      cancelled =
+        true
+    }
+  }, [])
+
   const buildSimulationInput =
     (): BattleSimulationInput => {
       return {
         attacker,
+
         defender,
 
         attackerModifiers,
+
         defenderModifiers,
 
         attackerPaladinWeapons,
+
         defenderPaladinWeapons,
 
         siegeSettings,
       }
     }
 
+  const applySimulationInput = (
+    input:
+      BattleSimulationInput,
+  ) => {
+    setAttacker({
+      ...input.attacker,
+    })
+
+    setDefender({
+      ...input.defender,
+    })
+
+    setAttackerModifiers({
+      ...input.attackerModifiers,
+    })
+
+    setDefenderModifiers({
+      ...input.defenderModifiers,
+    })
+
+    setAttackerPaladinWeapons({
+      ...input.attackerPaladinWeapons,
+    })
+
+    setDefenderPaladinWeapons({
+      ...input.defenderPaladinWeapons,
+    })
+
+    setSiegeSettings({
+      ...input.siegeSettings,
+    })
+
+    clearResults()
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById(
+            'simulator',
+          )
+          ?.scrollIntoView({
+            behavior:
+              'smooth',
+
+            block:
+              'start',
+          })
+      },
+      50,
+    )
+  }
+
   const updateAttacker = (
-    unitId: UnitId,
-    quantity: number,
+    unitId:
+      UnitId,
+
+    quantity:
+      number,
   ) => {
     setAttacker(
       (currentArmy) => ({
@@ -246,8 +470,11 @@ function SimulatorPage() {
   }
 
   const updateDefender = (
-    unitId: UnitId,
-    quantity: number,
+    unitId:
+      UnitId,
+
+    quantity:
+      number,
   ) => {
     setDefender(
       (currentArmy) => ({
@@ -439,8 +666,10 @@ function SimulatorPage() {
     const result =
       optimizeArmyComposition(
         buildSimulationInput(),
+
         {
           mode,
+
           unitIds,
         },
       )
@@ -457,7 +686,8 @@ function SimulatorPage() {
   }
 
   const applyArmy = (
-    army: Army,
+    army:
+      Army,
   ) => {
     setAttacker({
       ...army,
@@ -560,6 +790,9 @@ function SimulatorPage() {
       clearResults()
     }
 
+  const simulationInput =
+    buildSimulationInput()
+
   return (
     <div className="simulator-page">
       <header className="header">
@@ -588,8 +821,8 @@ function SimulatorPage() {
               Tools
             </a>
 
-            <a href="#guides">
-              Guides
+            <a href="#simulation-tools">
+              Presets
             </a>
           </nav>
         </div>
@@ -599,6 +832,20 @@ function SimulatorPage() {
         className="main-content"
         id="simulator"
       >
+        {sharedSimulationLoading && (
+          <div className="shared-simulation-message">
+            Loading shared battle...
+          </div>
+        )}
+
+        {sharedSimulationError && (
+          <div className="shared-simulation-message shared-simulation-error">
+            Could not load the shared
+            battle:{' '}
+            {sharedSimulationError}
+          </div>
+        )}
+
         <section className="hero">
           <span className="hero-badge">
             Battle Simulator
@@ -620,10 +867,15 @@ function SimulatorPage() {
         <section className="battle-container">
           <ArmyPanel
             side="attacker"
-            army={attacker}
+
+            army={
+              attacker
+            }
+
             onUnitChange={
               updateAttacker
             }
+
             onClear={
               clearAttacker
             }
@@ -637,10 +889,15 @@ function SimulatorPage() {
 
           <ArmyPanel
             side="defender"
-            army={defender}
+
+            army={
+              defender
+            }
+
             onUnitChange={
               updateDefender
             }
+
             onClear={
               clearDefender
             }
@@ -652,12 +909,15 @@ function SimulatorPage() {
             attacker={
               attackerModifiers
             }
+
             defender={
               defenderModifiers
             }
+
             onAttackerChange={
               handleAttackerModifiers
             }
+
             onDefenderChange={
               handleDefenderModifiers
             }
@@ -668,10 +928,12 @@ function SimulatorPage() {
           settings={
             siegeSettings
           }
+
           wallLevel={
             defenderModifiers
               .wallLevel
           }
+
           onChange={
             handleSiegeSettings
           }
@@ -681,12 +943,15 @@ function SimulatorPage() {
           attacker={
             attackerPaladinWeapons
           }
+
           defender={
             defenderPaladinWeapons
           }
+
           onAttackerChange={
             handleAttackerWeapons
           }
+
           onDefenderChange={
             handleDefenderWeapons
           }
@@ -697,9 +962,11 @@ function SimulatorPage() {
             result={
               optimizerResult
             }
+
             onOptimize={
               handleArmyOptimization
             }
+
             onApply={
               applyArmy
             }
@@ -709,19 +976,32 @@ function SimulatorPage() {
             result={
               advancedOptimizerResult
             }
+
             onOptimize={
               handleAdvancedArmyOptimization
             }
+
             onApply={
               applyArmy
             }
           />
         </div>
 
+        <SimulationToolsPanel
+          input={
+            simulationInput
+          }
+
+          onLoad={
+            applySimulationInput
+          }
+        />
+
         <div className="simulation-actions">
           <button
             className="example-button"
             type="button"
+
             onClick={
               loadExcelExample
             }
@@ -732,6 +1012,7 @@ function SimulatorPage() {
           <button
             className="simulate-button"
             type="button"
+
             onClick={
               handleSimulation
             }
@@ -742,6 +1023,7 @@ function SimulatorPage() {
           <button
             className="luck-analysis-button"
             type="button"
+
             onClick={
               handleLuckAnalysis
             }
