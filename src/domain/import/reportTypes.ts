@@ -17,6 +17,7 @@ export interface ReportUnitReading {
   confidence: number
   rawText: string
   assumedZero: boolean
+  debugCropDataUrl?: string
 }
 
 export interface ReportArmyReading {
