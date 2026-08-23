@@ -71,8 +71,8 @@ const DETAILED_BATTLE_DEFENDER_INITIAL_ROW: ReportRowTemplate = {
 const SPY_DEFENDER_TOTAL_ROW: ReportRowTemplate = {
   leftRatio: 0.083,
   rightRatio: 0.978,
-  centerYByWidth: 0.506,
-  heightByWidth: 0.034,
+  centerYByWidth: 0.500,
+  heightByWidth: 0.026,
 }
 
 const normalizeText = (
@@ -687,6 +687,162 @@ const detectBattleRowsFromLossText = (
   }
 }
 
+interface SpyDetectedRow {
+  template: ReportRowTemplate
+  dynamic: boolean
+}
+
+/*
+ * Spy reports render three numeric rows below the unit icons. The last row is
+ * the total army we want to import. A fixed Y coordinate worked only while the
+ * report used exactly the same browser/UI scale; on taller report windows the
+ * OCR crop landed too low and cut values such as 160/164/19.
+ *
+ * Detect the actual digit bands instead. Every spy row prints a number (even
+ * zero) in all 13 unit columns, which makes the numeric bands easy to
+ * distinguish from icons, grid borders and the "Espiões" label below.
+ */
+const detectSpyTotalRow = (
+  source: Awaited<ReturnType<typeof loadReportImage>>,
+): SpyDetectedRow => {
+  const imageData = getSourceImageData(source)
+
+  if (!imageData) {
+    return {
+      template: SPY_DEFENDER_TOTAL_ROW,
+      dynamic: false,
+    }
+  }
+
+  const leftRatio = SPY_DEFENDER_TOTAL_ROW.leftRatio
+  const rightRatio = SPY_DEFENDER_TOTAL_ROW.rightRatio
+  const start = Math.max(
+    0,
+    Math.round(source.width * 0.41),
+  )
+  const end = Math.min(
+    source.height - 1,
+    Math.round(source.width * 0.55),
+  )
+
+  const scoredRows: Array<{
+    y: number
+    score: number
+  }> = []
+
+  for (let y = start; y <= end; y++) {
+    const counts = getCellRowCounts(
+      imageData,
+      source.width,
+      y,
+      leftRatio,
+      rightRatio,
+      isDarkQuantityPixel,
+    )
+
+    const activeCells = counts.filter(
+      (count) => count >= 1 && count <= 17,
+    ).length
+
+    const darkPixels = counts.reduce(
+      (sum, count) =>
+        sum + (count <= 17 ? count : 0),
+      0,
+    )
+
+    scoredRows.push({
+      y,
+      score:
+        activeCells >= 9
+          ? activeCells * 24 + darkPixels
+          : 0,
+    })
+  }
+
+  /*
+   * Bitmap digits can form two dark bands separated by a few antialiased rows.
+   * Merge gaps up to 8px so each printed number row becomes one candidate.
+   */
+  const groups: Array<{
+    top: number
+    bottom: number
+    score: number
+  }> = []
+
+  let current: {
+    top: number
+    bottom: number
+    score: number
+  } | null = null
+
+  for (const row of scoredRows) {
+    if (row.score <= 0) {
+      continue
+    }
+
+    if (
+      current &&
+      row.y <= current.bottom + 8
+    ) {
+      current.bottom = row.y
+      current.score += row.score
+      continue
+    }
+
+    if (current) {
+      groups.push(current)
+    }
+
+    current = {
+      top: row.y,
+      bottom: row.y,
+      score: row.score,
+    }
+  }
+
+  if (current) {
+    groups.push(current)
+  }
+
+  const candidates = groups.filter(
+    (group) =>
+      group.bottom - group.top + 1 >= 5 &&
+      group.score >= 700,
+  )
+
+  if (candidates.length === 0) {
+    return {
+      template: SPY_DEFENDER_TOTAL_ROW,
+      dynamic: false,
+    }
+  }
+
+  /*
+   * The report lists stationed / away / total. Select the lowest full
+   * 13-column numeric row, which is the total used by the simulator.
+   */
+  const totalRow = candidates.reduce(
+    (lowest, candidate) =>
+      candidate.bottom > lowest.bottom
+        ? candidate
+        : lowest,
+  )
+
+  const center =
+    (totalRow.top + totalRow.bottom) / 2
+
+  return {
+    template: {
+      leftRatio,
+      rightRatio,
+      centerYByWidth: center / source.width,
+      /* Keep the full glyph but stay clear of the neighboring number row. */
+      heightByWidth: 0.026,
+    },
+    dynamic: true,
+  }
+}
+
 const fallbackReportTypeFromShape = (
   width: number,
   height: number,
@@ -934,6 +1090,14 @@ export const analyzeReportScreenshot = async (
     if (reportType === 'spy') {
       setProgress(
         options,
+        'Locating spy total row',
+        16,
+      )
+
+      const spyRow = detectSpyTotalRow(source)
+
+      setProgress(
+        options,
         'Reading defender troops',
         18,
       )
@@ -941,7 +1105,7 @@ export const analyzeReportScreenshot = async (
       const defender = await readArmyRow(
         worker,
         source,
-        SPY_DEFENDER_TOTAL_ROW,
+        spyRow.template,
         (completed, total) => {
           setProgress(
             options,
@@ -959,6 +1123,12 @@ export const analyzeReportScreenshot = async (
       )
 
       const warnings: string[] = []
+
+      if (spyRow.dynamic) {
+        warnings.push(
+          'The spy-report total troop row was located automatically from the 13 numeric columns, preventing clipped values when the report window height changes.',
+        )
+      }
 
       if (!detectedByText) {
         warnings.push(

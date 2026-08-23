@@ -777,6 +777,7 @@ const readNumberCell = async (
   source: LoadedReportImage,
   crop: NormalizedCrop,
   unitId: UnitId,
+  verifyBattleLeadingGlyph: boolean,
 ): Promise<ReportUnitReading> => {
   const detectionCanvas = cropToCanvas(
     source,
@@ -890,10 +891,12 @@ const readNumberCell = async (
 
   const selected = chooseCandidate(candidates)
 
-  const verified = verifyLeadingTwoOrThree(
-    detectionCanvas,
-    selected,
-  )
+  const verified = verifyBattleLeadingGlyph
+    ? verifyLeadingTwoOrThree(
+        detectionCanvas,
+        selected,
+      )
+    : selected
 
   if (verified.quantity !== null) {
     return {
@@ -978,6 +981,7 @@ export const readArmyRow = async (
       source,
       crop,
       unitId,
+      isCompactBattleRow,
     )
 
     army[unitId] = reading.quantity
