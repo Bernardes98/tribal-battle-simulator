@@ -10,7 +10,7 @@ import BattleResultPanel from '../components/battle/BattleResultPanel'
 import BattleSetupTable from '../components/battle/BattleSetupTable'
 import LuckAnalysisPanel from '../components/battle/LuckAnalysisPanel'
 import SimulationToolsPanel from '../components/battle/SimulationToolsPanel'
-import SpyReportImportPanel from '../components/battle/SpyReportImportPanel'
+import ReportScreenshotImportPanel from '../components/battle/ReportScreenshotImportPanel'
 
 import { units } from '../data/units'
 
@@ -544,7 +544,18 @@ function SimulatorPage() {
     clearResults()
   }
 
-  const handleSpyReportApply = (
+  const handleReportAttackerApply = (
+    importedArmy: Army,
+  ) => {
+    setAttacker({
+      ...createEmptyArmy(),
+      ...importedArmy,
+    })
+
+    clearResults()
+  }
+
+  const handleReportDefenderApply = (
     importedArmy: Army,
     modifierPatch: Partial<DefenderModifiers>,
   ) => {
@@ -563,26 +574,19 @@ function SimulatorPage() {
     clearResults()
   }
 
-  const handleSpyReportMerge = (
-    importedArmy: Army,
+  const handleReportBothApply = (
+    importedAttacker: Army,
+    importedDefender: Army,
     modifierPatch: Partial<DefenderModifiers>,
   ) => {
-    setDefender((current) => {
-      const merged = {
-        ...current,
-      }
+    setAttacker({
+      ...createEmptyArmy(),
+      ...importedAttacker,
+    })
 
-      for (const unit of units) {
-        const importedQuantity =
-          importedArmy[unit.id] ?? 0
-
-        if (importedQuantity > 0) {
-          merged[unit.id] =
-            importedQuantity
-        }
-      }
-
-      return merged
+    setDefender({
+      ...createEmptyArmy(),
+      ...importedDefender,
     })
 
     setDefenderModifiers(
@@ -771,7 +775,7 @@ function SimulatorPage() {
               Settings
             </a>
 
-            <a href="#spy-report-import">
+            <a href="#report-screenshot-import">
               Import
             </a>
 
@@ -836,11 +840,10 @@ function SimulatorPage() {
           onSiegeSettingsChange={handleSiegeSettings}
         />
 
-        <SpyReportImportPanel
-          defender={defender}
-          defenderModifiers={defenderModifiers}
-          onApply={handleSpyReportApply}
-          onMerge={handleSpyReportMerge}
+        <ReportScreenshotImportPanel
+          onApplyAttacker={handleReportAttackerApply}
+          onApplyDefender={handleReportDefenderApply}
+          onApplyBoth={handleReportBothApply}
         />
 
         <BattleQuickActions
