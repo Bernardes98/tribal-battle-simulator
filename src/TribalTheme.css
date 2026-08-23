@@ -1033,3 +1033,93 @@
     width: 100%;
   }
 }
+
+/* =========================================================
+   BATTLE RESULT — FORCE LIGHT MEDIEVAL PALETTE
+   This section intentionally comes last to remove old navy
+   backgrounds from BattleResultPanel.css.
+   ========================================================= */
+
+.simulator-page .battle-result-card,
+.simulator-page .strength-summary,
+.simulator-page .siege-result-section,
+.simulator-page .army-value-section,
+.simulator-page .result-sides,
+.simulator-page .combat-groups {
+  color: #2b190d !important;
+  border-color: #865e36 !important;
+  background: #c79b6c !important;
+}
+
+.simulator-page .siege-result-card,
+.simulator-page .strength-card,
+.simulator-page .result-stat-grid > div,
+.simulator-page .provision-summary > div,
+.simulator-page .combat-group-card,
+.simulator-page .level-flow > div,
+.simulator-page .catapult-level-result > div,
+.simulator-page .siege-calculation-details span {
+  color: #2b190d !important;
+  border-color: #896039 !important;
+  background: #d5af81 !important;
+}
+
+.simulator-page .level-flow > div,
+.simulator-page .catapult-level-result > div {
+  background: #f0d2a5 !important;
+}
+
+.simulator-page .army-value-table-wrapper,
+.simulator-page .result-unit-list {
+  border-color: #845a34 !important;
+  background: #d2aa7c !important;
+}
+
+.simulator-page .army-value-table,
+.simulator-page .army-value-table tbody,
+.simulator-page .result-unit-row {
+  color: #322012 !important;
+  background-color: transparent !important;
+}
+
+.simulator-page .army-value-table thead,
+.simulator-page .result-unit-header {
+  color: #2b190d !important;
+  background: #ae7b48 !important;
+}
+
+.simulator-page .army-value-table th,
+.simulator-page .army-value-table td,
+.simulator-page .result-unit-row,
+.simulator-page .result-unit-row strong,
+.simulator-page .siege-building-name,
+.simulator-page .level-flow strong,
+.simulator-page .catapult-level-result strong,
+.simulator-page .combat-group-card b {
+  color: #2b190d !important;
+}
+
+.simulator-page .result-section-heading p,
+.simulator-page .strength-card span,
+.simulator-page .result-stat-grid span,
+.simulator-page .provision-summary span,
+.simulator-page .siege-calculation-details span,
+.simulator-page .combat-group-card span,
+.simulator-page .level-flow span,
+.simulator-page .catapult-level-result span {
+  color: #68472c !important;
+}
+
+.simulator-page .attacker-strength strong,
+.simulator-page .attacker-result-title,
+.simulator-page .army-value-attacker-heading,
+.simulator-page .loss-value {
+  color: #7b3023 !important;
+}
+
+.simulator-page .defender-strength strong,
+.simulator-page .defender-result-title,
+.simulator-page .army-value-defender-heading,
+.simulator-page .revived-value {
+  color: #40551f !important;
+}
