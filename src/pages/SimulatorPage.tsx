@@ -10,6 +10,7 @@ import BattleResultPanel from '../components/battle/BattleResultPanel'
 import BattleSetupTable from '../components/battle/BattleSetupTable'
 import LuckAnalysisPanel from '../components/battle/LuckAnalysisPanel'
 import SimulationToolsPanel from '../components/battle/SimulationToolsPanel'
+import SpyReportImportPanel from '../components/battle/SpyReportImportPanel'
 
 import { units } from '../data/units'
 
@@ -543,6 +544,57 @@ function SimulatorPage() {
     clearResults()
   }
 
+  const handleSpyReportApply = (
+    importedArmy: Army,
+    modifierPatch: Partial<DefenderModifiers>,
+  ) => {
+    setDefender({
+      ...createEmptyArmy(),
+      ...importedArmy,
+    })
+
+    setDefenderModifiers(
+      (current) => ({
+        ...current,
+        ...modifierPatch,
+      }),
+    )
+
+    clearResults()
+  }
+
+  const handleSpyReportMerge = (
+    importedArmy: Army,
+    modifierPatch: Partial<DefenderModifiers>,
+  ) => {
+    setDefender((current) => {
+      const merged = {
+        ...current,
+      }
+
+      for (const unit of units) {
+        const importedQuantity =
+          importedArmy[unit.id] ?? 0
+
+        if (importedQuantity > 0) {
+          merged[unit.id] =
+            importedQuantity
+        }
+      }
+
+      return merged
+    })
+
+    setDefenderModifiers(
+      (current) => ({
+        ...current,
+        ...modifierPatch,
+      }),
+    )
+
+    clearResults()
+  }
+
   const handleSimulation = () => {
     const result = simulateBattle(
       buildSimulationInput(),
@@ -719,6 +771,10 @@ function SimulatorPage() {
               Settings
             </a>
 
+            <a href="#spy-report-import">
+              Import
+            </a>
+
             <a href="#tools">
               Tools
             </a>
@@ -778,6 +834,13 @@ function SimulatorPage() {
           onAttackerWeaponsChange={handleAttackerWeapons}
           onDefenderWeaponsChange={handleDefenderWeapons}
           onSiegeSettingsChange={handleSiegeSettings}
+        />
+
+        <SpyReportImportPanel
+          defender={defender}
+          defenderModifiers={defenderModifiers}
+          onApply={handleSpyReportApply}
+          onMerge={handleSpyReportMerge}
         />
 
         <BattleQuickActions
