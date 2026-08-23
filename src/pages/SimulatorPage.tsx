@@ -5,6 +5,7 @@ import {
 
 import AdvancedArmyOptimizerPanel from '../components/battle/AdvancedArmyOptimizerPanel'
 import ArmyOptimizerPanel from '../components/battle/ArmyOptimizerPanel'
+import BattleQuickActions from '../components/battle/BattleQuickActions'
 import BattleResultPanel from '../components/battle/BattleResultPanel'
 import BattleSetupTable from '../components/battle/BattleSetupTable'
 import LuckAnalysisPanel from '../components/battle/LuckAnalysisPanel'
@@ -436,6 +437,77 @@ function SimulatorPage() {
     clearResults()
   }
 
+  const resetBattle = () => {
+    setAttacker(
+      createEmptyArmy(),
+    )
+
+    setDefender(
+      createEmptyArmy(),
+    )
+
+    setAttackerModifiers(
+      createInitialAttackerModifiers(),
+    )
+
+    setDefenderModifiers(
+      createInitialDefenderModifiers(),
+    )
+
+    setAttackerPaladinWeapons({
+      ...createEmptyPaladinWeapons(),
+      axe: 1,
+    })
+
+    setDefenderPaladinWeapons(
+      createEmptyPaladinWeapons(),
+    )
+
+    setSiegeSettings(
+      createInitialSiegeSettings(),
+    )
+
+    setSharedSimulationError(null)
+
+    clearResults()
+  }
+
+  const swapArmies = () => {
+    const previousAttacker = {
+      ...attacker,
+    }
+
+    const previousDefender = {
+      ...defender,
+    }
+
+    const previousAttackerWeapons = {
+      ...attackerPaladinWeapons,
+    }
+
+    const previousDefenderWeapons = {
+      ...defenderPaladinWeapons,
+    }
+
+    setAttacker(
+      previousDefender,
+    )
+
+    setDefender(
+      previousAttacker,
+    )
+
+    setAttackerPaladinWeapons(
+      previousDefenderWeapons,
+    )
+
+    setDefenderPaladinWeapons(
+      previousAttackerWeapons,
+    )
+
+    clearResults()
+  }
+
   const handleAttackerModifiers = (
     modifiers: AttackerModifiers,
   ) => {
@@ -708,31 +780,17 @@ function SimulatorPage() {
           onSiegeSettingsChange={handleSiegeSettings}
         />
 
-        <div className="simulation-actions">
-          <button
-            className="example-button"
-            type="button"
-            onClick={loadExcelExample}
-          >
-            Load Excel Example
-          </button>
-
-          <button
-            className="simulate-button"
-            type="button"
-            onClick={handleSimulation}
-          >
-            Simulate Battle
-          </button>
-
-          <button
-            className="luck-analysis-button"
-            type="button"
-            onClick={handleLuckAnalysis}
-          >
-            Analyze Luck
-          </button>
-        </div>
+        <BattleQuickActions
+          attacker={attacker}
+          defender={defender}
+          attackerModifiers={attackerModifiers}
+          defenderModifiers={defenderModifiers}
+          onSwapArmies={swapArmies}
+          onResetBattle={resetBattle}
+          onLoadExample={loadExcelExample}
+          onSimulate={handleSimulation}
+          onAnalyzeLuck={handleLuckAnalysis}
+        />
 
         {battleResult && (
           <BattleResultPanel
