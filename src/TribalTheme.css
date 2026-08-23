@@ -1,0 +1,1035 @@
+/*
+ * Tribal Battle Simulator - Brown / Medieval Theme
+ *
+ * Imported after App.css so this file acts as a visual skin over the
+ * existing simulator without changing battle logic or component APIs.
+ */
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.simulator-page {
+  min-height: 100vh;
+  color: var(--tribal-text);
+  background: transparent;
+}
+
+/* =========================================================
+   TYPOGRAPHY
+   ========================================================= */
+
+.simulator-page :is(h1, h2, h3, h4) {
+  color: #2b190d !important;
+  font-family: Georgia, 'Times New Roman', serif;
+  letter-spacing: 0.015em;
+}
+
+.simulator-page :is(p, .field-help, .siege-field-help) {
+  color: var(--tribal-muted) !important;
+}
+
+.simulator-page .section-label,
+.simulator-page .hero-badge,
+.simulator-page .army-label {
+  color: #65401f !important;
+  font-size: 10px;
+  letter-spacing: 0.09em;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.simulator-page .header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--tribal-border-dark);
+  box-shadow:
+    0 2px 0 rgba(255, 230, 185, 0.12) inset,
+    0 3px 10px rgba(66, 38, 17, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 50%),
+    linear-gradient(90deg, #49301d 0%, #664326 48%, #49301d 100%);
+  backdrop-filter: none;
+}
+
+.simulator-page .header-content {
+  width: min(1120px, calc(100% - 34px));
+  min-height: 58px;
+  gap: 20px;
+}
+
+.simulator-page .header h1 {
+  color: #f4dfb7 !important;
+  font-size: 20px;
+  text-shadow: 0 1px 0 #1f1008;
+}
+
+.simulator-page .header p {
+  margin-top: 2px;
+  color: #ceb48f !important;
+  font-size: 10px;
+}
+
+.simulator-page .header nav {
+  gap: 7px;
+}
+
+.simulator-page .header nav a {
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: #ead2ad;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.simulator-page .header nav a:hover {
+  color: #fff3d7;
+  border-color: #8e663f;
+  background: rgba(221, 181, 108, 0.12);
+}
+
+/* =========================================================
+   PAGE / HERO
+   ========================================================= */
+
+.simulator-page .main-content {
+  width: min(1120px, calc(100% - 34px));
+  margin: 0 auto;
+  padding: 30px 0 70px;
+}
+
+.simulator-page .hero {
+  max-width: 760px;
+  margin: 0 auto 22px;
+  text-align: center;
+}
+
+.simulator-page .hero-badge {
+  padding: 5px 10px;
+  border: 1px solid #9a7047;
+  border-radius: 2px;
+  background: rgba(226, 194, 148, 0.45);
+  box-shadow: 0 1px 0 rgba(255, 245, 218, 0.45) inset;
+}
+
+.simulator-page .hero h2 {
+  margin: 9px 0 4px;
+  color: #26170c !important;
+  font-size: clamp(28px, 4vw, 39px);
+  line-height: 1.05;
+  text-shadow: 0 1px 0 rgba(255, 236, 201, 0.6);
+}
+
+.simulator-page .hero p {
+  max-width: 660px;
+  margin: 0 auto;
+  color: #65462b !important;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   COMMON PANEL SKIN
+   ========================================================= */
+
+.simulator-page :is(
+  .army-card,
+  .battle-settings-card,
+  .paladin-card,
+  .siege-settings-card,
+  .battle-result-card,
+  .luck-analysis-card,
+  .army-optimizer-card,
+  .advanced-optimizer-card,
+  .simulation-tools-card
+) {
+  border: 1px solid var(--tribal-border) !important;
+  border-radius: 4px !important;
+  background: var(--tribal-panel) !important;
+  box-shadow:
+    0 0 0 1px rgba(236, 202, 154, 0.45) inset,
+    0 2px 6px rgba(77, 46, 22, 0.14);
+}
+
+.simulator-page :is(
+  .battle-settings-card,
+  .paladin-card,
+  .siege-settings-card,
+  .battle-result-card,
+  .luck-analysis-card,
+  .army-optimizer-card,
+  .advanced-optimizer-card,
+  .simulation-tools-card
+) {
+  margin-top: 16px !important;
+}
+
+.simulator-page :is(
+  .settings-title,
+  .result-header,
+  .luck-analysis-header,
+  .army-optimizer-header,
+  .advanced-optimizer-header,
+  .simulation-tools-header
+) {
+  padding: 13px 16px !important;
+  border-color: var(--tribal-border) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), transparent),
+    #b98b5d !important;
+}
+
+.simulator-page :is(
+  .settings-title h3,
+  .result-header h3,
+  .luck-analysis-header h3,
+  .army-optimizer-header h3,
+  .advanced-optimizer-header h3,
+  .simulation-tools-header h3
+) {
+  margin-top: 3px !important;
+  font-size: 18px !important;
+}
+
+.simulator-page :is(
+  .settings-title p,
+  .result-header p,
+  .luck-analysis-header p,
+  .army-optimizer-header p,
+  .advanced-optimizer-header p,
+  .simulation-tools-header p
+) {
+  margin-top: 3px !important;
+  font-size: 10px !important;
+}
+
+/* =========================================================
+   ATTACKER / DEFENDER - COMPACT TW-CALC FEEL
+   ========================================================= */
+
+.simulator-page .battle-container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  padding: 5px;
+  border: 1px solid #93693e;
+  background: #b38454;
+  box-shadow:
+    0 0 0 1px #d7b183 inset,
+    0 2px 8px rgba(75, 44, 20, 0.13);
+}
+
+.simulator-page .army-card {
+  box-shadow: none;
+}
+
+.simulator-page .attacker-card {
+  border-radius: 3px 0 0 3px !important;
+}
+
+.simulator-page .defender-card {
+  border-radius: 0 3px 3px 0 !important;
+}
+
+.simulator-page .army-card-header {
+  min-height: 58px;
+  padding: 10px 12px;
+  border-color: var(--tribal-border) !important;
+  background:
+    linear-gradient(180deg, #c79a6d, #b9895a);
+}
+
+.simulator-page .army-card-header h3 {
+  margin-top: 2px;
+  color: #301d0f !important;
+  font-size: 16px;
+}
+
+.simulator-page .attacker-card .army-label {
+  color: #7f301f !important;
+}
+
+.simulator-page .defender-card .army-label {
+  color: #334f61 !important;
+}
+
+.simulator-page .clear-army-button {
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid #825830 !important;
+  border-radius: 2px !important;
+  color: #4b2f18 !important;
+  background: #d1a979 !important;
+  font-size: 10px;
+  box-shadow: 0 1px 0 rgba(255, 244, 218, 0.55) inset;
+}
+
+.simulator-page .clear-army-button:hover {
+  color: #2b190d !important;
+  border-color: #5f3c20 !important;
+  background: #dfba88 !important;
+}
+
+.simulator-page .unit-list-header {
+  min-height: 28px;
+  padding: 0 10px;
+  grid-template-columns: minmax(150px, 1fr) 82px 92px;
+  gap: 8px;
+  color: #5e3c20 !important;
+  background: #aa7849 !important;
+  border-bottom: 1px solid #79502c;
+  font-size: 8px;
+}
+
+.simulator-page .unit-row {
+  min-height: 46px;
+  padding: 4px 10px;
+  grid-template-columns: minmax(150px, 1fr) 82px 92px;
+  gap: 8px;
+  border-color: rgba(116, 75, 38, 0.48) !important;
+  background: rgba(216, 178, 132, 0.18);
+}
+
+.simulator-page .unit-row:nth-child(even) {
+  background: rgba(153, 105, 61, 0.07);
+}
+
+.simulator-page .unit-row:hover {
+  background: rgba(244, 213, 168, 0.3) !important;
+}
+
+.simulator-page .unit-info {
+  gap: 7px;
+}
+
+.simulator-page .unit-info > div:last-child {
+  gap: 1px;
+}
+
+.simulator-page .unit-info strong {
+  color: #2f1d10 !important;
+  font-size: 11px;
+}
+
+.simulator-page .unit-info span {
+  color: #745033 !important;
+  font-size: 8px;
+}
+
+.simulator-page .unit-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border: 1px solid #79502e !important;
+  border-radius: 2px !important;
+  color: #402710 !important;
+  background: #d1aa7a !important;
+  box-shadow: 0 1px 0 #efd2a5 inset;
+  font-size: 8px;
+}
+
+.simulator-page .unit-icon-cavalry {
+  background: #c2a178 !important;
+}
+
+.simulator-page .unit-icon-siege {
+  background: #b99060 !important;
+}
+
+.simulator-page .unit-icon-special {
+  background: #c5a66c !important;
+}
+
+.simulator-page .unit-stats {
+  gap: 7px;
+}
+
+.simulator-page .unit-stats span {
+  gap: 0;
+  color: #765133 !important;
+  font-size: 7px;
+}
+
+.simulator-page .unit-stats strong {
+  color: #3a2514 !important;
+  font-size: 9px;
+}
+
+.simulator-page .unit-input,
+.simulator-page .setting-field select,
+.simulator-page .setting-field input,
+.simulator-page .paladin-row select,
+.simulator-page .siege-setting-field select,
+.simulator-page .optimizer-setting select,
+.simulator-page .advanced-mode-field select,
+.simulator-page input[type='text'],
+.simulator-page input[type='number'],
+.simulator-page select {
+  border: 1px solid #6b4526 !important;
+  border-radius: 2px !important;
+  outline: none;
+  color: #fff7e8 !important;
+  background:
+    linear-gradient(180deg, #9a6b3e 0%, #b78452 46%, #8e6036 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(48, 27, 12, 0.55) inset,
+    0 1px 0 rgba(242, 211, 167, 0.35);
+}
+
+.simulator-page .unit-input {
+  height: 30px;
+  padding: 0 8px;
+  font-size: 11px;
+  text-align: center;
+}
+
+.simulator-page :is(input, select):focus {
+  border-color: #3f2917 !important;
+  box-shadow:
+    0 0 0 1px #2e1b0d inset,
+    0 0 0 2px rgba(230, 193, 111, 0.38) !important;
+}
+
+.simulator-page :is(input, select)::placeholder {
+  color: rgba(255, 246, 226, 0.72) !important;
+}
+
+.simulator-page select option {
+  color: #2c1a0d;
+  background: #d2ab7e;
+}
+
+.simulator-page .army-summary {
+  min-height: 48px;
+  padding: 7px 10px;
+  gap: 7px;
+  background: #ae7d4e !important;
+}
+
+.simulator-page .army-summary div {
+  padding: 5px 7px;
+  border: 1px solid #8c6139 !important;
+  border-radius: 2px !important;
+  background: rgba(224, 190, 146, 0.28);
+}
+
+.simulator-page .army-summary span {
+  color: #654326 !important;
+  font-size: 8px;
+}
+
+.simulator-page .army-summary strong {
+  color: #2d1a0c !important;
+  font-size: 11px;
+}
+
+.simulator-page .versus {
+  min-height: 100%;
+  background: #aa7849;
+  border-top: 1px solid #93693e;
+  border-bottom: 1px solid #93693e;
+}
+
+.simulator-page .versus span {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #684422 !important;
+  border-radius: 50%;
+  color: #f7e6c4 !important;
+  background: #694322 !important;
+  font-size: 8px;
+  box-shadow: 0 1px 0 rgba(255, 234, 196, .18) inset;
+}
+
+/* =========================================================
+   BATTLE SETTINGS - CLOSER / DENSER
+   ========================================================= */
+
+.simulator-page .settings-columns {
+  grid-template-columns: 1fr 1fr;
+}
+
+.simulator-page .settings-side {
+  padding: 12px !important;
+}
+
+.simulator-page .settings-side:first-child {
+  border-color: var(--tribal-border) !important;
+}
+
+.simulator-page .settings-side-header {
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.simulator-page .settings-side-header h4 {
+  margin-top: 2px;
+  color: #34200f !important;
+  font-size: 14px;
+}
+
+.simulator-page .modifier-result {
+  min-width: 70px;
+  padding: 6px 8px;
+  border: 1px solid #8d6037 !important;
+  border-radius: 2px !important;
+  background: #d0a777;
+}
+
+.simulator-page .modifier-result span {
+  color: #755033 !important;
+  font-size: 7px;
+}
+
+.simulator-page .modifier-result strong {
+  color: #3c2512 !important;
+  font-size: 14px;
+}
+
+.simulator-page .settings-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 9px !important;
+}
+
+.simulator-page .setting-field {
+  gap: 4px;
+}
+
+.simulator-page .setting-field label,
+.simulator-page .siege-setting-field label,
+.simulator-page .optimizer-setting label,
+.simulator-page .advanced-mode-field label {
+  color: #4b301a !important;
+  font-size: 9px !important;
+}
+
+.simulator-page .setting-field select,
+.simulator-page .setting-field input,
+.simulator-page .paladin-row select,
+.simulator-page .siege-setting-field select {
+  height: 32px !important;
+  padding: 0 8px !important;
+  font-size: 10px !important;
+}
+
+.simulator-page .input-suffix > span {
+  color: #f1d9b0 !important;
+  font-size: 9px;
+}
+
+.simulator-page .field-help,
+.simulator-page .siege-field-help {
+  font-size: 8px !important;
+}
+
+.simulator-page .toggle-setting {
+  min-height: 42px;
+  margin-top: 9px;
+  padding: 7px 9px;
+  border: 1px solid #966a42 !important;
+  border-radius: 2px !important;
+  background: rgba(216, 178, 132, 0.22);
+}
+
+.simulator-page .toggle-setting strong {
+  color: #352010 !important;
+  font-size: 10px;
+}
+
+.simulator-page .toggle-setting div span {
+  margin-top: 1px;
+  color: #765237 !important;
+  font-size: 8px;
+}
+
+.simulator-page .toggle-switch {
+  width: 34px;
+  height: 18px;
+  right: 9px;
+  background: #87603c !important;
+}
+
+.simulator-page .toggle-switch::after {
+  width: 12px;
+  height: 12px;
+  top: 3px;
+  left: 3px;
+  background: #f5e0bd !important;
+}
+
+.simulator-page .toggle-setting input:checked + .toggle-switch {
+  background: #6f4b26 !important;
+}
+
+.simulator-page .toggle-setting input:checked + .toggle-switch::after {
+  transform: translateX(16px);
+}
+
+/* =========================================================
+   PALADIN / SIEGE
+   ========================================================= */
+
+.simulator-page .paladin-table-header,
+.simulator-page .paladin-row {
+  grid-template-columns: minmax(160px, 1fr) 150px 150px !important;
+  gap: 10px !important;
+}
+
+.simulator-page .paladin-table-header {
+  min-height: 28px !important;
+  padding: 0 14px !important;
+  color: #644222 !important;
+  background: #aa7849 !important;
+  font-size: 8px !important;
+}
+
+.simulator-page .paladin-row {
+  min-height: 42px !important;
+  padding: 5px 14px !important;
+  border-color: rgba(116, 75, 38, 0.48) !important;
+}
+
+.simulator-page .paladin-row:hover {
+  background: rgba(244, 213, 168, 0.26) !important;
+}
+
+.simulator-page .paladin-unit {
+  gap: 7px;
+}
+
+.simulator-page .paladin-unit strong {
+  color: #33200f !important;
+  font-size: 10px !important;
+}
+
+.simulator-page .paladin-unit-icon {
+  width: 26px;
+  height: 26px;
+  border: 1px solid #835c35 !important;
+  border-radius: 2px !important;
+  color: #4b2d13 !important;
+  background: #c6a36d !important;
+  font-size: 7px;
+}
+
+.simulator-page .siege-settings-content {
+  padding: 12px !important;
+  grid-template-columns: 1fr 1fr minmax(200px, .75fr) !important;
+  gap: 10px !important;
+}
+
+.simulator-page .siege-setting-field {
+  gap: 4px;
+}
+
+.simulator-page .siege-info {
+  min-height: 58px !important;
+  padding: 7px !important;
+  border: 1px solid #8d6037 !important;
+  border-radius: 2px !important;
+  background: #b98758 !important;
+  gap: 6px !important;
+}
+
+.simulator-page .siege-info span {
+  color: #654226 !important;
+  font-size: 7px !important;
+}
+
+.simulator-page .siege-info strong {
+  color: #311e0e !important;
+  font-size: 10px !important;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.simulator-page button {
+  border-radius: 3px !important;
+  font-family: Verdana, Tahoma, Arial, sans-serif;
+  letter-spacing: 0.015em;
+}
+
+.simulator-page :is(
+  .simulate-button,
+  .luck-analysis-button,
+  .example-button,
+  .save-preset-button,
+  .share-battle-button,
+  .optimizer-button,
+  .advanced-search-button,
+  .advanced-apply-button
+) {
+  min-height: 38px !important;
+  border: 1px solid #5e3a1d !important;
+  border-radius: 3px !important;
+  color: #fff4dc !important;
+  background:
+    linear-gradient(180deg, #8b5b31 0%, #69401f 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 230, 184, 0.25) inset,
+    0 1px 2px rgba(50, 27, 10, 0.2);
+  font-size: 10px !important;
+  font-weight: 800;
+  text-transform: none;
+}
+
+.simulator-page :is(
+  .simulate-button,
+  .luck-analysis-button,
+  .example-button,
+  .save-preset-button,
+  .share-battle-button,
+  .optimizer-button,
+  .advanced-search-button,
+  .advanced-apply-button
+):hover {
+  color: #fff9e9 !important;
+  border-color: #452914 !important;
+  background:
+    linear-gradient(180deg, #9d6b3c 0%, #7a4a26 100%) !important;
+  transform: translateY(-1px);
+}
+
+.simulator-page .simulate-button {
+  color: #301b0d !important;
+  border-color: #8c6727 !important;
+  background:
+    linear-gradient(180deg, #f0cd6d 0%, #cda546 100%) !important;
+  text-shadow: 0 1px 0 rgba(255, 245, 201, 0.4);
+}
+
+.simulator-page .simulate-button:hover {
+  color: #231207 !important;
+  background:
+    linear-gradient(180deg, #f7da82 0%, #d8b24f 100%) !important;
+}
+
+.simulator-page .simulation-actions,
+.simulator-page .simulate-container {
+  margin-top: 16px !important;
+  gap: 8px !important;
+}
+
+/* =========================================================
+   RESULTS / ANALYSIS / OPTIMIZERS / SHARE
+   ========================================================= */
+
+.simulator-page :is(
+  .strength-summary,
+  .army-value-section,
+  .combat-groups,
+  .luck-summary,
+  .optimizer-settings,
+  .advanced-optimizer-settings
+) {
+  border-color: var(--tribal-border) !important;
+  background: #b98758 !important;
+}
+
+.simulator-page :is(
+  .strength-card,
+  .siege-result-card,
+  .luck-summary-card,
+  .luck-extreme-card,
+  .optimizer-description,
+  .advanced-fixed-info,
+  .result-stat-grid div,
+  .provision-summary div,
+  .combat-group-card
+) {
+  border-color: #8f643a !important;
+  border-radius: 3px !important;
+  background: #c89f71 !important;
+}
+
+.simulator-page :is(
+  .result-section-heading h4,
+  .luck-table-title h4,
+  .simulation-tools-section-title h4
+) {
+  color: #34200f !important;
+}
+
+.simulator-page :is(
+  .strength-card span,
+  .result-stat-grid span,
+  .provision-summary span,
+  .luck-summary-card span,
+  .siege-calculation-details span,
+  .simulation-tools-section-title p
+) {
+  color: #765034 !important;
+}
+
+.simulator-page :is(
+  .strength-card strong,
+  .result-stat-grid strong,
+  .provision-summary strong,
+  .luck-summary-card strong,
+  .siege-calculation-details strong
+) {
+  color: #2f1b0d !important;
+}
+
+.simulator-page :is(
+  .army-value-table-wrapper,
+  .result-unit-list,
+  .luck-table-wrapper,
+  .advanced-result-table-wrapper
+) {
+  border-color: #855b34 !important;
+  border-radius: 3px !important;
+  background: #c89f71 !important;
+}
+
+.simulator-page :is(
+  .army-value-table,
+  .luck-table,
+  .advanced-result-table
+) {
+  color: #35200f !important;
+  background: #c89f71 !important;
+}
+
+.simulator-page :is(
+  .army-value-table thead,
+  .luck-table thead,
+  .result-unit-header,
+  .advanced-result-table thead
+) {
+  color: #5e3b20 !important;
+  background: #a97749 !important;
+}
+
+.simulator-page :is(
+  .army-value-table th,
+  .luck-table th,
+  .army-value-table td,
+  .luck-table td,
+  .result-unit-row
+) {
+  color: #3a2513 !important;
+  border-color: rgba(115, 75, 40, .48) !important;
+}
+
+.simulator-page :is(
+  .army-value-table td strong,
+  .result-unit-row strong
+) {
+  color: #2c190c !important;
+}
+
+.simulator-page .result-sides {
+  background: #c69d70;
+}
+
+.simulator-page .result-side {
+  padding: 14px !important;
+}
+
+.simulator-page .result-side:first-child {
+  border-color: var(--tribal-border) !important;
+}
+
+.simulator-page .result-stat-grid,
+.simulator-page .provision-summary {
+  gap: 6px !important;
+}
+
+.simulator-page .result-stat-grid div,
+.simulator-page .provision-summary div {
+  padding: 8px !important;
+}
+
+.simulator-page .result-unit-list {
+  margin-top: 12px !important;
+}
+
+.simulator-page .winner-badge,
+.simulator-page .luck-range-badge,
+.simulator-page .optimizer-badge,
+.simulator-page .advanced-beta-badge,
+.simulator-page .simulation-tools-badge {
+  border: 1px solid #76502d !important;
+  border-radius: 2px !important;
+  color: #3d2715 !important;
+  background: #d9b475 !important;
+}
+
+.simulator-page .simulation-tools-content {
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr) !important;
+  background: #c89e70;
+}
+
+.simulator-page .simulation-presets-section,
+.simulator-page .simulation-share-section {
+  padding: 14px !important;
+}
+
+.simulator-page .simulation-presets-section {
+  border-color: var(--tribal-border) !important;
+}
+
+.simulator-page .simulation-feedback {
+  border-color: var(--tribal-border) !important;
+}
+
+.simulator-page .simulation-feedback-success {
+  color: #315923 !important;
+  background: #bed29f !important;
+}
+
+.simulator-page .simulation-feedback-error {
+  color: #722b20 !important;
+  background: #ddb09c !important;
+}
+
+.simulator-page .shared-simulation-message {
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  border: 1px solid #87603a;
+  border-radius: 3px;
+  color: #3f2a18;
+  background: #d9b486;
+}
+
+/* Generic controls inside presets / optimizers */
+.simulator-page :is(
+  .preset-create-row,
+  .optimizer-settings,
+  .advanced-optimizer-settings,
+  .advanced-unit-selection,
+  .advanced-search-action
+) {
+  gap: 10px !important;
+}
+
+.simulator-page :is(
+  .preset-item,
+  .share-preview,
+  .share-note
+) {
+  border-color: #8b6038 !important;
+  border-radius: 3px !important;
+  background: #d0a778 !important;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .simulator-page .main-content,
+  .simulator-page .header-content {
+    width: min(100% - 24px, 1120px);
+  }
+
+  .simulator-page .settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .simulator-page .header-content {
+    min-height: auto;
+    padding: 10px 0;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .simulator-page .header nav {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .simulator-page .battle-container {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .simulator-page .attacker-card,
+  .simulator-page .defender-card {
+    border-radius: 3px !important;
+  }
+
+  .simulator-page .versus {
+    min-height: 34px;
+    border: none;
+  }
+
+  .simulator-page .settings-columns,
+  .simulator-page .simulation-tools-content {
+    grid-template-columns: 1fr !important;
+  }
+
+  .simulator-page .settings-side:first-child,
+  .simulator-page .simulation-presets-section {
+    border-right: none !important;
+    border-bottom: 1px solid var(--tribal-border) !important;
+  }
+
+  .simulator-page .siege-settings-content {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .simulator-page .main-content {
+    padding-top: 20px;
+  }
+
+  .simulator-page .hero {
+    margin-bottom: 15px;
+  }
+
+  .simulator-page .hero h2 {
+    font-size: 28px;
+  }
+
+  .simulator-page .unit-list-header {
+    display: none;
+  }
+
+  .simulator-page .unit-row {
+    grid-template-columns: minmax(0, 1fr) 86px;
+    min-height: 44px;
+    padding: 4px 7px;
+  }
+
+  .simulator-page .unit-stats {
+    display: none;
+  }
+
+  .simulator-page .settings-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .simulator-page .paladin-table-header,
+  .simulator-page .paladin-row {
+    grid-template-columns: minmax(100px, 1fr) 88px 88px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    gap: 5px !important;
+  }
+
+  .simulator-page .paladin-unit-icon {
+    display: none;
+  }
+
+  .simulator-page .simulation-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .simulator-page .simulation-actions button {
+    width: 100%;
+  }
+}
