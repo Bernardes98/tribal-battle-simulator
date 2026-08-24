@@ -20,11 +20,17 @@ export interface LoadedReportImage {
   dispose: () => void
 }
 
+export type ReportRowProfile =
+  | 'spy'
+  | 'battle-regular'
+  | 'battle-detailed'
+
 export interface ReportRowTemplate {
   leftRatio: number
   rightRatio: number
   centerYByWidth: number
   heightByWidth: number
+  profile?: ReportRowProfile
 }
 
 interface NormalizedCrop {
@@ -53,7 +59,8 @@ const CELL_HORIZONTAL_INSET = 0.055
  * glyph is preserved. Spy rows are already taller and are left unchanged.
  */
 const BATTLE_CELL_TOP_PADDING_BY_WIDTH = 0.001
-const BATTLE_CELL_BOTTOM_PADDING_BY_WIDTH = 0.006
+const BATTLE_REGULAR_CELL_BOTTOM_PADDING_BY_WIDTH = 0.002
+const BATTLE_DETAILED_CELL_BOTTOM_PADDING_BY_WIDTH = 0.006
 const BATTLE_ROW_MAX_HEIGHT_BY_WIDTH = 0.025
 
 const PRIMARY_OCR_SCALE = 12
@@ -451,6 +458,383 @@ const findLeadingGlyphShape = (
   }
 }
 
+/**
+ * Split the detected number band into visual digit glyphs.
+ *
+ * A thousands separator can appear as a tiny one-pixel component; it is
+ * deliberately discarded by requiring a minimum vertical glyph height.
+ * This lets us compare OCR characters with what is actually printed in the
+ * Tribal Wars bitmap font without depending on Tesseract for the ambiguous
+ * 2/7 pair.
+ */
+const findDigitGlyphShapes = (
+  canvas: HTMLCanvasElement,
+): LeadingGlyphShape[] => {
+  const context = canvas.getContext('2d', {
+    willReadFrequently: true,
+  })
+
+  if (!context) {
+    return []
+  }
+
+  const imageData = context.getImageData(
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  )
+
+  const width = canvas.width
+  const height = canvas.height
+  const dark = new Uint8Array(width * height)
+  const rowCounts = new Uint16Array(height)
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const index = (y * width + x) * 4
+      const red = imageData.data[index]
+      const green = imageData.data[index + 1]
+      const blue = imageData.data[index + 2]
+
+      const {
+        brightness,
+        spread,
+      } = getPixelMetrics(red, green, blue)
+
+      const isDigitInk =
+        brightness <= 122 &&
+        spread <= 92
+
+      if (isDigitInk) {
+        dark[y * width + x] = 1
+        rowCounts[y] += 1
+      }
+    }
+  }
+
+  const maximumUsefulRowInk = Math.max(
+    8,
+    Math.floor(width * 0.48),
+  )
+
+  const bands: Array<{
+    top: number
+    bottom: number
+    ink: number
+  }> = []
+
+  let y = 0
+
+  while (y < height) {
+    const useful =
+      rowCounts[y] >= 1 &&
+      rowCounts[y] <= maximumUsefulRowInk
+
+    if (!useful) {
+      y += 1
+      continue
+    }
+
+    const top = y
+    let ink = 0
+
+    while (
+      y < height &&
+      rowCounts[y] >= 1 &&
+      rowCounts[y] <= maximumUsefulRowInk
+    ) {
+      ink += rowCounts[y]
+      y += 1
+    }
+
+    const bottom = y - 1
+    const bandHeight = bottom - top + 1
+
+    if (
+      bandHeight >= 3 &&
+      bandHeight <= Math.max(
+        12,
+        Math.round(height * 0.80),
+      )
+    ) {
+      bands.push({
+        top,
+        bottom,
+        ink,
+      })
+    }
+  }
+
+  if (bands.length === 0) {
+    return []
+  }
+
+  const centerY = (height - 1) / 2
+  const band = bands
+    .map((candidate) => {
+      const candidateCenter =
+        (candidate.top + candidate.bottom) / 2
+
+      return {
+        ...candidate,
+        rank:
+          candidate.ink -
+          Math.abs(candidateCenter - centerY) * 1.5,
+      }
+    })
+    .sort(
+      (left, right) => right.rank - left.rank,
+    )[0]
+
+  const bandHeight = band.bottom - band.top + 1
+  const columnCounts = new Uint16Array(width)
+
+  for (let x = 0; x < width; x++) {
+    for (
+      let currentY = band.top;
+      currentY <= band.bottom;
+      currentY++
+    ) {
+      columnCounts[x] +=
+        dark[currentY * width + x]
+    }
+  }
+
+  const glyphs: LeadingGlyphShape[] = []
+  let x = 0
+
+  while (x < width) {
+    if (columnCounts[x] === 0) {
+      x += 1
+      continue
+    }
+
+    const left = x
+
+    while (
+      x + 1 < width &&
+      columnCounts[x + 1] > 0
+    ) {
+      x += 1
+    }
+
+    const right = x
+    let top = band.bottom
+    let bottom = band.top
+    let hasInk = false
+
+    for (
+      let currentY = band.top;
+      currentY <= band.bottom;
+      currentY++
+    ) {
+      for (
+        let currentX = left;
+        currentX <= right;
+        currentX++
+      ) {
+        if (!dark[currentY * width + currentX]) {
+          continue
+        }
+
+        hasInk = true
+        top = Math.min(top, currentY)
+        bottom = Math.max(bottom, currentY)
+      }
+    }
+
+    const glyphHeight = bottom - top + 1
+    const glyphWidth = right - left + 1
+
+    /*
+     * A thousands separator is normally only one or two pixels high while a
+     * real TW2 digit spans most of the number band. Keep narrow "1" glyphs,
+     * but discard short punctuation / texture fragments.
+     */
+    const minimumGlyphHeight = Math.max(
+      3,
+      Math.floor(bandHeight * 0.55),
+    )
+
+    if (
+      hasInk &&
+      glyphHeight >= minimumGlyphHeight
+    ) {
+      const pixels = new Uint8Array(
+        glyphWidth * glyphHeight,
+      )
+
+      for (
+        let glyphY = 0;
+        glyphY < glyphHeight;
+        glyphY++
+      ) {
+        for (
+          let glyphX = 0;
+          glyphX < glyphWidth;
+          glyphX++
+        ) {
+          pixels[glyphY * glyphWidth + glyphX] =
+            dark[
+              (top + glyphY) * width +
+              left +
+              glyphX
+            ]
+        }
+      }
+
+      glyphs.push({
+        width: glyphWidth,
+        height: glyphHeight,
+        pixels,
+      })
+    }
+
+    x += 1
+  }
+
+  return glyphs
+}
+
+/**
+ * TW2's bitmap 2 and 7 are easy for generic OCR to confuse. In the calibrated
+ * regular battle report, 3.420 was being returned as 3.470 even though the
+ * crop is correct.
+ *
+ * The visual distinction is stable in the game font:
+ * - 7 starts with an almost full-width horizontal top stroke and then moves
+ *   diagonally down.
+ * - 2 has a shorter centered top stroke and its second row reaches both the
+ *   left and right side of the glyph.
+ */
+const looksLikeTw2TwoGlyph = (
+  glyph: LeadingGlyphShape,
+): boolean => {
+  if (
+    glyph.width < 3 ||
+    glyph.height < 4
+  ) {
+    return false
+  }
+
+  const rowInk = (
+    row: number,
+  ): number[] => {
+    const xs: number[] = []
+
+    for (let x = 0; x < glyph.width; x++) {
+      if (glyph.pixels[row * glyph.width + x]) {
+        xs.push(x)
+      }
+    }
+
+    return xs
+  }
+
+  const firstRow = rowInk(0)
+  const secondRow = rowInk(
+    Math.min(1, glyph.height - 1),
+  )
+
+  if (firstRow.length === 0) {
+    return false
+  }
+
+  const topCoverage =
+    firstRow.length / glyph.width
+
+  const leftLimit = Math.max(
+    0,
+    Math.floor(glyph.width * 0.25),
+  )
+
+  const rightLimit = Math.min(
+    glyph.width - 1,
+    Math.ceil(glyph.width * 0.75),
+  )
+
+  const secondHasLeft = secondRow.some(
+    (x) => x <= leftLimit,
+  )
+
+  const secondHasRight = secondRow.some(
+    (x) => x >= rightLimit,
+  )
+
+  return (
+    topCoverage <= 0.78 &&
+    secondHasLeft &&
+    secondHasRight
+  )
+}
+
+const verifyTw2TwoOrSeven = (
+  detectionCanvas: HTMLCanvasElement,
+  candidate: OcrCandidate,
+): OcrCandidate => {
+  if (candidate.quantity === null) {
+    return candidate
+  }
+
+  const quantityText = String(candidate.quantity)
+
+  if (!quantityText.includes('7')) {
+    return candidate
+  }
+
+  const glyphs = findDigitGlyphShapes(
+    detectionCanvas,
+  )
+
+  if (glyphs.length !== quantityText.length) {
+    return candidate
+  }
+
+  const correctedCharacters =
+    quantityText.split('')
+
+  let corrected = false
+
+  for (
+    let index = 0;
+    index < correctedCharacters.length;
+    index++
+  ) {
+    if (
+      correctedCharacters[index] !== '7' ||
+      !looksLikeTw2TwoGlyph(glyphs[index])
+    ) {
+      continue
+    }
+
+    correctedCharacters[index] = '2'
+    corrected = true
+  }
+
+  if (!corrected) {
+    return candidate
+  }
+
+  const correctedText =
+    correctedCharacters.join('')
+  const correctedQuantity = Number(correctedText)
+
+  if (!Number.isSafeInteger(correctedQuantity)) {
+    return candidate
+  }
+
+  return {
+    quantity: correctedQuantity,
+    rawText:
+      `${candidate.rawText} [TW2 glyph geometry corrected 7 -> 2]`,
+    confidence: Math.max(
+      candidate.confidence,
+      92,
+    ),
+  }
+}
+
 const looksLikeTw2Three = (
   canvas: HTMLCanvasElement,
 ): boolean => {
@@ -655,6 +1039,214 @@ const binaryNumberCanvas = (
   return canvas
 }
 
+/**
+ * Estimate how many printed digit glyphs are actually present in the source
+ * crop. This is intentionally conservative: it is only used to reject OCR
+ * results that contain MORE digits than can be seen in the screenshot.
+ *
+ * Examples from the regression fixtures:
+ *   visual "0"  + OCR "19" -> reject "19"
+ *   visual "1"  + OCR "31" -> reject "31"
+ *
+ * Results with fewer OCR digits are not rejected here because a tiny glyph can
+ * still be missed by Tesseract. Thousands separators are ignored because they
+ * do not form a vertical glyph run.
+ */
+const estimatePrintedDigitCount = (
+  canvas: HTMLCanvasElement,
+): number | null => {
+  const context = canvas.getContext('2d', {
+    willReadFrequently: true,
+  })
+
+  if (!context) {
+    return null
+  }
+
+  const imageData = context.getImageData(
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  )
+
+  const width = canvas.width
+  const height = canvas.height
+  const rowCounts = new Uint16Array(height)
+  const dark = new Uint8Array(width * height)
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const index = (y * width + x) * 4
+      const red = imageData.data[index]
+      const green = imageData.data[index + 1]
+      const blue = imageData.data[index + 2]
+
+      const {
+        brightness,
+        spread,
+      } = getPixelMetrics(red, green, blue)
+
+      const isDigitInk =
+        brightness <= 122 &&
+        spread <= 92
+
+      if (isDigitInk) {
+        dark[y * width + x] = 1
+        rowCounts[y] += 1
+      }
+    }
+  }
+
+  const maximumUsefulRowInk = Math.max(
+    8,
+    Math.floor(width * 0.48),
+  )
+
+  const bands: Array<{
+    top: number
+    bottom: number
+    ink: number
+  }> = []
+
+  let y = 0
+
+  while (y < height) {
+    const useful =
+      rowCounts[y] >= 1 &&
+      rowCounts[y] <= maximumUsefulRowInk
+
+    if (!useful) {
+      y += 1
+      continue
+    }
+
+    const top = y
+    let ink = 0
+
+    while (
+      y < height &&
+      rowCounts[y] >= 1 &&
+      rowCounts[y] <= maximumUsefulRowInk
+    ) {
+      ink += rowCounts[y]
+      y += 1
+    }
+
+    const bottom = y - 1
+    const bandHeight = bottom - top + 1
+
+    if (
+      bandHeight >= 3 &&
+      bandHeight <= Math.max(12, Math.round(height * 0.80))
+    ) {
+      bands.push({
+        top,
+        bottom,
+        ink,
+      })
+    }
+  }
+
+  if (bands.length === 0) {
+    return null
+  }
+
+  const centerY = (height - 1) / 2
+
+  const band = bands
+    .map((candidate) => {
+      const candidateCenter =
+        (candidate.top + candidate.bottom) / 2
+
+      return {
+        ...candidate,
+        rank:
+          candidate.ink -
+          Math.abs(candidateCenter - centerY) * 1.5,
+      }
+    })
+    .sort(
+      (left, right) => right.rank - left.rank,
+    )[0]
+
+  const columnCounts = new Uint16Array(width)
+
+  for (let x = 0; x < width; x++) {
+    for (
+      let currentY = band.top;
+      currentY <= band.bottom;
+      currentY++
+    ) {
+      columnCounts[x] +=
+        dark[currentY * width + x]
+    }
+  }
+
+  let glyphCount = 0
+  let x = 0
+
+  while (x < width) {
+    /*
+     * A thousands-separator dot generally has only one dark pixel vertically.
+     * Requiring two pixels keeps it out of the digit count.
+     */
+    if (columnCounts[x] < 2) {
+      x += 1
+      continue
+    }
+
+    glyphCount += 1
+    x += 1
+
+    while (
+      x < width &&
+      columnCounts[x] >= 2
+    ) {
+      x += 1
+    }
+  }
+
+  if (glyphCount <= 0) {
+    return null
+  }
+
+  return glyphCount
+}
+
+const rejectImpossibleExtraDigits = (
+  candidates: OcrCandidate[],
+  printedDigitCount: number | null,
+): OcrCandidate[] => {
+  if (
+    printedDigitCount === null ||
+    printedDigitCount <= 0
+  ) {
+    return candidates
+  }
+
+  return candidates.map((candidate) => {
+    if (candidate.quantity === null) {
+      return candidate
+    }
+
+    const ocrDigitCount =
+      String(candidate.quantity).length
+
+    if (ocrDigitCount <= printedDigitCount) {
+      return candidate
+    }
+
+    return {
+      ...candidate,
+      quantity: null,
+      rawText:
+        `${candidate.rawText} [rejected: OCR detected ${ocrDigitCount} digits, source contains ${printedDigitCount}]`,
+      confidence: Math.min(candidate.confidence, 20),
+    }
+  })
+}
+
 const parseTroopQuantity = (
   rawText: string,
 ): number | null => {
@@ -796,6 +1388,9 @@ const readNumberCell = async (
   const debugCropDataUrl =
     debugCanvas.toDataURL('image/png')
 
+  const printedDigitCount =
+    estimatePrintedDigitCount(detectionCanvas)
+
   if (!hasNumberInk(detectionCanvas)) {
     return {
       unitId,
@@ -889,14 +1484,27 @@ const readNumberCell = async (
     ]
   }
 
+  candidates = rejectImpossibleExtraDigits(
+    candidates,
+    printedDigitCount,
+  )
+
   const selected = chooseCandidate(candidates)
+
+  const sevenOrTwoVerified =
+    verifyBattleLeadingGlyph
+      ? verifyTw2TwoOrSeven(
+          detectionCanvas,
+          selected,
+        )
+      : selected
 
   const verified = verifyBattleLeadingGlyph
     ? verifyLeadingTwoOrThree(
         detectionCanvas,
-        selected,
+        sevenOrTwoVerified,
       )
-    : selected
+    : sevenOrTwoVerified
 
   if (verified.quantity !== null) {
     return {
@@ -946,8 +1554,12 @@ export const readArmyRow = async (
       template.leftRatio + index * cellWidth
 
     const isCompactBattleRow =
-      template.heightByWidth <=
-      BATTLE_ROW_MAX_HEIGHT_BY_WIDTH
+      template.profile === 'battle-regular' ||
+      template.profile === 'battle-detailed' ||
+      (
+        !template.profile &&
+        template.heightByWidth <= BATTLE_ROW_MAX_HEIGHT_BY_WIDTH
+      )
 
     const topPadding =
       isCompactBattleRow
@@ -955,25 +1567,39 @@ export const readArmyRow = async (
         : 0
 
     const bottomPadding =
-      isCompactBattleRow
-        ? BATTLE_CELL_BOTTOM_PADDING_BY_WIDTH
-        : 0
+      template.profile === 'battle-detailed'
+        ? BATTLE_DETAILED_CELL_BOTTOM_PADDING_BY_WIDTH
+        : template.profile === 'battle-regular'
+          ? BATTLE_REGULAR_CELL_BOTTOM_PADDING_BY_WIDTH
+          : isCompactBattleRow
+            ? BATTLE_DETAILED_CELL_BOTTOM_PADDING_BY_WIDTH
+            : 0
+
+    const regularBattleTopByWidth =
+      template.centerYByWidth - 0.011
+
+    const regularBattleHeightByWidth =
+      0.019
 
     const crop: NormalizedCrop = {
       leftRatio:
         cellLeft +
         cellWidth * CELL_HORIZONTAL_INSET,
       topByWidth:
-        template.centerYByWidth -
-        template.heightByWidth / 2 -
-        topPadding,
+        template.profile === 'battle-regular'
+          ? regularBattleTopByWidth
+          : template.centerYByWidth -
+            template.heightByWidth / 2 -
+            topPadding,
       widthRatio:
         cellWidth *
         (1 - CELL_HORIZONTAL_INSET * 2),
       heightByWidth:
-        template.heightByWidth +
-        topPadding +
-        bottomPadding,
+        template.profile === 'battle-regular'
+          ? regularBattleHeightByWidth
+          : template.heightByWidth +
+            topPadding +
+            bottomPadding,
     }
 
     const reading = await readNumberCell(

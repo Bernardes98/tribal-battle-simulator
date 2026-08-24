@@ -41,6 +41,7 @@ const BATTLE_ATTACKER_INITIAL_ROW: ReportRowTemplate = {
   rightRatio: 0.968,
   centerYByWidth: 0.478,
   heightByWidth: 0.020,
+  profile: 'battle-regular',
 }
 
 const BATTLE_DEFENDER_INITIAL_ROW: ReportRowTemplate = {
@@ -48,6 +49,7 @@ const BATTLE_DEFENDER_INITIAL_ROW: ReportRowTemplate = {
   rightRatio: 0.968,
   centerYByWidth: 0.718,
   heightByWidth: 0.020,
+  profile: 'battle-regular',
 }
 
 /*
@@ -59,6 +61,7 @@ const DETAILED_BATTLE_ATTACKER_INITIAL_ROW: ReportRowTemplate = {
   rightRatio: 0.965,
   centerYByWidth: 0.552,
   heightByWidth: 0.020,
+  profile: 'battle-detailed',
 }
 
 const DETAILED_BATTLE_DEFENDER_INITIAL_ROW: ReportRowTemplate = {
@@ -66,6 +69,7 @@ const DETAILED_BATTLE_DEFENDER_INITIAL_ROW: ReportRowTemplate = {
   rightRatio: 0.965,
   centerYByWidth: 0.770,
   heightByWidth: 0.020,
+  profile: 'battle-detailed',
 }
 
 const SPY_DEFENDER_TOTAL_ROW: ReportRowTemplate = {
@@ -73,6 +77,7 @@ const SPY_DEFENDER_TOTAL_ROW: ReportRowTemplate = {
   rightRatio: 0.978,
   centerYByWidth: 0.500,
   heightByWidth: 0.026,
+  profile: 'spy',
 }
 
 const normalizeText = (
@@ -665,6 +670,9 @@ const detectBattleRowsFromLossText = (
           centerYByWidth:
             attackerQuantityCenter / source.width,
           heightByWidth: 0.020,
+          profile: detailedLayout
+            ? 'battle-detailed'
+            : 'battle-regular',
         }
 
   const defender =
@@ -676,6 +684,9 @@ const detectBattleRowsFromLossText = (
           centerYByWidth:
             defenderQuantityCenter / source.width,
           heightByWidth: 0.020,
+          profile: detailedLayout
+            ? 'battle-detailed'
+            : 'battle-regular',
         }
 
   return {
@@ -838,6 +849,7 @@ const detectSpyTotalRow = (
       centerYByWidth: center / source.width,
       /* Keep the full glyph but stay clear of the neighboring number row. */
       heightByWidth: 0.026,
+      profile: 'spy',
     },
     dynamic: true,
   }
