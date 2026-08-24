@@ -15,7 +15,6 @@ interface BattleQuickActionsProps {
   defenderModifiers: DefenderModifiers
   onSwapArmies: () => void
   onResetBattle: () => void
-  onLoadExample: () => void
   onSimulate: () => void
   onAnalyzeLuck: () => void
 }
@@ -63,7 +62,6 @@ function BattleQuickActions({
   defenderModifiers,
   onSwapArmies,
   onResetBattle,
-  onLoadExample,
   onSimulate,
   onAnalyzeLuck,
 }: BattleQuickActionsProps) {
@@ -149,14 +147,6 @@ function BattleQuickActions({
             Reset
           </button>
 
-          <button
-            className="quick-action-button"
-            type="button"
-            onClick={onLoadExample}
-          >
-            <span aria-hidden="true">★</span>
-            Example
-          </button>
         </div>
 
         <div className="quick-actions-primary">

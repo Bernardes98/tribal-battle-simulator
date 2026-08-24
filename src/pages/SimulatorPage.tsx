@@ -94,28 +94,28 @@ const createEmptyPaladinWeapons =
 
 const createInitialAttackerModifiers =
   (): AttackerModifiers => ({
-    churchLevel: 1,
+    churchLevel: 0,
     morale: 100,
     luck: 0,
-    grandmaster: true,
+    grandmaster: false,
     weaponMasteryLevel: 0,
-    medicLevel: 1,
+    medicLevel: 0,
     medicusLevel: 0,
   })
 
 const createInitialDefenderModifiers =
   (): DefenderModifiers => ({
-    churchLevel: 1,
+    churchLevel: 0,
     hospitalLevel: 0,
     clinicLevel: 0,
     ironWallLevel: 0,
-    wallLevel: 13,
+    wallLevel: 0,
   })
 
 const createInitialSiegeSettings =
   (): SiegeSettings => ({
     catapultTarget: 'farm',
-    catapultTargetLevel: 16,
+    catapultTargetLevel: 0,
   })
 
 function SimulatorPage() {
@@ -151,10 +151,7 @@ function SimulatorPage() {
     attackerPaladinWeapons,
     setAttackerPaladinWeapons,
   ] = useState<PaladinWeaponLevels>(
-    () => ({
-      ...createEmptyPaladinWeapons(),
-      axe: 1,
-    }),
+    createEmptyPaladinWeapons,
   )
 
   const [
@@ -455,10 +452,9 @@ function SimulatorPage() {
       createInitialDefenderModifiers(),
     )
 
-    setAttackerPaladinWeapons({
-      ...createEmptyPaladinWeapons(),
-      axe: 1,
-    })
+    setAttackerPaladinWeapons(
+      createEmptyPaladinWeapons(),
+    )
 
     setDefenderPaladinWeapons(
       createEmptyPaladinWeapons(),
@@ -701,53 +697,6 @@ function SimulatorPage() {
     )
   }
 
-  const loadExcelExample = () => {
-    const exampleAttacker =
-      createEmptyArmy()
-
-    exampleAttacker.axe = 1800
-    exampleAttacker.lightCavalry = 25
-    exampleAttacker.mountedArcher = 10
-    exampleAttacker.catapult = 16
-    exampleAttacker.paladin = 1
-
-    const exampleDefender =
-      createEmptyArmy()
-
-    exampleDefender.spearman = 154
-    exampleDefender.swordsman = 270
-    exampleDefender.axe = 914
-    exampleDefender.archer = 30
-    exampleDefender.lightCavalry = 30
-    exampleDefender.mountedArcher = 10
-    exampleDefender.paladin = 1
-
-    setAttacker(exampleAttacker)
-    setDefender(exampleDefender)
-
-    setAttackerModifiers(
-      createInitialAttackerModifiers(),
-    )
-
-    setDefenderModifiers(
-      createInitialDefenderModifiers(),
-    )
-
-    setAttackerPaladinWeapons({
-      ...createEmptyPaladinWeapons(),
-      axe: 1,
-    })
-
-    setDefenderPaladinWeapons(
-      createEmptyPaladinWeapons(),
-    )
-
-    setSiegeSettings(
-      createInitialSiegeSettings(),
-    )
-
-    clearResults()
-  }
 
   const simulationInput =
     buildSimulationInput()
@@ -853,7 +802,6 @@ function SimulatorPage() {
           defenderModifiers={defenderModifiers}
           onSwapArmies={swapArmies}
           onResetBattle={resetBattle}
-          onLoadExample={loadExcelExample}
           onSimulate={handleSimulation}
           onAnalyzeLuck={handleLuckAnalysis}
         />

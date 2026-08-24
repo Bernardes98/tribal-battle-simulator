@@ -854,66 +854,129 @@ const fallbackReportTypeFromShape = (
     : 'battle'
 }
 
-const readWallLevel = async (
-  worker: Awaited<ReturnType<typeof createWorker>>,
-  source: Awaited<ReturnType<typeof loadReportImage>>,
-  detailedLayout: boolean,
-): Promise<number | null> => {
-  await worker.setParameters({
-    tessedit_char_whitelist: '',
-    tessedit_pageseg_mode: PSM.SINGLE_LINE,
-  })
+const parseInitialWallLevel = (
+  rawText: string,
+): number | null => {
+  const text = normalizeText(rawText)
 
-  const wallRegion = cropTextRegion(
-    source,
-    detailedLayout
-      ? {
-          leftRatio: 0.06,
-          topByWidth: 0.835,
-          widthRatio: 0.9,
-          heightByWidth: 0.06,
-        }
-      : {
-          leftRatio: 0.08,
-          topByWidth: 0.765,
-          widthRatio: 0.88,
-          heightByWidth: 0.064,
-        },
-    2.5,
-  )
-
-  const result = await worker.recognize(wallRegion)
-  const text = normalizeText(result.data.text)
-
-  const matches = [
-    ...text.matchAll(/nivel\s*(\d{1,2})/g),
+  /*
+   * PT-BR examples:
+   *   "Ariete: Muralha foi reduzido do nivel 6 para o nivel 0"
+   *
+   * EN examples:
+   *   "Wall was reduced from level 6 to level 0"
+   *
+   * We always want the INITIAL level, therefore the first level mentioned in
+   * the wall sentence, never the final post-battle level.
+   */
+  const patterns = [
+    /muralha[^\n]{0,100}?nivel\s*(\d{1,2})/,
+    /wall[^\n]{0,100}?level\s*(\d{1,2})/,
+    /muralha[^0-9\n]{0,80}?(\d{1,2})/,
+    /wall[^0-9\n]{0,80}?(\d{1,2})/,
   ]
 
-  if (matches.length > 0) {
-    const level = Number(matches[0][1])
+  for (const pattern of patterns) {
+    const match = text.match(pattern)
+
+    if (!match?.[1]) {
+      continue
+    }
+
+    const level = Number(match[1])
 
     if (
       Number.isInteger(level) &&
       level >= 0 &&
-      level <= 30
+      level <= 20
     ) {
       return level
     }
   }
 
-  const fallbackMatch = text.match(
-    /muralha[^0-9]{0,40}(\d{1,2})/,
+  return null
+}
+
+const readWallLevel = async (
+  worker: Awaited<ReturnType<typeof createWorker>>,
+  source: Awaited<ReturnType<typeof loadReportImage>>,
+  defenderRow: ReportRowTemplate,
+): Promise<number | null> => {
+  /*
+   * The wall event is not always present. Tribal Wars normally renders it
+   * below the defender troop/loss rows only when rams actually changed the
+   * wall. Rather than depending on one fixed screenshot Y coordinate, scan
+   * the lower report area relative to the defender quantity row.
+   */
+  const dynamicTop = Math.max(
+    0,
+    defenderRow.centerYByWidth + 0.025,
   )
 
-  if (fallbackMatch?.[1]) {
-    const level = Number(fallbackMatch[1])
+  const remainingHeightByWidth =
+    source.height / source.width - dynamicTop
 
-    if (
-      Number.isInteger(level) &&
-      level >= 0 &&
-      level <= 30
-    ) {
-      return level
+  const dynamicHeight = Math.max(
+    0.10,
+    Math.min(0.30, remainingHeightByWidth - 0.015),
+  )
+
+  const regions = [
+    {
+      leftRatio: 0.035,
+      topByWidth: dynamicTop,
+      widthRatio: 0.93,
+      heightByWidth: dynamicHeight,
+    },
+    /*
+     * Broad fallback for report variants where loyalty/loot rows move the wall
+     * sentence slightly farther from the defender grid.
+     */
+    {
+      leftRatio: 0.025,
+      topByWidth: Math.max(0.60, dynamicTop - 0.04),
+      widthRatio: 0.95,
+      heightByWidth: Math.min(
+        0.38,
+        Math.max(
+          0.16,
+          source.height / source.width -
+            Math.max(0.60, dynamicTop - 0.04) -
+            0.01,
+        ),
+      ),
+    },
+  ]
+
+  const pageModes = [
+    PSM.SINGLE_BLOCK,
+    PSM.SPARSE_TEXT,
+  ]
+
+  for (const region of regions) {
+    const wallRegion = cropTextRegion(
+      source,
+      region,
+      3.5,
+    )
+
+    for (const pageMode of pageModes) {
+      await worker.setParameters({
+        tessedit_char_whitelist: '',
+        tessedit_pageseg_mode: pageMode,
+      })
+
+      const result = await worker.recognize(
+        wallRegion,
+      )
+
+      const level = parseInitialWallLevel(
+        result.data.text,
+      )
+
+      if (level !== null) {
+        return level
+      }
     }
   }
 
@@ -1295,7 +1358,7 @@ export const analyzeReportScreenshot = async (
       await readWallLevel(
         worker,
         source,
-        resolvedDetailedBattleLayout,
+        detectedBattleRows.defender,
       )
 
     const warnings: string[] = []
