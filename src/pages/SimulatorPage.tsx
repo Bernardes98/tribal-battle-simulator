@@ -11,6 +11,7 @@ import BattleSetupTable from '../components/battle/BattleSetupTable'
 import LuckAnalysisPanel from '../components/battle/LuckAnalysisPanel'
 import SimulationToolsPanel from '../components/battle/SimulationToolsPanel'
 import ReportScreenshotImportPanel from '../components/battle/ReportScreenshotImportPanel'
+import SimulationHistoryPanel from '../components/history/SimulationHistoryPanel'
 
 import { units } from '../data/units'
 
@@ -51,6 +52,14 @@ import {
 import {
   getSharedSimulation,
 } from '../services/sharedSimulationApi'
+
+import {
+  createSimulationHistory,
+} from '../services/simulationHistoryApi'
+
+import type {
+  SimulationHistorySource,
+} from '../services/simulationHistoryApi'
 
 import type {
   Army,
@@ -208,6 +217,18 @@ function SimulatorPage() {
     null,
   )
 
+  const [
+    historySource,
+    setHistorySource,
+  ] = useState<SimulationHistorySource>(
+    'MANUAL',
+  )
+
+  const [
+    historyRefreshToken,
+    setHistoryRefreshToken,
+  ] = useState(0)
+
   const clearResults = () => {
     setBattleResult(null)
     setLuckAnalysis(null)
@@ -348,6 +369,10 @@ function SimulatorPage() {
   const applySimulationInput = (
     input: BattleSimulationInput,
   ) => {
+    setHistorySource(
+      'MANUAL',
+    )
+
     setAttacker({
       ...input.attacker,
     })
@@ -436,6 +461,10 @@ function SimulatorPage() {
   }
 
   const resetBattle = () => {
+    setHistorySource(
+      'MANUAL',
+    )
+
     setAttacker(
       createEmptyArmy(),
     )
@@ -470,6 +499,10 @@ function SimulatorPage() {
   }
 
   const swapArmies = () => {
+    setHistorySource(
+      'MANUAL',
+    )
+
     const previousAttacker = {
       ...attacker,
     }
@@ -596,14 +629,36 @@ function SimulatorPage() {
   }
 
   const handleSimulation = () => {
-    const result = simulateBattle(
-      buildSimulationInput(),
-    )
+    const input =
+      buildSimulationInput()
+
+    const result =
+      simulateBattle(input)
 
     setBattleResult(result)
     setLuckAnalysis(null)
     setOptimizerResult(null)
     setAdvancedOptimizerResult(null)
+
+    void createSimulationHistory(
+      historySource,
+      input,
+      result,
+    )
+      .then(() => {
+        setHistoryRefreshToken(
+          (current) =>
+            current + 1,
+        )
+      })
+      .catch(
+        (historyError) => {
+          console.error(
+            'Could not save simulation history:',
+            historyError,
+          )
+        },
+      )
 
     window.setTimeout(
       () => {
@@ -732,6 +787,10 @@ function SimulatorPage() {
               Tools
             </a>
 
+            <a href="#simulation-history">
+              History
+            </a>
+
             <a href="#simulation-tools">
               Presets
             </a>
@@ -793,6 +852,7 @@ function SimulatorPage() {
           onApplyAttacker={handleReportAttackerApply}
           onApplyDefender={handleReportDefenderApply}
           onApplyBoth={handleReportBothApply}
+          onImportApplied={setHistorySource}
         />
 
         <BattleQuickActions
@@ -831,6 +891,11 @@ function SimulatorPage() {
             onApply={applyArmy}
           />
         </div>
+
+        <SimulationHistoryPanel
+          refreshToken={historyRefreshToken}
+          onOpen={applySimulationInput}
+        />
 
         <SimulationToolsPanel
           input={simulationInput}

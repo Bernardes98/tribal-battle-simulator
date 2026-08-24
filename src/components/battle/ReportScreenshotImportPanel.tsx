@@ -54,6 +54,12 @@ interface ReportScreenshotImportPanelProps {
     defender: Army,
     modifierPatch: Partial<DefenderModifiers>,
   ) => void
+
+  onImportApplied?: (
+    source:
+      | 'SPY_REPORT'
+      | 'BATTLE_REPORT',
+  ) => void
 }
 
 const MAX_IMAGE_SIZE =
@@ -304,6 +310,7 @@ function ReportScreenshotImportPanel({
   onApplyAttacker,
   onApplyDefender,
   onApplyBoth,
+  onImportApplied,
 }: ReportScreenshotImportPanelProps) {
   const fileInputRef =
     useRef<HTMLInputElement | null>(null)
@@ -736,6 +743,12 @@ function ReportScreenshotImportPanel({
       defenderPatch(),
     )
 
+    onImportApplied?.(
+      analysis.reportType === 'spy'
+        ? 'SPY_REPORT'
+        : 'BATTLE_REPORT',
+    )
+
     setAppliedMessage(
       `Defender imported successfully — ${formatter.format(defenderTotal)} troops applied.`,
     )
@@ -751,6 +764,10 @@ function ReportScreenshotImportPanel({
 
     onApplyAttacker(
       editableAttacker,
+    )
+
+    onImportApplied?.(
+      'BATTLE_REPORT',
     )
 
     setAppliedMessage(
@@ -771,6 +788,10 @@ function ReportScreenshotImportPanel({
       editableAttacker,
       editableDefender,
       defenderPatch(),
+    )
+
+    onImportApplied?.(
+      'BATTLE_REPORT',
     )
 
     setAppliedMessage(
