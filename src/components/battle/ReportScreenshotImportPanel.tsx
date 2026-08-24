@@ -62,6 +62,27 @@ const MAX_IMAGE_SIZE =
 const MAX_TROOP_QUANTITY =
   999_999_999
 
+const SUPPORTED_IMAGE_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+]
+
+const isEditableTarget = (
+  target: EventTarget | null,
+): boolean => {
+  if (!(target instanceof HTMLElement)) {
+    return false
+  }
+
+  return (
+    target.tagName === 'INPUT' ||
+    target.tagName === 'TEXTAREA' ||
+    target.tagName === 'SELECT' ||
+    target.isContentEditable
+  )
+}
+
 const formatter =
   new Intl.NumberFormat('en-US')
 
@@ -352,6 +373,11 @@ function ReportScreenshotImportPanel({
     setAppliedMessage,
   ] = useState<string | null>(null)
 
+  const [
+    importSource,
+    setImportSource,
+  ] = useState<'file' | 'drop' | 'clipboard' | null>(null)
+
   useEffect(() => {
     return () => {
       if (imagePreview) {
@@ -418,6 +444,7 @@ function ReportScreenshotImportPanel({
 
     setImageFile(null)
     setImagePreview(null)
+    setImportSource(null)
     resetAnalysis()
 
     if (fileInputRef.current) {
@@ -425,19 +452,54 @@ function ReportScreenshotImportPanel({
     }
   }
 
+  const analyzeFile = async (
+    file: File,
+  ) => {
+    if (isAnalyzing) {
+      return
+    }
+
+    setIsAnalyzing(true)
+    setAnalysis(null)
+    setError(null)
+    setAppliedMessage(null)
+    setShowDebug(false)
+
+    try {
+      const result =
+        await analyzeReportScreenshot(
+          file,
+          {
+            onProgress: setProgress,
+          },
+        )
+
+      setAnalysis(result)
+    } catch (analysisError) {
+      console.error(
+        'Report screenshot analysis failed:',
+        analysisError,
+      )
+
+      setError(
+        analysisError instanceof Error
+          ? analysisError.message
+          : 'Could not analyze the screenshot.',
+      )
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
+
   const selectImage = (
     file: File,
+    source: 'file' | 'drop' | 'clipboard',
+    autoAnalyze = true,
   ) => {
     setError(null)
     setAppliedMessage(null)
 
-    if (
-      ![
-        'image/png',
-        'image/jpeg',
-        'image/webp',
-      ].includes(file.type)
-    ) {
+    if (!SUPPORTED_IMAGE_TYPES.includes(file.type)) {
       setError(
         'Use a PNG, JPG/JPEG or WEBP screenshot.',
       )
@@ -459,13 +521,22 @@ function ReportScreenshotImportPanel({
     setImagePreview(
       URL.createObjectURL(file),
     )
+    setImportSource(source)
     setAnalysis(null)
     setShowDebug(false)
     setShowAllUnits(false)
     setProgress({
-      phase: 'Ready to analyze',
+      phase: autoAnalyze
+        ? 'Preparing screenshot'
+        : 'Ready to analyze',
       percent: 0,
     })
+
+    if (autoAnalyze) {
+      window.setTimeout(() => {
+        void analyzeFile(file)
+      }, 0)
+    }
   }
 
   const handleFileInput = (
@@ -475,7 +546,7 @@ function ReportScreenshotImportPanel({
       event.target.files?.[0]
 
     if (file) {
-      selectImage(file)
+      selectImage(file, 'file')
     }
   }
 
@@ -488,7 +559,7 @@ function ReportScreenshotImportPanel({
       event.dataTransfer.files?.[0]
 
     if (file) {
-      selectImage(file)
+      selectImage(file, 'drop')
     }
   }
 
@@ -512,37 +583,70 @@ function ReportScreenshotImportPanel({
       return
     }
 
-    setIsAnalyzing(true)
-    setAnalysis(null)
-    setError(null)
-    setAppliedMessage(null)
-    setShowDebug(false)
-
-    try {
-      const result =
-        await analyzeReportScreenshot(
-          imageFile,
-          {
-            onProgress: setProgress,
-          },
-        )
-
-      setAnalysis(result)
-    } catch (analysisError) {
-      console.error(
-        'Report screenshot analysis failed:',
-        analysisError,
-      )
-
-      setError(
-        analysisError instanceof Error
-          ? analysisError.message
-          : 'Could not analyze the screenshot.',
-      )
-    } finally {
-      setIsAnalyzing(false)
-    }
+    await analyzeFile(imageFile)
   }
+
+  useEffect(() => {
+    const handlePaste = (
+      event: ClipboardEvent,
+    ) => {
+      if (isAnalyzing || isEditableTarget(event.target)) {
+        return
+      }
+
+      const items =
+        Array.from(event.clipboardData?.items ?? [])
+
+      const imageItem = items.find((item) =>
+        item.kind === 'file' &&
+        item.type.startsWith('image/'),
+      )
+
+      if (!imageItem) {
+        return
+      }
+
+      const blob = imageItem.getAsFile()
+
+      if (!blob) {
+        return
+      }
+
+      event.preventDefault()
+
+      const extension =
+        blob.type === 'image/jpeg'
+          ? 'jpg'
+          : blob.type === 'image/webp'
+            ? 'webp'
+            : 'png'
+
+      const file = new File(
+        [blob],
+        `tribal-wars-report-${Date.now()}.${extension}`,
+        {
+          type: blob.type || 'image/png',
+        },
+      )
+
+      selectImage(
+        file,
+        'clipboard',
+      )
+    }
+
+    window.addEventListener(
+      'paste',
+      handlePaste,
+    )
+
+    return () => {
+      window.removeEventListener(
+        'paste',
+        handlePaste,
+      )
+    }
+  }, [isAnalyzing, imagePreview])
 
   const handleResetDetectedValues = () => {
     if (!analysis) {
@@ -690,7 +794,7 @@ function ReportScreenshotImportPanel({
           </h3>
 
           <p>
-            Upload a Tribal Wars spy or battle report screenshot. The detected army can be reviewed and corrected before it is applied to the simulator.
+            Paste, drop or select a Tribal Wars spy or battle report screenshot. Analysis starts automatically and every detected value can still be reviewed before applying it.
           </p>
         </div>
 
@@ -734,19 +838,39 @@ function ReportScreenshotImportPanel({
             ) : (
               <div className="report-drop-zone-empty">
                 <strong>
-                  Drop report screenshot here
+                  Paste, drop or select a report screenshot
                 </strong>
 
                 <span>
-                  or click to select PNG, JPG or WEBP
+                  Press Ctrl+V anywhere on the page after using Win + Shift + S, or click here to choose an image.
                 </span>
 
                 <small>
-                  Supported: Spy Report and Battle Report
+                  PNG, JPG and WEBP · Spy Report and Battle Report
                 </small>
               </div>
             )}
           </div>
+
+          {imageFile && (
+            <div className="report-import-source-status">
+              <span>
+                {importSource === 'clipboard'
+                  ? 'Pasted from clipboard'
+                  : importSource === 'drop'
+                    ? 'Dropped screenshot'
+                    : 'Selected screenshot'}
+              </span>
+
+              <strong>
+                {isAnalyzing
+                  ? 'Analyzing automatically…'
+                  : analysis
+                    ? 'Analysis complete'
+                    : 'Ready'}
+              </strong>
+            </div>
+          )}
 
           <div className="report-source-actions">
             <button
@@ -798,7 +922,7 @@ function ReportScreenshotImportPanel({
           )}
 
           <p className="report-import-help">
-            Use the complete report window at normal browser zoom. If one value is wrong, edit it before applying. OCR diagnostics remain available under the advanced debug button.
+            Fastest workflow: Win + Shift + S → select the complete report → return here → Ctrl+V. The screenshot is analyzed automatically. OCR diagnostics remain available under Advanced OCR Debug.
           </p>
 
           {error && (

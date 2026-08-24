@@ -766,3 +766,58 @@
     grid-column: auto;
   }
 }
+
+
+/* V14 — clipboard paste + automatic analysis */
+.report-import-source-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 1px solid #8b633d;
+  background: #bd8b5b;
+  color: #4a2f1a;
+  font-size: 10px;
+}
+
+.report-import-source-status span {
+  font-weight: 700;
+}
+
+.report-import-source-status strong {
+  color: #2d1b0e;
+  font-size: 10px;
+  text-align: right;
+}
+
+.report-drop-zone:not(.has-image) {
+  position: relative;
+}
+
+.report-drop-zone:not(.has-image)::after {
+  content: 'CTRL + V';
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  padding: 5px 7px;
+  border: 1px solid #76502f;
+  background: rgba(116, 72, 34, 0.12);
+  color: #604126;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 650px) {
+  .report-import-source-status {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .report-import-source-status strong {
+    text-align: left;
+  }
+}
