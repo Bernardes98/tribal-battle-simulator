@@ -1,0 +1,600 @@
+#player-village-intelligence {
+  scroll-margin-top: 90px;
+}
+
+.player-intelligence-card {
+  margin-top: 22px;
+  border: 1px solid #76502f;
+  background: #cba273;
+  color: #2c1a0d;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 238, 204, 0.35);
+}
+
+.player-intelligence-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #76502f;
+  background: #b98554;
+}
+
+.player-intelligence-eyebrow {
+  color: #70451f;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.player-intelligence-header h3 {
+  margin: 3px 0 4px;
+  color: #261507;
+}
+
+.player-intelligence-header p {
+  margin: 0;
+  color: #5f3c20;
+  font-size: 13px;
+}
+
+.player-intelligence-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.player-intelligence-stats span {
+  display: grid;
+  min-width: 72px;
+  padding: 8px 10px;
+  border: 1px solid #684323;
+  background: #8a582b;
+  color: #fff0cf;
+  text-align: center;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.player-intelligence-stats strong {
+  font-size: 18px;
+}
+
+.player-intelligence-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #9c7147;
+  background: #c49769;
+}
+
+.player-intelligence-toolbar label {
+  display: grid;
+  flex: 1;
+  gap: 5px;
+}
+
+.player-intelligence-toolbar label span {
+  color: #5d391e;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.player-intelligence-toolbar input {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #7b5532;
+  background: #ead2ad;
+  color: #2c1a0d;
+  outline: none;
+}
+
+.player-intelligence-toolbar input:focus {
+  border-color: #4e2d16;
+}
+
+.player-intelligence-toolbar button,
+.player-intelligence-actions button,
+.player-intelligence-snapshot button,
+.player-intelligence-error button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.player-intelligence-toolbar button:hover:not(:disabled),
+.player-intelligence-actions button:hover,
+.player-intelligence-snapshot button:hover,
+.player-intelligence-error button:hover {
+  background: #b98652;
+}
+
+.player-intelligence-toolbar button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.player-intelligence-empty,
+.player-intelligence-error {
+  display: grid;
+  gap: 7px;
+  margin: 18px;
+  padding: 22px;
+  border: 1px dashed #8c623b;
+  background: #d8b384;
+  color: #57371d;
+  text-align: center;
+}
+
+.player-intelligence-error {
+  border-style: solid;
+  border-color: #914b37;
+  background: #d4a078;
+}
+
+.player-intelligence-error button {
+  justify-self: center;
+}
+
+.player-intelligence-players {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.player-intelligence-player {
+  border: 1px solid #825a35;
+  background: #d5af7d;
+}
+
+.player-intelligence-player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #94683f;
+  background: #b98554;
+}
+
+.player-intelligence-player-header > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.player-intelligence-player-header span {
+  color: #70451f;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.player-intelligence-player-header strong {
+  color: #2c190c;
+  font-size: 17px;
+}
+
+.player-intelligence-player-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.player-intelligence-player-meta span {
+  padding: 4px 7px;
+  border: 1px solid rgba(90, 55, 29, 0.35);
+  background: rgba(238, 210, 170, 0.45);
+  color: #4b2f18;
+  font-size: 10px;
+  text-transform: none;
+}
+
+.player-intelligence-villages {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.player-intelligence-village {
+  border: 1px solid #997047;
+  background: #dfbd8e;
+}
+
+.player-intelligence-village-main {
+  display: grid;
+  grid-template-columns:
+    minmax(170px, 0.8fr)
+    minmax(190px, 1fr)
+    minmax(260px, 1.8fr)
+    auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+}
+
+.player-intelligence-village-name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.player-intelligence-village-name span,
+.player-intelligence-defense span,
+.player-intelligence-wall span,
+.player-intelligence-delta span {
+  color: #795330;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.player-intelligence-village-name strong {
+  overflow: hidden;
+  color: #2c190c;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-intelligence-village-name small {
+  color: #674426;
+  font-weight: 800;
+}
+
+.player-intelligence-latest {
+  display: grid;
+  gap: 4px;
+  color: #5b3c22;
+  font-size: 11px;
+}
+
+.player-intelligence-source {
+  justify-self: start;
+  padding: 3px 7px;
+  border: 1px solid #694422;
+  background: #8a582b;
+  color: #fff0cf;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.player-intelligence-source.source-spy_report {
+  background: #6f6a32;
+}
+
+.player-intelligence-source.source-battle_report {
+  background: #7b3f2d;
+}
+
+.player-intelligence-defense {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.player-intelligence-defense > div:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.player-intelligence-defense strong {
+  color: #2e1a0d;
+}
+
+.player-intelligence-defense small {
+  overflow: hidden;
+  color: #654326;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-intelligence-wall,
+.player-intelligence-delta {
+  display: grid;
+  min-width: 58px;
+  gap: 2px;
+  padding: 7px 8px;
+  border: 1px solid rgba(105, 68, 34, 0.3);
+  background: rgba(236, 207, 164, 0.5);
+  text-align: center;
+}
+
+.player-intelligence-delta.positive strong {
+  color: #426022;
+}
+
+.player-intelligence-delta.negative strong {
+  color: #8a3727;
+}
+
+.player-intelligence-actions {
+  display: grid;
+  gap: 7px;
+  min-width: 120px;
+}
+
+.player-intelligence-actions .player-intelligence-primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+.player-intelligence-timeline {
+  display: grid;
+  gap: 1px;
+  border-top: 1px solid #987046;
+  background: #9a7149;
+}
+
+.player-intelligence-snapshot {
+  display: grid;
+  grid-template-columns:
+    auto
+    minmax(180px, 1fr)
+    auto
+    auto
+    minmax(140px, auto)
+    auto;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 11px;
+  background: #d2aa77;
+  color: #52351e;
+  font-size: 11px;
+}
+
+.player-intelligence-snapshot > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.player-intelligence-snapshot small {
+  overflow: hidden;
+  color: #674426;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-intelligence-snapshot-index {
+  font-weight: 900;
+}
+
+.player-intelligence-snapshot time {
+  white-space: nowrap;
+}
+
+@media (max-width: 1050px) {
+  .player-intelligence-village-main {
+    grid-template-columns:
+      1fr
+      1fr;
+  }
+
+  .player-intelligence-actions {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .player-intelligence-snapshot {
+    grid-template-columns:
+      auto
+      minmax(0, 1fr)
+      auto;
+  }
+
+  .player-intelligence-snapshot time {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 720px) {
+  .player-intelligence-header,
+  .player-intelligence-toolbar,
+  .player-intelligence-player-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .player-intelligence-stats {
+    width: 100%;
+  }
+
+  .player-intelligence-stats span {
+    flex: 1;
+  }
+
+  .player-intelligence-player-meta {
+    justify-content: flex-start;
+  }
+
+  .player-intelligence-village-main {
+    grid-template-columns: 1fr;
+  }
+
+  .player-intelligence-defense {
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto
+      auto;
+  }
+
+  .player-intelligence-snapshot {
+    grid-template-columns:
+      auto
+      minmax(0, 1fr);
+  }
+
+  .player-intelligence-snapshot button {
+    grid-column: 1 / -1;
+  }
+}
+
+
+.player-intelligence-stat-alert {
+  border-color: #8b3f2c !important;
+  background: #8b3f2c !important;
+}
+
+.player-intelligence-threshold {
+  flex: 0 0 auto !important;
+  min-width: 112px;
+}
+
+.player-intelligence-threshold > div {
+  display: flex;
+  align-items: center;
+  border: 1px solid #7b5532;
+  background: #ead2ad;
+}
+
+.player-intelligence-threshold input {
+  width: 70px;
+  border: 0;
+  background: transparent;
+}
+
+.player-intelligence-threshold strong {
+  padding-right: 9px;
+  color: #5c391e;
+}
+
+.player-intelligence-filter-active {
+  background: #70451f !important;
+  color: #fff1d0 !important;
+}
+
+.player-intelligence-watch-alerts {
+  display: grid;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #87412f;
+  background: #bd765f;
+}
+
+.player-intelligence-watch-alerts-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #35180f;
+}
+
+.player-intelligence-watch-alerts-title strong {
+  text-transform: uppercase;
+}
+
+.player-intelligence-watch-alerts-title span {
+  font-size: 11px;
+}
+
+.player-intelligence-watch-alert-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.player-intelligence-watch-alert-list button {
+  display: grid;
+  gap: 2px;
+  padding: 7px 10px;
+  border: 1px solid #703222;
+  background: #d49a7d;
+  color: #35180f;
+  cursor: pointer;
+  text-align: left;
+}
+
+.player-intelligence-watch-alert-list button:hover {
+  background: #dfaa8d;
+}
+
+.player-intelligence-watch-alert-list span {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.player-intelligence-village.is-watched {
+  border-color: #7c6827;
+  box-shadow:
+    inset 4px 0 0 #8e7a2e;
+}
+
+.player-intelligence-village.has-watch-alert {
+  border-color: #8d3c29;
+  box-shadow:
+    inset 5px 0 0 #9f442d;
+}
+
+.player-intelligence-watch-badge {
+  justify-self: start;
+  margin-top: 3px;
+  padding: 2px 6px;
+  border: 1px solid #76631f;
+  background: #b5a052;
+  color: #3b310d;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.player-intelligence-watch-badge.alert {
+  border-color: #833522;
+  background: #bd6e55;
+  color: #3b160d;
+}
+
+.player-intelligence-watch-button.active {
+  border-color: #6f5b1f;
+  background: #aa963f;
+}
+
+@media (max-width: 920px) {
+  .player-intelligence-toolbar {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .player-intelligence-threshold {
+    min-width: 105px;
+  }
+}
+
+@media (max-width: 720px) {
+  .player-intelligence-watch-alerts-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .player-intelligence-watch-alert-list {
+    display: grid;
+  }
+
+  .player-intelligence-threshold {
+    width: 100%;
+  }
+
+  .player-intelligence-threshold > div {
+    width: 100%;
+  }
+
+  .player-intelligence-threshold input {
+    flex: 1;
+    width: auto;
+  }
+}

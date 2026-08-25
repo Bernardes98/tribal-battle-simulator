@@ -78,11 +78,112 @@ const showAllUnits = async (
   }
 }
 
+const getIdentitySides = (
+  importer: Locator,
+) => {
+  return importer.locator(
+    '.report-identity-card .report-identity-side',
+  )
+}
+
+const expectIdentity = async (
+  importer: Locator,
+  party:
+    | 'Attacker'
+    | 'Defender',
+  expected: {
+    player: string
+    village: string
+    x: string
+    y: string
+  },
+) => {
+  const sides =
+    getIdentitySides(
+      importer,
+    )
+
+  const sideCount =
+    await sides.count()
+
+  /*
+   * Spy report:
+   *   only one identity card exists -> Defender
+   *
+   * Battle report:
+   *   0 -> Attacker
+   *   1 -> Defender
+   *
+   * We intentionally target the real component classes instead
+   * of ARIA headings because the current UI renders the titles
+   * as <strong>, not heading elements.
+   */
+  await expect(
+    sides,
+  ).toHaveCount(
+    party === 'Attacker'
+      ? 2
+      : sideCount === 1
+        ? 1
+        : 2,
+  )
+
+  const side =
+    party === 'Attacker'
+      ? sides.nth(0)
+      : sides.nth(
+          sideCount - 1,
+        )
+
+  await expect(
+    side.locator(
+      '.report-identity-title strong',
+    ),
+  ).toHaveText(
+    party,
+  )
+
+  const inputs =
+    side.locator(
+      '.report-identity-fields input',
+    )
+
+  await expect(
+    inputs,
+  ).toHaveCount(
+    4,
+  )
+
+  await expect(
+    inputs.nth(0),
+  ).toHaveValue(
+    expected.player,
+  )
+
+  await expect(
+    inputs.nth(1),
+  ).toHaveValue(
+    expected.village,
+  )
+
+  await expect(
+    inputs.nth(2),
+  ).toHaveValue(
+    expected.x,
+  )
+
+  await expect(
+    inputs.nth(3),
+  ).toHaveValue(
+    expected.y,
+  )
+}
+
 test.describe(
   'Tribal Wars screenshot importer regression',
   () => {
     test(
-      'imports the calibrated spy report into the defender',
+      'imports the calibrated spy report troops and metadata into the defender',
       async ({
         page,
       }) => {
@@ -102,6 +203,32 @@ test.describe(
           ),
         ).toBeVisible()
 
+        /*
+         * Metadata regression:
+         *
+         * Defender
+         * SolRain
+         * Salvhigard
+         * (501|516)
+         */
+        await expectIdentity(
+          importer,
+          'Defender',
+          {
+            player:
+              'SolRain',
+            village:
+              'Salvhigard',
+            x:
+              '501',
+            y:
+              '516',
+          },
+        )
+
+        /*
+         * Troop regression.
+         */
         await expect(
           importer.locator(
             '#Defender-spearman',
@@ -179,7 +306,7 @@ test.describe(
     )
 
     test(
-      'imports the calibrated battle report initial armies',
+      'imports the calibrated battle report troops and metadata',
       async ({
         page,
       }) => {
@@ -199,18 +326,45 @@ test.describe(
           ),
         ).toBeVisible()
 
+        /*
+         * Metadata regression.
+         */
+        await expectIdentity(
+          importer,
+          'Attacker',
+          {
+            player:
+              'FelipeG98',
+            village:
+              '[001] F',
+            x:
+              '499',
+            y:
+              '511',
+          },
+        )
+
+        await expectIdentity(
+          importer,
+          'Defender',
+          {
+            player:
+              'SolRain',
+            village:
+              'Salvhigard',
+            x:
+              '501',
+            y:
+              '516',
+          },
+        )
+
         await showAllUnits(
           importer,
         )
 
         /*
-         * ATACANTE
-         *
-         * Este fixture é o novo relatório:
-         *
-         * Axe Fighter = 3171
-         * Nobleman    = 1
-         * Paladin     = 1
+         * Attacker regression.
          */
         await expect(
           importer.locator(
@@ -236,10 +390,6 @@ test.describe(
           '1',
         )
 
-        /*
-         * Não existem aríetes
-         * nesse relatório.
-         */
         await expect(
           importer.locator(
             '#Attacker-ram',
@@ -249,10 +399,7 @@ test.describe(
         )
 
         /*
-         * DEFENSOR
-         *
-         * Spearman   = 0
-         * Swordsman  = 34
+         * Defender regression.
          */
         await expect(
           importer.locator(
@@ -270,11 +417,6 @@ test.describe(
           '34',
         )
 
-        /*
-         * Garante que as demais
-         * unidades vazias realmente
-         * foram interpretadas como 0.
-         */
         const attackerZeroUnits =
           [
             'spearman',
@@ -331,14 +473,6 @@ test.describe(
           )
         }
 
-        /*
-         * O novo screenshot não
-         * informa redução de muralha.
-         *
-         * Portanto NÃO devemos esperar
-         * Wall Level = 6.
-         */
-
         await importer
           .getByRole(
             'button',
@@ -349,11 +483,6 @@ test.describe(
           )
           .click()
 
-        /*
-         * Confere que os valores
-         * realmente chegaram ao
-         * simulador.
-         */
         await expect(
           page.getByLabel(
             'Axe Fighter attacker quantity',

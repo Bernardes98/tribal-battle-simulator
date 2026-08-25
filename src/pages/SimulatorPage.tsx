@@ -17,6 +17,8 @@ import ReportScreenshotImportPanel from '../components/battle/ReportScreenshotIm
 import SafeAttackPanel from '../components/battle/SafeAttackPanel'
 import SimulationHistoryPanel from '../components/history/SimulationHistoryPanel'
 import ArmyLibraryPanel from '../components/library/ArmyLibraryPanel'
+import PlayerVillageIntelligencePanel from '../components/intelligence/PlayerVillageIntelligencePanel'
+import WatchlistDashboardPanel from '../components/intelligence/WatchlistDashboardPanel'
 
 import { units } from '../data/units'
 
@@ -1215,6 +1217,42 @@ function SimulatorPage() {
     )
   }
 
+  const handleIntelligenceLoadDefense = (
+    input: BattleSimulationInput,
+    metadata: ReportMetadata | null,
+    source: SimulationHistorySource,
+  ) => {
+    setHistorySource(source)
+    setReportMetadata(metadata)
+
+    setDefender({
+      ...createEmptyArmy(),
+      ...input.defender,
+    })
+
+    setDefenderModifiers({
+      ...input.defenderModifiers,
+    })
+
+    setDefenderPaladinWeapons({
+      ...input.defenderPaladinWeapons,
+    })
+
+    clearResults()
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('simulator')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
+  }
+
   const applyArmy = (
     army: Army,
   ) => {
@@ -1290,6 +1328,14 @@ function SimulatorPage() {
 
             <a href="#army-library">
               Armies
+            </a>
+
+            <a href="#watchlist-dashboard">
+              Watchlist
+            </a>
+
+            <a href="#player-village-intelligence">
+              Intel
             </a>
 
             <a href="#simulation-history">
@@ -1429,6 +1475,16 @@ function SimulatorPage() {
           reportMetadata={reportMetadata}
           onApplyAttacker={handleArmyLibraryAttacker}
           onApplyDefender={handleArmyLibraryDefender}
+        />
+
+        <WatchlistDashboardPanel
+          refreshToken={historyRefreshToken}
+          onLoadDefense={handleIntelligenceLoadDefense}
+        />
+
+        <PlayerVillageIntelligencePanel
+          refreshToken={historyRefreshToken}
+          onLoadDefense={handleIntelligenceLoadDefense}
         />
 
         <SimulationHistoryPanel

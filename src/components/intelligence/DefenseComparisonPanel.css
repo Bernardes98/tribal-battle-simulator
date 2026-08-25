@@ -1,0 +1,165 @@
+.defense-comparison {
+  margin: 0 12px 12px;
+  border: 1px solid #7f5835;
+  background: #d9b583;
+}
+
+.defense-comparison-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 12px;
+  border-bottom: 1px solid #93683f;
+  background: #bd8c5b;
+}
+
+.defense-comparison-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.defense-comparison-header > div > span {
+  color: #714a28;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.defense-comparison-header > div > strong {
+  color: #2d190b;
+}
+
+.defense-comparison-status {
+  padding: 5px 8px;
+  border: 1px solid #76502f;
+  background: #9c7147;
+  color: #fff0cf;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.defense-comparison-status.reinforced {
+  background: #60723b;
+}
+
+.defense-comparison-status.reduced {
+  background: #8a4633;
+}
+
+.defense-comparison-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid #93683f;
+}
+
+.defense-comparison-summary > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-right: 1px solid #aa7e50;
+}
+
+.defense-comparison-summary > div:last-child {
+  border-right: 0;
+}
+
+.defense-comparison-summary span {
+  color: #704b2a;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.defense-comparison-summary strong {
+  color: #2c190c;
+  font-size: 18px;
+}
+
+.defense-comparison-summary .positive strong,
+.defense-comparison-table .positive {
+  color: #466523;
+}
+
+.defense-comparison-summary .negative strong,
+.defense-comparison-table .negative {
+  color: #913e2b;
+}
+
+.defense-comparison-table-wrap {
+  overflow-x: auto;
+}
+
+.defense-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.defense-comparison-table th,
+.defense-comparison-table td {
+  padding: 7px 9px;
+  border-bottom: 1px solid #bb9161;
+  text-align: right;
+}
+
+.defense-comparison-table th:first-child,
+.defense-comparison-table td:first-child {
+  text-align: left;
+}
+
+.defense-comparison-table th {
+  background: #c79b69;
+  color: #5b391f;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.defense-comparison-table td {
+  color: #4c311b;
+}
+
+.defense-comparison-table td:last-child {
+  font-weight: 900;
+}
+
+.defense-comparison-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 9px 12px;
+  color: #654326;
+  font-size: 10px;
+}
+
+.defense-comparison-footer span {
+  padding: 3px 6px;
+  border: 1px solid rgba(100, 65, 35, 0.28);
+  background: rgba(237, 209, 170, 0.42);
+}
+
+.defense-comparison-empty {
+  margin: 0 12px 12px;
+  padding: 10px 12px;
+  border: 1px dashed #987046;
+  background: #d7b27f;
+  color: #694626;
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  .defense-comparison-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .defense-comparison-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .defense-comparison-summary > div:nth-child(2) {
+    border-right: 0;
+  }
+}

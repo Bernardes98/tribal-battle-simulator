@@ -1,0 +1,356 @@
+#watchlist-dashboard {
+  scroll-margin-top: 90px;
+}
+
+.watchlist-dashboard {
+  margin-top: 22px;
+  border: 1px solid #76502f;
+  background: #cba273;
+  color: #2c1a0d;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 238, 204, 0.35);
+}
+
+.watchlist-dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #76502f;
+  background: #aa7646;
+}
+
+.watchlist-dashboard-eyebrow {
+  color: #6d421e;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.watchlist-dashboard-header h3 {
+  margin: 3px 0 4px;
+  color: #261507;
+}
+
+.watchlist-dashboard-header p {
+  max-width: 760px;
+  margin: 0;
+  color: #5b381e;
+  font-size: 12px;
+}
+
+.watchlist-dashboard-header button,
+.watchlist-dashboard-message button,
+.watchlist-dashboard-actions button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.watchlist-dashboard-header button:hover:not(:disabled),
+.watchlist-dashboard-message button:hover,
+.watchlist-dashboard-actions button:hover {
+  background: #b98652;
+}
+
+.watchlist-dashboard-header button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.watchlist-dashboard-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      6,
+      minmax(0, 1fr)
+    );
+  border-bottom: 1px solid #93683f;
+  background: #c49769;
+}
+
+.watchlist-dashboard-summary > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-right: 1px solid #9d7247;
+  text-align: center;
+}
+
+.watchlist-dashboard-summary > div:last-child {
+  border-right: 0;
+}
+
+.watchlist-dashboard-summary span {
+  color: #714b2a;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.watchlist-dashboard-summary strong {
+  color: #2c190c;
+  font-size: 20px;
+}
+
+.watchlist-dashboard-summary .critical {
+  background: #b66d57;
+}
+
+.watchlist-dashboard-summary .critical strong {
+  color: #5a1f15;
+}
+
+.watchlist-dashboard-message {
+  display: grid;
+  gap: 8px;
+  margin: 18px;
+  padding: 20px;
+  border: 1px dashed #8c623b;
+  background: #d8b384;
+  color: #57371d;
+  text-align: center;
+}
+
+.watchlist-dashboard-message.error {
+  border-style: solid;
+  border-color: #914b37;
+  background: #d4a078;
+}
+
+.watchlist-dashboard-message button {
+  justify-self: center;
+}
+
+.watchlist-dashboard-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 12px;
+  padding: 16px;
+}
+
+.watchlist-dashboard-village {
+  border: 1px solid #8c623b;
+  background: #dfbd8e;
+  box-shadow:
+    inset 4px 0 0 #8e7a2e;
+}
+
+.watchlist-dashboard-village.attention-critical {
+  border-color: #8b3d2a;
+  box-shadow:
+    inset 5px 0 0 #9e432d;
+}
+
+.watchlist-dashboard-village.attention-increased {
+  border-color: #8e6c26;
+  box-shadow:
+    inset 5px 0 0 #a4892d;
+}
+
+.watchlist-dashboard-village.attention-stale {
+  opacity: 0.86;
+}
+
+.watchlist-dashboard-village-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid #ae8355;
+  background: #cfaa79;
+}
+
+.watchlist-dashboard-village-top > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.watchlist-dashboard-village-top > div > span {
+  color: #714b2a;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.watchlist-dashboard-village-top > div > strong {
+  overflow: hidden;
+  color: #2b180b;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.watchlist-dashboard-village-top small {
+  color: #684528;
+  font-weight: 800;
+}
+
+.watchlist-dashboard-attention {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border: 1px solid #6e4927;
+  background: #8b5b30;
+  color: #fff0cf;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attention-critical
+.watchlist-dashboard-attention {
+  border-color: #6f291c;
+  background: #9b402c;
+}
+
+.attention-increased
+.watchlist-dashboard-attention {
+  background: #8a7627;
+}
+
+.attention-recent
+.watchlist-dashboard-attention {
+  background: #667239;
+}
+
+.attention-stale
+.watchlist-dashboard-attention {
+  background: #786e62;
+}
+
+.watchlist-dashboard-village-metrics {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  border-bottom: 1px solid #b78d5d;
+}
+
+.watchlist-dashboard-village-metrics > div {
+  display: grid;
+  gap: 1px;
+  padding: 9px 10px;
+  border-right: 1px solid #b78d5d;
+}
+
+.watchlist-dashboard-village-metrics > div:last-child {
+  border-right: 0;
+}
+
+.watchlist-dashboard-village-metrics span {
+  color: #795330;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.watchlist-dashboard-village-metrics strong {
+  color: #2d1a0d;
+  font-size: 15px;
+}
+
+.watchlist-dashboard-village-metrics small {
+  color: #704c2d;
+  font-size: 9px;
+}
+
+.watchlist-dashboard-village-metrics .positive {
+  color: #496523;
+}
+
+.watchlist-dashboard-village-metrics .negative {
+  color: #913e2b;
+}
+
+.watchlist-dashboard-army {
+  overflow: hidden;
+  padding: 9px 12px;
+  border-bottom: 1px solid #b78d5d;
+  color: #5b3a20;
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.watchlist-dashboard-actions {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 7px;
+  padding: 10px 12px;
+}
+
+.watchlist-dashboard-actions .primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+@media (max-width: 1050px) {
+  .watchlist-dashboard-summary {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+  .watchlist-dashboard-summary > div:nth-child(3n) {
+    border-right: 0;
+  }
+
+  .watchlist-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .watchlist-dashboard-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .watchlist-dashboard-summary {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .watchlist-dashboard-summary > div {
+    border-right: 1px solid #9d7247;
+  }
+
+  .watchlist-dashboard-summary > div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .watchlist-dashboard-village-metrics {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .watchlist-dashboard-village-metrics > div:nth-child(2n) {
+    border-right: 0;
+  }
+}
