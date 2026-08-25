@@ -34,6 +34,10 @@ import type {
   BattleSimulationInput,
 } from '../../types/Battle'
 
+import type {
+  ReportPartyMetadata,
+} from '../../types/ReportMetadata'
+
 import './SimulationHistoryPanel.css'
 
 interface SimulationHistoryPanelProps {
@@ -130,6 +134,36 @@ const armySummary = (
         totalActive - active.length
       } more`
     : summary
+}
+
+const formatReportParty = (
+  party: ReportPartyMetadata | null | undefined,
+): string | null => {
+  if (!party) {
+    return null
+  }
+
+  const identity = [
+    party.playerName,
+    party.villageName,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
+  const coordinates =
+    party.coordinates
+      ? `(${party.coordinates.x}|${party.coordinates.y})`
+      : ''
+
+  const value = [
+    identity,
+    coordinates,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+
+  return value || null
 }
 
 const formatHistoryDate = (
@@ -399,6 +433,33 @@ function SimulationHistoryPanel({
                     Saved
                   </span>
                 </div>
+
+                {(item.reportMetadata?.attacker ||
+                  item.reportMetadata?.defender) && (
+                  <div className="simulation-history-report-context">
+                    {formatReportParty(
+                      item.reportMetadata?.attacker,
+                    ) && (
+                      <span>
+                        <strong>From</strong>
+                        {formatReportParty(
+                          item.reportMetadata?.attacker,
+                        )}
+                      </span>
+                    )}
+
+                    {formatReportParty(
+                      item.reportMetadata?.defender,
+                    ) && (
+                      <span>
+                        <strong>Target</strong>
+                        {formatReportParty(
+                          item.reportMetadata?.defender,
+                        )}
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 <div className="simulation-history-armies">
                   <div className="history-army">

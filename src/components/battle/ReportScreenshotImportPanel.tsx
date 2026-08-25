@@ -37,6 +37,16 @@ import type {
   UnitId,
 } from '../../types/Unit'
 
+import {
+  cloneReportMetadata,
+  hasReportPartyMetadata,
+} from '../../types/ReportMetadata'
+
+import type {
+  ReportMetadata,
+  ReportPartyMetadata,
+} from '../../types/ReportMetadata'
+
 import './ReportScreenshotImportPanel.css'
 
 interface ReportScreenshotImportPanelProps {
@@ -59,6 +69,7 @@ interface ReportScreenshotImportPanelProps {
     source:
       | 'SPY_REPORT'
       | 'BATTLE_REPORT',
+    metadata: ReportMetadata,
   ) => void
 }
 
@@ -306,6 +317,159 @@ function ArmyPreview({
   )
 }
 
+interface ReportIdentityEditorProps {
+  title: string
+  metadata: ReportPartyMetadata | null
+  onChange: (
+    metadata: ReportPartyMetadata,
+  ) => void
+}
+
+function ReportIdentityEditor({
+  title,
+  metadata,
+  onChange,
+}: ReportIdentityEditorProps) {
+  const value: ReportPartyMetadata =
+    metadata ?? {
+      playerName: null,
+      villageName: null,
+      coordinates: null,
+    }
+
+  const updateText = (
+    key: 'playerName' | 'villageName',
+    nextValue: string,
+  ) => {
+    onChange({
+      ...value,
+      [key]: nextValue.trimStart() || null,
+    })
+  }
+
+  const updateCoordinate = (
+    axis: 'x' | 'y',
+    nextValue: string,
+  ) => {
+    const numeric = Number(nextValue)
+
+    const coordinates = {
+      x: value.coordinates?.x ?? 0,
+      y: value.coordinates?.y ?? 0,
+    }
+
+    coordinates[axis] =
+      Number.isFinite(numeric)
+        ? Math.max(
+            0,
+            Math.min(
+              999,
+              Math.trunc(numeric),
+            ),
+          )
+        : 0
+
+    onChange({
+      ...value,
+      coordinates,
+    })
+  }
+
+  return (
+    <div className="report-identity-side">
+      <div className="report-identity-title">
+        <strong>{title}</strong>
+
+        <span>
+          {hasReportPartyMetadata(metadata)
+            ? 'Detected'
+            : 'Not detected'}
+        </span>
+      </div>
+
+      <div className="report-identity-fields">
+        <label>
+          <span>Player</span>
+          <input
+            type="text"
+            maxLength={32}
+            value={value.playerName ?? ''}
+            placeholder="Player name"
+            onChange={(event) =>
+              updateText(
+                'playerName',
+                event.target.value,
+              )
+            }
+          />
+        </label>
+
+        <label>
+          <span>Village</span>
+          <input
+            type="text"
+            maxLength={80}
+            value={value.villageName ?? ''}
+            placeholder="Village name"
+            onChange={(event) =>
+              updateText(
+                'villageName',
+                event.target.value,
+              )
+            }
+          />
+        </label>
+
+        <div className="report-coordinate-fields">
+          <label>
+            <span>X</span>
+            <input
+              type="number"
+              min={0}
+              max={999}
+              step={1}
+              value={
+                value.coordinates?.x ?? ''
+              }
+              placeholder="000"
+              onChange={(event) =>
+                updateCoordinate(
+                  'x',
+                  event.target.value,
+                )
+              }
+            />
+          </label>
+
+          <span className="report-coordinate-separator">
+            |
+          </span>
+
+          <label>
+            <span>Y</span>
+            <input
+              type="number"
+              min={0}
+              max={999}
+              step={1}
+              value={
+                value.coordinates?.y ?? ''
+              }
+              placeholder="000"
+              onChange={(event) =>
+                updateCoordinate(
+                  'y',
+                  event.target.value,
+                )
+              }
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ReportScreenshotImportPanel({
   onApplyAttacker,
   onApplyDefender,
@@ -346,6 +510,11 @@ function ReportScreenshotImportPanel({
     editableWallLevel,
     setEditableWallLevel,
   ] = useState<number | null>(null)
+
+  const [
+    editableMetadata,
+    setEditableMetadata,
+  ] = useState<ReportMetadata | null>(null)
 
   const [
     showDebug,
@@ -398,6 +567,7 @@ function ReportScreenshotImportPanel({
       setEditableAttacker(null)
       setEditableDefender(null)
       setEditableWallLevel(null)
+      setEditableMetadata(null)
       return
     }
 
@@ -413,6 +583,12 @@ function ReportScreenshotImportPanel({
 
     setEditableWallLevel(
       analysis.defenderWallLevel,
+    )
+
+    setEditableMetadata(
+      cloneReportMetadata(
+        analysis.metadata,
+      ),
     )
 
     setShowAllUnits(false)
@@ -434,6 +610,7 @@ function ReportScreenshotImportPanel({
 
   const resetAnalysis = () => {
     setAnalysis(null)
+    setEditableMetadata(null)
     setProgress({
       phase: 'Waiting for screenshot',
       percent: 0,
@@ -674,6 +851,12 @@ function ReportScreenshotImportPanel({
       analysis.defenderWallLevel,
     )
 
+    setEditableMetadata(
+      cloneReportMetadata(
+        analysis.metadata,
+      ),
+    )
+
     setAppliedMessage(null)
   }
 
@@ -708,6 +891,34 @@ function ReportScreenshotImportPanel({
       }
     })
   }
+
+  const updateMetadataParty = (
+    side: 'attacker' | 'defender',
+    metadata: ReportPartyMetadata,
+  ) => {
+    setEditableMetadata(
+      (current) => ({
+        attacker:
+          side === 'attacker'
+            ? metadata
+            : current?.attacker ?? null,
+        defender:
+          side === 'defender'
+            ? metadata
+            : current?.defender ?? null,
+      }),
+    )
+  }
+
+  const currentMetadata =
+    (): ReportMetadata => {
+      return (
+        editableMetadata ?? {
+          attacker: null,
+          defender: null,
+        }
+      )
+    }
 
   const defenderPatch =
     (): Partial<DefenderModifiers> => {
@@ -747,6 +958,7 @@ function ReportScreenshotImportPanel({
       analysis.reportType === 'spy'
         ? 'SPY_REPORT'
         : 'BATTLE_REPORT',
+      currentMetadata(),
     )
 
     setAppliedMessage(
@@ -768,6 +980,7 @@ function ReportScreenshotImportPanel({
 
     onImportApplied?.(
       'BATTLE_REPORT',
+      currentMetadata(),
     )
 
     setAppliedMessage(
@@ -792,6 +1005,7 @@ function ReportScreenshotImportPanel({
 
     onImportApplied?.(
       'BATTLE_REPORT',
+      currentMetadata(),
     )
 
     setAppliedMessage(
@@ -1048,6 +1262,53 @@ function ReportScreenshotImportPanel({
                     </small>
                   </div>
                 )}
+              </div>
+
+              <div className="report-identity-card">
+                <div className="report-identity-heading">
+                  <div>
+                    <strong>
+                      Report identity
+                    </strong>
+                    <span>
+                      Player, village and coordinates are read from the screenshot and can be corrected before import.
+                    </span>
+                  </div>
+
+                  <span className="report-identity-badge">
+                    OCR metadata
+                  </span>
+                </div>
+
+                <div className="report-identity-grid">
+                  {analysis.attacker && (
+                    <ReportIdentityEditor
+                      title="Attacker"
+                      metadata={
+                        editableMetadata?.attacker ?? null
+                      }
+                      onChange={(metadata) =>
+                        updateMetadataParty(
+                          'attacker',
+                          metadata,
+                        )
+                      }
+                    />
+                  )}
+
+                  <ReportIdentityEditor
+                    title="Defender"
+                    metadata={
+                      editableMetadata?.defender ?? null
+                    }
+                    onChange={(metadata) =>
+                      updateMetadataParty(
+                        'defender',
+                        metadata,
+                      )
+                    }
+                  />
+                </div>
               </div>
 
               <div className="report-preview-toolbar">

@@ -1,5 +1,6 @@
 import type { Army } from '../../types/Battle'
 import type { UnitId } from '../../types/Unit'
+import type { ReportMetadata } from '../../types/ReportMetadata'
 
 export type TribalReportType =
   | 'spy'
@@ -32,6 +33,7 @@ export interface ReportScreenshotAnalysis {
   attacker: ReportArmyReading | null
   defender: ReportArmyReading
   defenderWallLevel: number | null
+  metadata: ReportMetadata
   warnings: string[]
   sourceWidth: number
   sourceHeight: number

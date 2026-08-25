@@ -821,3 +821,156 @@
     text-align: left;
   }
 }
+
+/* V24.1 — report player / village / coordinates */
+.report-identity-card {
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid rgba(101, 66, 38, 0.28);
+  border-radius: 8px;
+  background: rgba(248, 237, 214, 0.72);
+}
+
+.report-identity-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.report-identity-heading > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.report-identity-heading strong {
+  color: #4a2f1c;
+}
+
+.report-identity-heading span {
+  color: #725a45;
+  font-size: 0.82rem;
+}
+
+.report-identity-badge {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border: 1px solid rgba(106, 71, 42, 0.28);
+  border-radius: 999px;
+  background: #f3e2c1;
+  color: #68472e !important;
+  font-size: 0.72rem !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.report-identity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.report-identity-grid > :only-child {
+  grid-column: 1 / -1;
+}
+
+.report-identity-side {
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid rgba(113, 75, 43, 0.22);
+  border-radius: 7px;
+  background: rgba(255, 250, 238, 0.86);
+}
+
+.report-identity-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.report-identity-title strong {
+  color: #4b301e;
+}
+
+.report-identity-title span {
+  color: #7b624d;
+  font-size: 0.72rem;
+}
+
+/*
+ * Player and village used to share the same row with both coordinate fields.
+ * Inside the two-column identity card that made all labels/inputs collide.
+ * Keep the two text fields full-width and put coordinates on their own row.
+ */
+.report-identity-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  min-width: 0;
+}
+
+.report-identity-fields label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.report-identity-fields label > span {
+  color: #765a43;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.report-identity-fields input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid rgba(103, 68, 39, 0.32);
+  border-radius: 6px;
+  background: #fffaf0;
+  color: #40291a;
+}
+
+.report-coordinate-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 6px;
+  max-width: 190px;
+}
+
+.report-coordinate-fields label {
+  width: auto;
+  min-width: 0;
+}
+
+.report-coordinate-separator {
+  padding-bottom: 8px;
+  color: #6f5139;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .report-identity-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .report-identity-heading {
+    flex-direction: column;
+  }
+
+  .report-coordinate-fields {
+    max-width: none;
+  }
+}

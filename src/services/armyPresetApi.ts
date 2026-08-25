@@ -1,6 +1,5 @@
 import type {
-  BattleResult,
-  BattleSimulationInput,
+  Army,
 } from '../types/Battle'
 
 import {
@@ -8,22 +7,22 @@ import {
 } from '../domain/history/simulationHistoryClient'
 
 import type {
-  ReportMetadata,
+  ReportPartyMetadata,
 } from '../types/ReportMetadata'
 
-export type SimulationHistorySource =
-  | 'MANUAL'
-  | 'SPY_REPORT'
-  | 'BATTLE_REPORT'
+export type ArmyPresetType =
+  | 'ATTACKER'
+  | 'DEFENDER'
 
-export interface SimulationHistoryItem {
+export interface ArmyPresetItem {
   id: string
   clientId: string
-  source: SimulationHistorySource
-  payload: BattleSimulationInput
-  result: BattleResult | null
-  reportMetadata: ReportMetadata | null
+  name: string
+  type: ArmyPresetType
+  army: Army
+  context: ReportPartyMetadata | null
   createdAt: string
+  updatedAt: string
 }
 
 const API_URL = (
@@ -52,14 +51,14 @@ const readErrorMessage = async (
   return `Request failed with status ${response.status}`
 }
 
-export const createSimulationHistory = async (
-  source: SimulationHistorySource,
-  payload: BattleSimulationInput,
-  result: BattleResult | null,
-  reportMetadata: ReportMetadata | null = null,
-): Promise<SimulationHistoryItem> => {
+export const createArmyPreset = async (
+  name: string,
+  type: ArmyPresetType,
+  army: Army,
+  context: ReportPartyMetadata | null = null,
+): Promise<ArmyPresetItem> => {
   const response = await fetch(
-    `${API_URL}/api/v1/simulation-history`,
+    `${API_URL}/api/v1/army-presets`,
     {
       method: 'POST',
       headers: {
@@ -69,10 +68,10 @@ export const createSimulationHistory = async (
       body: JSON.stringify({
         clientId:
           getSimulationHistoryClientId(),
-        source,
-        payload,
-        result,
-        reportMetadata,
+        name,
+        type,
+        army,
+        context,
       }),
     },
   )
@@ -84,18 +83,18 @@ export const createSimulationHistory = async (
   }
 
   return (await response.json()) as
-    SimulationHistoryItem
+    ArmyPresetItem
 }
 
-export const listSimulationHistory =
+export const listArmyPresets =
   async (): Promise<
-    SimulationHistoryItem[]
+    ArmyPresetItem[]
   > => {
     const clientId =
       getSimulationHistoryClientId()
 
     const response = await fetch(
-      `${API_URL}/api/v1/simulation-history?clientId=${encodeURIComponent(
+      `${API_URL}/api/v1/army-presets?clientId=${encodeURIComponent(
         clientId,
       )}`,
     )
@@ -107,30 +106,29 @@ export const listSimulationHistory =
     }
 
     return (await response.json()) as
-      SimulationHistoryItem[]
+      ArmyPresetItem[]
   }
 
-export const deleteSimulationHistory =
-  async (
-    id: string,
-  ): Promise<void> => {
-    const clientId =
-      getSimulationHistoryClientId()
+export const deleteArmyPreset = async (
+  id: string,
+): Promise<void> => {
+  const clientId =
+    getSimulationHistoryClientId()
 
-    const response = await fetch(
-      `${API_URL}/api/v1/simulation-history/${encodeURIComponent(
-        id,
-      )}?clientId=${encodeURIComponent(
-        clientId,
-      )}`,
-      {
-        method: 'DELETE',
-      },
+  const response = await fetch(
+    `${API_URL}/api/v1/army-presets/${encodeURIComponent(
+      id,
+    )}?clientId=${encodeURIComponent(
+      clientId,
+    )}`,
+    {
+      method: 'DELETE',
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      await readErrorMessage(response),
     )
-
-    if (!response.ok) {
-      throw new Error(
-        await readErrorMessage(response),
-      )
-    }
   }
+}

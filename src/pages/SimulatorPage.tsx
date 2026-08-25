@@ -8,10 +8,15 @@ import ArmyOptimizerPanel from '../components/battle/ArmyOptimizerPanel'
 import BattleQuickActions from '../components/battle/BattleQuickActions'
 import BattleResultPanel from '../components/battle/BattleResultPanel'
 import BattleSetupTable from '../components/battle/BattleSetupTable'
+import CatapultPlannerPanel from '../components/battle/CatapultPlannerPanel'
 import LuckAnalysisPanel from '../components/battle/LuckAnalysisPanel'
+import MultiWavePlannerPanel from '../components/battle/MultiWavePlannerPanel'
+import WallRamPlannerPanel from '../components/battle/WallRamPlannerPanel'
 import SimulationToolsPanel from '../components/battle/SimulationToolsPanel'
 import ReportScreenshotImportPanel from '../components/battle/ReportScreenshotImportPanel'
+import SafeAttackPanel from '../components/battle/SafeAttackPanel'
 import SimulationHistoryPanel from '../components/history/SimulationHistoryPanel'
+import ArmyLibraryPanel from '../components/library/ArmyLibraryPanel'
 
 import { units } from '../data/units'
 
@@ -45,6 +50,23 @@ import type {
 } from '../domain/battle/luckAnalysis'
 
 import {
+  findSafeAttack,
+} from '../domain/battle/safeAttack'
+
+import type {
+  SafeAttackOptions,
+  SafeAttackResult,
+} from '../domain/battle/safeAttack'
+
+import type {
+  CatapultPlannerResult,
+} from '../domain/battle/catapultPlanner'
+
+import type {
+  WallRamPlannerResult,
+} from '../domain/battle/wallRamPlanner'
+
+import {
   readLegacySimulationFromUrl,
   readSharedSimulationCodeFromUrl,
 } from '../domain/simulation/simulationShare'
@@ -74,6 +96,10 @@ import type {
 import type {
   UnitId,
 } from '../types/Unit'
+
+import type {
+  ReportMetadata,
+} from '../types/ReportMetadata'
 
 const createEmptyArmy =
   (): Army => {
@@ -206,6 +232,13 @@ function SimulatorPage() {
   )
 
   const [
+    safeAttackResult,
+    setSafeAttackResult,
+  ] = useState<SafeAttackResult | null>(
+    null,
+  )
+
+  const [
     sharedSimulationLoading,
     setSharedSimulationLoading,
   ] = useState(false)
@@ -225,6 +258,13 @@ function SimulatorPage() {
   )
 
   const [
+    reportMetadata,
+    setReportMetadata,
+  ] = useState<ReportMetadata | null>(
+    null,
+  )
+
+  const [
     historyRefreshToken,
     setHistoryRefreshToken,
   ] = useState(0)
@@ -234,6 +274,7 @@ function SimulatorPage() {
     setLuckAnalysis(null)
     setOptimizerResult(null)
     setAdvancedOptimizerResult(null)
+    setSafeAttackResult(null)
   }
 
   useEffect(() => {
@@ -372,6 +413,7 @@ function SimulatorPage() {
     setHistorySource(
       'MANUAL',
     )
+    setReportMetadata(null)
 
     setAttacker({
       ...input.attacker,
@@ -464,6 +506,7 @@ function SimulatorPage() {
     setHistorySource(
       'MANUAL',
     )
+    setReportMetadata(null)
 
     setAttacker(
       createEmptyArmy(),
@@ -502,6 +545,7 @@ function SimulatorPage() {
     setHistorySource(
       'MANUAL',
     )
+    setReportMetadata(null)
 
     const previousAttacker = {
       ...attacker,
@@ -628,6 +672,14 @@ function SimulatorPage() {
     clearResults()
   }
 
+  const handleReportImportApplied = (
+    source: SimulationHistorySource,
+    metadata: ReportMetadata,
+  ) => {
+    setHistorySource(source)
+    setReportMetadata(metadata)
+  }
+
   const handleSimulation = () => {
     const input =
       buildSimulationInput()
@@ -639,11 +691,13 @@ function SimulatorPage() {
     setLuckAnalysis(null)
     setOptimizerResult(null)
     setAdvancedOptimizerResult(null)
+    setSafeAttackResult(null)
 
     void createSimulationHistory(
       historySource,
       input,
       result,
+      reportMetadata,
     )
       .then(() => {
         setHistoryRefreshToken(
@@ -683,6 +737,7 @@ function SimulatorPage() {
     setBattleResult(null)
     setOptimizerResult(null)
     setAdvancedOptimizerResult(null)
+    setSafeAttackResult(null)
 
     window.setTimeout(
       () => {
@@ -709,6 +764,7 @@ function SimulatorPage() {
     setBattleResult(null)
     setLuckAnalysis(null)
     setAdvancedOptimizerResult(null)
+    setSafeAttackResult(null)
   }
 
   const handleAdvancedArmyOptimization = (
@@ -728,6 +784,435 @@ function SimulatorPage() {
     setBattleResult(null)
     setLuckAnalysis(null)
     setOptimizerResult(null)
+    setSafeAttackResult(null)
+  }
+
+  const handleSafeAttack = (
+    options: SafeAttackOptions,
+  ) => {
+    const result =
+      findSafeAttack(
+        buildSimulationInput(),
+        options,
+      )
+
+    setSafeAttackResult(result)
+    setBattleResult(null)
+    setLuckAnalysis(null)
+    setOptimizerResult(null)
+    setAdvancedOptimizerResult(null)
+  }
+
+  const handleSafeAttackSimulation = (
+    result: SafeAttackResult,
+  ) => {
+    if (
+      !result.success ||
+      !result.recommendedArmy ||
+      !result.battleResult
+    ) {
+      return
+    }
+
+    const safeInput: BattleSimulationInput = {
+      ...buildSimulationInput(),
+      attacker: {
+        ...result.recommendedArmy,
+      },
+      attackerModifiers: {
+        ...attackerModifiers,
+        luck: result.minimumLuck,
+      },
+    }
+
+    setAttacker({
+      ...result.recommendedArmy,
+    })
+
+    setAttackerModifiers({
+      ...attackerModifiers,
+      luck: result.minimumLuck,
+    })
+
+    setBattleResult(
+      result.battleResult,
+    )
+    setLuckAnalysis(null)
+    setOptimizerResult(null)
+    setAdvancedOptimizerResult(null)
+    setSafeAttackResult(result)
+
+    void createSimulationHistory(
+      historySource,
+      safeInput,
+      result.battleResult,
+      reportMetadata,
+    )
+      .then(() => {
+        setHistoryRefreshToken(
+          (current) =>
+            current + 1,
+        )
+      })
+      .catch(
+        (historyError) => {
+          console.error(
+            'Could not save safe attack simulation history:',
+            historyError,
+          )
+        },
+      )
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('battle-result')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
+  }
+
+  const handleMultiWaveFinalDefense = (
+    army: Army,
+    wallLevel: number,
+    targetLevel: number,
+  ) => {
+    setDefender({
+      ...army,
+    })
+
+    setDefenderModifiers(
+      (current) => ({
+        ...current,
+        wallLevel,
+      }),
+    )
+
+    setSiegeSettings(
+      (current) => ({
+        ...current,
+        catapultTargetLevel:
+          targetLevel,
+      }),
+    )
+
+    clearResults()
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('simulator')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
+  }
+
+  const handleMultiWaveApplyWave = (
+    army: Army,
+    luck: number,
+  ) => {
+    setAttacker({
+      ...army,
+    })
+
+    setAttackerModifiers(
+      (current) => ({
+        ...current,
+        luck,
+      }),
+    )
+
+    clearResults()
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('simulator')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
+  }
+
+  const handleWallRamApply = (
+    ramCount: number,
+    luck: number,
+  ) => {
+    setAttacker(
+      (current) => ({
+        ...current,
+        ram: ramCount,
+      }),
+    )
+
+    setAttackerModifiers(
+      (current) => ({
+        ...current,
+        luck,
+      }),
+    )
+
+    clearResults()
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('simulator')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
+  }
+
+  const handleWallRamSimulation = (
+    result: WallRamPlannerResult,
+  ) => {
+    if (
+      !result.success ||
+      !result.recommendedArmy ||
+      !result.battleResult ||
+      result.recommendedRams === null
+    ) {
+      return
+    }
+
+    const plannerInput: BattleSimulationInput = {
+      ...buildSimulationInput(),
+      attacker: {
+        ...result.recommendedArmy,
+      },
+      attackerModifiers: {
+        ...attackerModifiers,
+        luck: result.minimumLuck,
+      },
+    }
+
+    setAttacker({
+      ...result.recommendedArmy,
+    })
+
+    setAttackerModifiers({
+      ...attackerModifiers,
+      luck: result.minimumLuck,
+    })
+
+    setBattleResult(
+      result.battleResult,
+    )
+    setLuckAnalysis(null)
+    setOptimizerResult(null)
+    setAdvancedOptimizerResult(null)
+    setSafeAttackResult(null)
+
+    void createSimulationHistory(
+      historySource,
+      plannerInput,
+      result.battleResult,
+      reportMetadata,
+    )
+      .then(() => {
+        setHistoryRefreshToken(
+          (current) =>
+            current + 1,
+        )
+      })
+      .catch(
+        (historyError) => {
+          console.error(
+            'Could not save wall/ram planner simulation history:',
+            historyError,
+          )
+        },
+      )
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('battle-result')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
+  }
+
+  const handleCatapultApply = (
+    catapultCount: number,
+    luck: number,
+  ) => {
+    setAttacker(
+      (current) => ({
+        ...current,
+        catapult: catapultCount,
+      }),
+    )
+
+    setAttackerModifiers(
+      (current) => ({
+        ...current,
+        luck,
+      }),
+    )
+
+    clearResults()
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('simulator')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
+  }
+
+  const handleCatapultSimulation = (
+    result: CatapultPlannerResult,
+  ) => {
+    if (
+      !result.success ||
+      !result.recommendedArmy ||
+      !result.battleResult ||
+      result.recommendedCatapults === null
+    ) {
+      return
+    }
+
+    const plannerInput: BattleSimulationInput = {
+      ...buildSimulationInput(),
+      attacker: {
+        ...result.recommendedArmy,
+      },
+      attackerModifiers: {
+        ...attackerModifiers,
+        luck: result.minimumLuck,
+      },
+    }
+
+    setAttacker({
+      ...result.recommendedArmy,
+    })
+
+    setAttackerModifiers({
+      ...attackerModifiers,
+      luck: result.minimumLuck,
+    })
+
+    setBattleResult(
+      result.battleResult,
+    )
+    setLuckAnalysis(null)
+    setOptimizerResult(null)
+    setAdvancedOptimizerResult(null)
+    setSafeAttackResult(null)
+
+    void createSimulationHistory(
+      historySource,
+      plannerInput,
+      result.battleResult,
+      reportMetadata,
+    )
+      .then(() => {
+        setHistoryRefreshToken(
+          (current) =>
+            current + 1,
+        )
+      })
+      .catch(
+        (historyError) => {
+          console.error(
+            'Could not save catapult planner simulation history:',
+            historyError,
+          )
+        },
+      )
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('battle-result')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
+  }
+
+  const handleArmyLibraryAttacker = (
+    army: Army,
+  ) => {
+    setHistorySource(
+      'MANUAL',
+    )
+    setReportMetadata(null)
+
+    setAttacker({
+      ...createEmptyArmy(),
+      ...army,
+    })
+
+    clearResults()
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('simulator')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
+  }
+
+  const handleArmyLibraryDefender = (
+    army: Army,
+  ) => {
+    setHistorySource(
+      'MANUAL',
+    )
+    setReportMetadata(null)
+
+    setDefender({
+      ...createEmptyArmy(),
+      ...army,
+    })
+
+    clearResults()
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('simulator')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
   }
 
   const applyArmy = (
@@ -785,6 +1270,26 @@ function SimulatorPage() {
 
             <a href="#tools">
               Tools
+            </a>
+
+            <a href="#safe-attack">
+              Safe Attack
+            </a>
+
+            <a href="#multi-wave">
+              Waves
+            </a>
+
+            <a href="#wall-ram">
+              Rams
+            </a>
+
+            <a href="#catapult-planner">
+              Catapults
+            </a>
+
+            <a href="#army-library">
+              Armies
             </a>
 
             <a href="#simulation-history">
@@ -852,7 +1357,7 @@ function SimulatorPage() {
           onApplyAttacker={handleReportAttackerApply}
           onApplyDefender={handleReportDefenderApply}
           onApplyBoth={handleReportBothApply}
-          onImportApplied={setHistorySource}
+          onImportApplied={handleReportImportApplied}
         />
 
         <BattleQuickActions
@@ -879,6 +1384,32 @@ function SimulatorPage() {
         )}
 
         <div id="tools">
+          <SafeAttackPanel
+            input={simulationInput}
+            result={safeAttackResult}
+            onSearch={handleSafeAttack}
+            onApply={applyArmy}
+            onSimulate={handleSafeAttackSimulation}
+          />
+
+          <MultiWavePlannerPanel
+            input={simulationInput}
+            onApplyFinalDefense={handleMultiWaveFinalDefense}
+            onApplyWave={handleMultiWaveApplyWave}
+          />
+
+          <WallRamPlannerPanel
+            input={simulationInput}
+            onApply={handleWallRamApply}
+            onSimulate={handleWallRamSimulation}
+          />
+
+          <CatapultPlannerPanel
+            input={simulationInput}
+            onApply={handleCatapultApply}
+            onSimulate={handleCatapultSimulation}
+          />
+
           <ArmyOptimizerPanel
             result={optimizerResult}
             onOptimize={handleArmyOptimization}
@@ -891,6 +1422,14 @@ function SimulatorPage() {
             onApply={applyArmy}
           />
         </div>
+
+        <ArmyLibraryPanel
+          attacker={attacker}
+          defender={defender}
+          reportMetadata={reportMetadata}
+          onApplyAttacker={handleArmyLibraryAttacker}
+          onApplyDefender={handleArmyLibraryDefender}
+        />
 
         <SimulationHistoryPanel
           refreshToken={historyRefreshToken}

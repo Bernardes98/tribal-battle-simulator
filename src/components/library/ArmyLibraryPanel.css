@@ -1,0 +1,326 @@
+.army-library-card {
+  margin-top: 24px;
+  border: 1px solid #b89a6d;
+  border-radius: 8px;
+  background: linear-gradient(
+    180deg,
+    #f5ecd9 0%,
+    #eadcc1 100%
+  );
+  box-shadow: 0 12px 28px rgba(70, 43, 24, 0.12);
+  overflow: hidden;
+}
+
+.army-library-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 22px 24px;
+  border-bottom: 1px solid #c8ad82;
+  background: rgba(110, 68, 38, 0.08);
+}
+
+.army-library-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: #8b5b2b;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.army-library-header h3,
+.army-library-column-title h4 {
+  margin: 0;
+  color: #4a2f1f;
+}
+
+.army-library-header p {
+  max-width: 680px;
+  margin: 7px 0 0;
+  color: #72553d;
+  line-height: 1.5;
+}
+
+.army-library-counter {
+  min-width: 120px;
+  padding: 10px 14px;
+  border: 1px solid #b89a6d;
+  border-radius: 6px;
+  background: #fff8e9;
+  text-align: center;
+}
+
+.army-library-counter strong {
+  display: block;
+  color: #5d351e;
+  font-size: 1.4rem;
+}
+
+.army-library-counter span {
+  color: #806146;
+  font-size: 0.78rem;
+}
+
+.army-library-save {
+  padding: 20px 24px;
+  border-bottom: 1px solid #d5be98;
+}
+
+.army-library-save label {
+  display: block;
+  margin-bottom: 7px;
+  color: #533723;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.army-library-save-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  gap: 10px;
+}
+
+.army-library-save-row input {
+  min-width: 0;
+  border: 1px solid #b99a70;
+  border-radius: 6px;
+  background: #fffaf0;
+  color: #422a1b;
+  padding: 11px 12px;
+  font: inherit;
+}
+
+.army-library-save-row button,
+.army-library-actions button {
+  border: 1px solid #7d522f;
+  border-radius: 6px;
+  padding: 10px 14px;
+  background: #6f4328;
+  color: #fff8e9;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.army-library-save-row button:hover:not(:disabled),
+.army-library-actions button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.army-library-save-row button:disabled,
+.army-library-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.army-library-feedback {
+  margin: 16px 24px 0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.army-library-error {
+  border: 1px solid #a6604d;
+  background: #f6ded4;
+  color: #733624;
+}
+
+.army-library-success {
+  border: 1px solid #8d8a50;
+  background: #eef0d7;
+  color: #535423;
+}
+
+.army-library-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 20px 24px 24px;
+}
+
+.army-library-column {
+  min-width: 0;
+}
+
+.army-library-column-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.army-library-column-title span {
+  display: block;
+  color: #8a6445;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.army-library-column-title h4 {
+  margin-top: 2px;
+  font-size: 1rem;
+}
+
+.army-library-column-title > strong {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #6f4328;
+  color: #fff8e9;
+  font-size: 0.78rem;
+}
+
+.army-library-list {
+  display: grid;
+  gap: 10px;
+}
+
+.army-library-preset {
+  border: 1px solid #c6aa80;
+  border-radius: 7px;
+  background: rgba(255, 250, 240, 0.78);
+  padding: 14px;
+}
+
+.army-library-preset-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.army-library-preset-top strong {
+  color: #4a2f1f;
+  font-size: 0.96rem;
+}
+
+.army-library-preset-top p {
+  margin: 5px 0 0;
+  color: #795c42;
+  font-size: 0.8rem;
+  line-height: 1.42;
+}
+
+.army-library-type-badge {
+  align-self: flex-start;
+  border: 1px solid #a98254;
+  border-radius: 999px;
+  background: #e7d3ad;
+  color: #654224;
+  padding: 4px 8px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.army-library-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.army-library-stats > span {
+  border: 1px solid #dac5a4;
+  border-radius: 5px;
+  background: #f5ead5;
+  padding: 8px 10px;
+}
+
+.army-library-stats small {
+  display: block;
+  color: #896c50;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+}
+
+.army-library-stats strong {
+  display: block;
+  margin-top: 2px;
+  color: #50321f;
+}
+
+.army-library-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.army-library-actions button {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+}
+
+.army-library-actions .army-library-delete {
+  border-color: #a56b59;
+  background: transparent;
+  color: #814430;
+}
+
+.army-library-empty {
+  border: 1px dashed #b99b74;
+  border-radius: 7px;
+  background: rgba(255, 250, 240, 0.46);
+  color: #816348;
+  padding: 18px;
+  text-align: center;
+  font-size: 0.84rem;
+}
+
+@media (max-width: 850px) {
+  .army-library-header,
+  .army-library-save-row,
+  .army-library-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .army-library-header {
+    display: grid;
+  }
+
+  .army-library-counter {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .army-library-header,
+  .army-library-save,
+  .army-library-columns {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .army-library-stats,
+  .army-library-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .army-library-actions {
+    display: grid;
+  }
+}
+
+/* V24 — village context saved with report-derived presets */
+.army-library-context {
+  display: inline-flex;
+  margin-top: 5px;
+  padding: 4px 7px;
+  border: 1px solid rgba(109, 72, 42, 0.22);
+  border-radius: 999px;
+  background: rgba(245, 233, 209, 0.82);
+  color: #684a31;
+  font-size: 0.72rem;
+  font-weight: 700;
+}

@@ -14,6 +14,14 @@ import type {
   ReportRowTemplate,
 } from './reportNumberReader'
 
+import {
+  parseReportPartyMetadata,
+} from './reportMetadataParser'
+
+import type {
+  ReportPartyMetadata,
+} from '../../types/ReportMetadata'
+
 import type {
   ReportArmyReading,
   ReportConfidence,
@@ -855,6 +863,363 @@ const detectSpyTotalRow = (
   }
 }
 
+interface PartyMetadataRegion {
+  leftRatio: number
+  topByWidth: number
+  widthRatio: number
+  heightByWidth: number
+}
+
+const extractFocusedCoordinates = (
+  rawText: string,
+): ReportPartyMetadata['coordinates'] => {
+  const lines = rawText
+    .split(/[\r\n]+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .reverse()
+
+  const asCoordinates = (
+    xValue: string,
+    yValue: string,
+  ): ReportPartyMetadata['coordinates'] => {
+    const x = Number(xValue)
+    const y = Number(yValue)
+
+    if (
+      !Number.isInteger(x) ||
+      !Number.isInteger(y) ||
+      x < 0 ||
+      x > 999 ||
+      y < 0 ||
+      y > 999
+    ) {
+      return null
+    }
+
+    return {
+      x,
+      y,
+    }
+  }
+
+  for (const line of lines) {
+    const groups = line.match(/\d+/g) ?? []
+
+    /*
+     * Tesseract frequently reads the TW2 coordinate separator as the digit 1:
+     *
+     *   (499|511) -> (4991511)
+     *   (501|516) -> (5011516)
+     *
+     * The focused village crop lets us safely recover the final seven-digit
+     * sequence as XXX | YYY.
+     */
+    for (
+      let index = groups.length - 1;
+      index >= 0;
+      index -= 1
+    ) {
+      const group = groups[index]
+
+      if (
+        group.length === 7 &&
+        group[3] === '1'
+      ) {
+        const coordinates = asCoordinates(
+          group.slice(0, 3),
+          group.slice(4),
+        )
+
+        if (coordinates) {
+          return coordinates
+        }
+      }
+
+      if (group.length === 6) {
+        const coordinates = asCoordinates(
+          group.slice(0, 3),
+          group.slice(3),
+        )
+
+        if (coordinates) {
+          return coordinates
+        }
+      }
+    }
+
+    /*
+     * Other common OCR forms:
+     *
+     *   (501]516)
+     *   (501 | 516)
+     *   (501 1516)
+     */
+    if (groups.length >= 2) {
+      const first = groups[groups.length - 2]
+      const second = groups[groups.length - 1]
+
+      if (
+        first.length === 3 &&
+        second.length === 3
+      ) {
+        const coordinates = asCoordinates(
+          first,
+          second,
+        )
+
+        if (coordinates) {
+          return coordinates
+        }
+      }
+
+      if (
+        first.length === 3 &&
+        second.length === 4 &&
+        second.startsWith('1')
+      ) {
+        const coordinates = asCoordinates(
+          first,
+          second.slice(1),
+        )
+
+        if (coordinates) {
+          return coordinates
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+const removeFocusedCoordinatesFromVillage = (
+  villageName: string | null,
+  coordinates: ReportPartyMetadata['coordinates'],
+): string | null => {
+  if (
+    !villageName ||
+    !coordinates
+  ) {
+    return villageName
+  }
+
+  const x = String(coordinates.x)
+  const y = String(coordinates.y)
+
+  /*
+   * If the parser could not understand the malformed separator it may leave
+   * the coordinates inside the village name, for example:
+   *
+   *   Salvhigard (501]516)
+   *
+   * Once the focused coordinate reader recovered 501 | 516, remove that
+   * trailing coordinate fragment from the editable village field.
+   */
+  const openingParenthesis = villageName.lastIndexOf('(')
+
+  if (openingParenthesis > 0) {
+    const tail = villageName.slice(openingParenthesis)
+    const digits = tail.replace(/\D/g, '')
+
+    if (
+      digits.includes(x) &&
+      digits.includes(y)
+    ) {
+      return villageName
+        .slice(0, openingParenthesis)
+        .trim() || null
+    }
+  }
+
+  return villageName
+}
+
+const recognizeMetadataRegion = async (
+  worker: Awaited<ReturnType<typeof createWorker>>,
+  source: Awaited<ReturnType<typeof loadReportImage>>,
+  region: PartyMetadataRegion,
+): Promise<string> => {
+  const metadataRegion = cropTextRegion(
+    source,
+    region,
+    3,
+  )
+
+  const result = await worker.recognize(
+    metadataRegion,
+  )
+
+  return result.data.text
+}
+
+const readPartyMetadata = async (
+  worker: Awaited<ReturnType<typeof createWorker>>,
+  source: Awaited<ReturnType<typeof loadReportImage>>,
+  role: 'attacker' | 'defender',
+  region: PartyMetadataRegion,
+): Promise<ReportPartyMetadata | null> => {
+  await worker.setParameters({
+    tessedit_char_whitelist: '',
+    tessedit_pageseg_mode: PSM.SPARSE_TEXT,
+  })
+
+  /*
+   * Do not ask one OCR crop to understand both sides of the report row.
+   * Tribal Wars places the player on the left and village/coordinates on the
+   * right, with several icons between them. Reading the entire row alone can
+   * combine unrelated digits, e.g. FelipeG98 + [001] F -> 98 | 1.
+   *
+   * Keep the full crop for the labels/names that were already reliable, but
+   * add focused left/right passes and use the right pass as the authoritative
+   * source for coordinates.
+   */
+  const fullText = await recognizeMetadataRegion(
+    worker,
+    source,
+    region,
+  )
+
+  const leftText = await recognizeMetadataRegion(
+    worker,
+    source,
+    {
+      leftRatio: region.leftRatio,
+      topByWidth: region.topByWidth,
+      widthRatio: region.widthRatio * 0.42,
+      heightByWidth: region.heightByWidth,
+    },
+  )
+
+  const rightText = await recognizeMetadataRegion(
+    worker,
+    source,
+    {
+      leftRatio:
+        region.leftRatio +
+        region.widthRatio * 0.40,
+      topByWidth: region.topByWidth,
+      widthRatio: region.widthRatio * 0.60,
+      heightByWidth: region.heightByWidth,
+    },
+  )
+
+  const fullMetadata = parseReportPartyMetadata(
+    fullText,
+    role,
+  )
+
+  const leftMetadata = parseReportPartyMetadata(
+    leftText,
+    role,
+  )
+
+  const rightMetadata = parseReportPartyMetadata(
+    rightText,
+    role,
+  )
+
+  const coordinates =
+    extractFocusedCoordinates(rightText) ??
+    rightMetadata?.coordinates ??
+    fullMetadata?.coordinates ??
+    null
+
+  const playerName =
+    leftMetadata?.playerName ??
+    fullMetadata?.playerName ??
+    null
+
+  const rawVillageName =
+    fullMetadata?.villageName ??
+    rightMetadata?.villageName ??
+    null
+
+  const villageName =
+    removeFocusedCoordinatesFromVillage(
+      rawVillageName,
+      coordinates,
+    )
+
+  if (
+    !playerName &&
+    !villageName &&
+    !coordinates
+  ) {
+    return null
+  }
+
+  return {
+    playerName,
+    villageName,
+    coordinates,
+  }
+}
+
+const readBattleMetadata = async (
+  worker: Awaited<ReturnType<typeof createWorker>>,
+  source: Awaited<ReturnType<typeof loadReportImage>>,
+  attackerRow: ReportRowTemplate,
+  defenderRow: ReportRowTemplate,
+) => {
+  const attacker = await readPartyMetadata(
+    worker,
+    source,
+    'attacker',
+    {
+      leftRatio: 0.06,
+      topByWidth: Math.max(
+        0.20,
+        attackerRow.centerYByWidth - 0.19,
+      ),
+      widthRatio: 0.90,
+      heightByWidth: 0.115,
+    },
+  )
+
+  const defender = await readPartyMetadata(
+    worker,
+    source,
+    'defender',
+    {
+      leftRatio: 0.06,
+      topByWidth: Math.max(
+        0.42,
+        defenderRow.centerYByWidth - 0.145,
+      ),
+      widthRatio: 0.90,
+      heightByWidth: 0.105,
+    },
+  )
+
+  return {
+    attacker,
+    defender,
+  }
+}
+
+const readSpyMetadata = async (
+  worker: Awaited<ReturnType<typeof createWorker>>,
+  source: Awaited<ReturnType<typeof loadReportImage>>,
+) => {
+  const defender = await readPartyMetadata(
+    worker,
+    source,
+    'defender',
+    {
+      leftRatio: 0.03,
+      topByWidth: 0.225,
+      widthRatio: 0.94,
+      heightByWidth: 0.105,
+    },
+  )
+
+  return {
+    attacker: null,
+    defender,
+  }
+}
+
 const fallbackReportTypeFromShape = (
   width: number,
   height: number,
@@ -1191,6 +1556,18 @@ export const analyzeReportScreenshot = async (
         },
       )
 
+      setProgress(
+        options,
+        'Reading village and player',
+        92,
+      )
+
+      const metadata =
+        await readSpyMetadata(
+          worker,
+          source,
+        )
+
       const suspiciousUnits = defender.units.filter(
         (unit) =>
           unit.assumedZero &&
@@ -1198,6 +1575,12 @@ export const analyzeReportScreenshot = async (
       )
 
       const warnings: string[] = []
+
+      if (!metadata.defender) {
+        warnings.push(
+          'The defender player/village identity could not be read. Troop import is still available.',
+        )
+      }
 
       if (spyRow.dynamic) {
         warnings.push(
@@ -1244,6 +1627,7 @@ export const analyzeReportScreenshot = async (
         attacker: null,
         defender,
         defenderWallLevel: null,
+        metadata,
         warnings,
         sourceWidth: source.width,
         sourceHeight: source.height,
@@ -1360,10 +1744,38 @@ export const analyzeReportScreenshot = async (
       }
     }
 
+    const metadataAttackerRow =
+      detectedBattleRows.dynamic
+        ? detectedBattleRows.attacker
+        : resolvedDetailedBattleLayout
+          ? DETAILED_BATTLE_ATTACKER_INITIAL_ROW
+          : BATTLE_ATTACKER_INITIAL_ROW
+
+    const metadataDefenderRow =
+      detectedBattleRows.dynamic
+        ? detectedBattleRows.defender
+        : resolvedDetailedBattleLayout
+          ? DETAILED_BATTLE_DEFENDER_INITIAL_ROW
+          : BATTLE_DEFENDER_INITIAL_ROW
+
+    setProgress(
+      options,
+      'Reading players, villages and coordinates',
+      84,
+    )
+
+    const metadata =
+      await readBattleMetadata(
+        worker,
+        source,
+        metadataAttackerRow,
+        metadataDefenderRow,
+      )
+
     setProgress(
       options,
       'Reading wall level',
-      91,
+      93,
     )
 
     const defenderWallLevel =
@@ -1374,6 +1786,18 @@ export const analyzeReportScreenshot = async (
       )
 
     const warnings: string[] = []
+
+    if (!metadata.attacker) {
+      warnings.push(
+        'The attacker player/village identity could not be read. Troop import is still available.',
+      )
+    }
+
+    if (!metadata.defender) {
+      warnings.push(
+        'The defender player/village identity could not be read. Troop import is still available.',
+      )
+    }
 
     if (!detectedByText) {
       warnings.push(
@@ -1447,6 +1871,7 @@ export const analyzeReportScreenshot = async (
       attacker,
       defender,
       defenderWallLevel,
+      metadata,
       warnings,
       sourceWidth: source.width,
       sourceHeight: source.height,
