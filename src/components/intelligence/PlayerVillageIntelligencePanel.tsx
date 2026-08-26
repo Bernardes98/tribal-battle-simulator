@@ -42,6 +42,7 @@ import type {
 
 import DefenseComparisonPanel from './DefenseComparisonPanel'
 import DefenseTrendPanel from './DefenseTrendPanel'
+import ReportTimelinePanel from './ReportTimelinePanel'
 
 import './PlayerVillageIntelligencePanel.css'
 
@@ -239,6 +240,13 @@ function PlayerVillageIntelligencePanel({
   const [
     trendedVillage,
     setTrendedVillage,
+  ] = useState<
+    string | null
+  >(null)
+
+  const [
+    timelineVillage,
+    setTimelineVillage,
   ] = useState<
     string | null
   >(null)
@@ -1047,6 +1055,23 @@ function PlayerVillageIntelligencePanel({
 
                               <button
                                 type="button"
+                                onClick={() =>
+                                  setTimelineVillage(
+                                    timelineVillage ===
+                                    village.key
+                                      ? null
+                                      : village.key,
+                                  )
+                                }
+                              >
+                                {timelineVillage ===
+                                village.key
+                                  ? 'Hide Timeline'
+                                  : 'Report Timeline'}
+                              </button>
+
+                              <button
+                                type="button"
                                 className={
                                   watched
                                     ? 'player-intelligence-watch-button active'
@@ -1076,6 +1101,16 @@ function PlayerVillageIntelligencePanel({
                             village.key && (
                             <DefenseTrendPanel
                               village={village}
+                            />
+                          )}
+
+                          {timelineVillage ===
+                            village.key && (
+                            <ReportTimelinePanel
+                              village={village}
+                              onLoadDefense={
+                                onLoadDefense
+                              }
                             />
                           )}
 

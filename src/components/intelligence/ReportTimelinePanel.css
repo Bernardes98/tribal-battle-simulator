@@ -1,0 +1,241 @@
+.report-timeline {
+  margin: 0 12px 12px;
+  border: 1px solid #7f5835;
+  background: #d9b583;
+}
+
+.report-timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 12px;
+  border-bottom: 1px solid #93683f;
+  background: #bd8c5b;
+}
+
+.report-timeline-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.report-timeline-header > div > span {
+  color: #714a28;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.report-timeline-header > div > strong {
+  color: #2d190b;
+}
+
+.report-timeline-header > span {
+  color: #674326;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.report-timeline-list {
+  position: relative;
+  display: grid;
+  gap: 0;
+  padding: 8px 0;
+}
+
+.report-timeline-list::before {
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 31px;
+  width: 2px;
+  background: #9a7149;
+  content: '';
+}
+
+.report-timeline-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px 12px 8px 0;
+}
+
+.report-timeline-marker {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1;
+}
+
+.report-timeline-marker span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid #684323;
+  border-radius: 50%;
+  background: #8a582b;
+  color: #fff0cf;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.report-timeline-content {
+  border: 1px solid #a77d51;
+  background: #dfbd8e;
+}
+
+.report-timeline-entry-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-bottom: 1px solid #b48a5b;
+  background: #cfa678;
+}
+
+.report-timeline-entry-top > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.report-timeline-source {
+  padding: 3px 6px;
+  border: 1px solid #694422;
+  background: #8a582b;
+  color: #fff0cf;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.report-timeline-source.source-spy_report {
+  background: #6f6a32;
+}
+
+.report-timeline-source.source-battle_report {
+  background: #7b3f2d;
+}
+
+.report-timeline-entry-top time {
+  color: #624024;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.report-timeline-entry-top button {
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid #684323;
+  background: #70451f;
+  color: #fff1d0;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.report-timeline-entry-top button:hover {
+  background: #80532c;
+}
+
+.report-timeline-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid #b48a5b;
+}
+
+.report-timeline-metrics > div {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  border-right: 1px solid #b48a5b;
+}
+
+.report-timeline-metrics > div:last-child {
+  border-right: 0;
+}
+
+.report-timeline-metrics span {
+  color: #795330;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.report-timeline-metrics strong {
+  color: #2d1a0d;
+  font-size: 15px;
+}
+
+.report-timeline-metrics small {
+  color: #735035;
+  font-size: 9px;
+}
+
+.report-timeline-metrics .positive strong,
+.report-timeline-metrics small.positive {
+  color: #476323;
+}
+
+.report-timeline-metrics .negative strong,
+.report-timeline-metrics small.negative {
+  color: #8f3d2a;
+}
+
+.report-timeline-units {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.report-timeline-units span {
+  padding: 3px 6px;
+  border: 1px solid rgba(103, 68, 36, 0.28);
+  background: rgba(238, 210, 170, 0.55);
+  color: #654326;
+  font-size: 9px;
+}
+
+.report-timeline-units strong {
+  color: #2e1a0d;
+}
+
+@media (max-width: 720px) {
+  .report-timeline-header,
+  .report-timeline-entry-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .report-timeline-entry {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .report-timeline-list::before {
+    left: 21px;
+  }
+
+  .report-timeline-marker span {
+    width: 24px;
+    height: 24px;
+  }
+
+  .report-timeline-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .report-timeline-metrics > div {
+    border-right: 0;
+    border-bottom: 1px solid #b48a5b;
+  }
+
+  .report-timeline-metrics > div:last-child {
+    border-bottom: 0;
+  }
+}
