@@ -21,6 +21,25 @@ import {
 } from '../../domain/intelligence/villageWatchlist'
 
 import {
+  getVillageAnnotation,
+  loadVillageAnnotations,
+  VILLAGE_ANNOTATIONS_CHANGED_EVENT,
+} from '../../domain/intelligence/villageAnnotations'
+
+import type {
+  VillageTag,
+} from '../../domain/intelligence/villageAnnotations'
+
+import {
+  filterWatchlistEntries,
+} from '../../domain/intelligence/villageFilters'
+
+import type {
+  VillageTagMatchMode,
+  WatchlistAttentionFilter,
+} from '../../domain/intelligence/villageFilters'
+
+import {
   listSimulationHistory,
 } from '../../services/simulationHistoryApi'
 
@@ -36,6 +55,8 @@ import type {
 import type {
   ReportMetadata,
 } from '../../types/ReportMetadata'
+
+import VillageFilterControls from './VillageFilterControls'
 
 import './WatchlistDashboardPanel.css'
 
@@ -222,11 +243,42 @@ function WatchlistDashboardPanel({
   ] = useState(true)
 
   const [
+    annotationVersion,
+    setAnnotationVersion,
+  ] = useState(0)
+
+  const [
     error,
     setError,
   ] = useState<
     string | null
   >(null)
+
+  const [
+    search,
+    setSearch,
+  ] = useState('')
+
+  const [
+    selectedTags,
+    setSelectedTags,
+  ] = useState<
+    VillageTag[]
+  >([])
+
+  const [
+    tagMode,
+    setTagMode,
+  ] = useState<
+    VillageTagMatchMode
+  >('any')
+
+  const [
+    attentionFilter,
+    setAttentionFilter,
+  ] = useState<
+    WatchlistAttentionFilter
+  >('all')
 
   const load =
     async () => {
@@ -286,6 +338,16 @@ function WatchlistDashboardPanel({
           ) {
             handleWatchlistChange()
           }
+
+          if (
+            event.key ===
+            'tribal-battle-village-annotations-v1'
+          ) {
+            setAnnotationVersion(
+              (value) =>
+                value + 1,
+            )
+          }
         }
 
       window.addEventListener(
@@ -293,9 +355,22 @@ function WatchlistDashboardPanel({
         handleWatchlistChange,
       )
 
+      const handleAnnotationsChange =
+        () => {
+          setAnnotationVersion(
+            (value) =>
+              value + 1,
+          )
+        }
+
       window.addEventListener(
         'storage',
         handleStorage,
+      )
+
+      window.addEventListener(
+        VILLAGE_ANNOTATIONS_CHANGED_EVENT,
+        handleAnnotationsChange,
       )
 
       return () => {
@@ -307,6 +382,11 @@ function WatchlistDashboardPanel({
         window.removeEventListener(
           'storage',
           handleStorage,
+        )
+
+        window.removeEventListener(
+          VILLAGE_ANNOTATIONS_CHANGED_EVENT,
+          handleAnnotationsChange,
         )
       }
     },
@@ -355,6 +435,39 @@ function WatchlistDashboardPanel({
           entries,
         ),
       [entries],
+    )
+
+  const annotations =
+    useMemo(
+      () => {
+        void annotationVersion
+
+        return loadVillageAnnotations()
+      },
+      [annotationVersion],
+    )
+
+  const filteredEntries =
+    useMemo(
+      () =>
+        filterWatchlistEntries(
+          entries,
+          annotations,
+          {
+            search,
+            selectedTags,
+            tagMode,
+          },
+          attentionFilter,
+        ),
+      [
+        entries,
+        annotations,
+        search,
+        selectedTags,
+        tagMode,
+        attentionFilter,
+      ],
     )
 
   return (
@@ -473,6 +586,20 @@ function WatchlistDashboardPanel({
         </div>
       </div>
 
+      <VillageFilterControls
+        search={search}
+        onSearchChange={setSearch}
+        selectedTags={selectedTags}
+        onSelectedTagsChange={setSelectedTags}
+        tagMode={tagMode}
+        onTagModeChange={setTagMode}
+        attention={attentionFilter}
+        onAttentionChange={setAttentionFilter}
+        resultCount={
+          filteredEntries.length
+        }
+      />
+
       {error && (
         <div className="watchlist-dashboard-message error">
           <strong>
@@ -528,15 +655,37 @@ function WatchlistDashboardPanel({
         )}
 
       {entries.length >
+        0 &&
+        filteredEntries.length ===
+          0 && (
+          <div className="watchlist-dashboard-message">
+            <strong>
+              No villages match the active filters.
+            </strong>
+
+            <span>
+              Clear or change the search, tags or status filter.
+            </span>
+          </div>
+        )}
+
+      {filteredEntries.length >
         0 && (
         <div className="watchlist-dashboard-grid">
-          {entries.map(
+          {filteredEntries.map(
             (
               entry,
             ) => {
               const {
                 village,
               } = entry
+
+              void annotationVersion
+
+              const annotation =
+                getVillageAnnotation(
+                  village.key,
+                )
 
               return (
                 <article
@@ -682,6 +831,27 @@ function WatchlistDashboardPanel({
                       village.latest.army,
                     )}
                   </div>
+
+                  {(annotation.tags.length > 0 ||
+                    annotation.note) && (
+                    <div className="watchlist-dashboard-annotation">
+                      {annotation.tags.length > 0 && (
+                        <div className="watchlist-dashboard-tags">
+                          {annotation.tags.map(
+                            (tag) => (
+                              <span key={tag}>
+                                {tag}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                      )}
+
+                      {annotation.note && (
+                        <p>{annotation.note}</p>
+                      )}
+                    </div>
+                  )}
 
                   <div className="watchlist-dashboard-actions">
                     <button

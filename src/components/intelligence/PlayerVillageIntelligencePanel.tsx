@@ -8,7 +8,6 @@ import { units } from '../../data/units'
 
 import {
   buildPlayerVillageIntelligence,
-  filterPlayerVillageIntelligence,
 } from '../../domain/intelligence/playerVillageIntelligence'
 
 import type {
@@ -22,6 +21,23 @@ import {
   toggleVillageWatch,
   updateVillageWatchThreshold,
 } from '../../domain/intelligence/villageWatchlist'
+
+import {
+  loadVillageAnnotations,
+  VILLAGE_ANNOTATIONS_CHANGED_EVENT,
+} from '../../domain/intelligence/villageAnnotations'
+
+import type {
+  VillageTag,
+} from '../../domain/intelligence/villageAnnotations'
+
+import {
+  filterPlayersWithVillageFilters,
+} from '../../domain/intelligence/villageFilters'
+
+import type {
+  VillageTagMatchMode,
+} from '../../domain/intelligence/villageFilters'
 
 import {
   listSimulationHistory,
@@ -43,6 +59,8 @@ import type {
 import DefenseComparisonPanel from './DefenseComparisonPanel'
 import DefenseTrendPanel from './DefenseTrendPanel'
 import ReportTimelinePanel from './ReportTimelinePanel'
+import VillageNotesTagsPanel from './VillageNotesTagsPanel'
+import VillageFilterControls from './VillageFilterControls'
 
 import './PlayerVillageIntelligencePanel.css'
 
@@ -212,6 +230,25 @@ function PlayerVillageIntelligencePanel({
   ] = useState('')
 
   const [
+    selectedTags,
+    setSelectedTags,
+  ] = useState<
+    VillageTag[]
+  >([])
+
+  const [
+    tagMode,
+    setTagMode,
+  ] = useState<
+    VillageTagMatchMode
+  >('any')
+
+  const [
+    annotationVersion,
+    setAnnotationVersion,
+  ] = useState(0)
+
+  const [
     expandedVillage,
     setExpandedVillage,
   ] = useState<
@@ -251,6 +288,13 @@ function PlayerVillageIntelligencePanel({
     string | null
   >(null)
 
+  const [
+    annotatedVillage,
+    setAnnotatedVillage,
+  ] = useState<
+    string | null
+  >(null)
+
   const load =
     async () => {
       try {
@@ -285,6 +329,54 @@ function PlayerVillageIntelligencePanel({
     [refreshToken],
   )
 
+  useEffect(
+    () => {
+      const handleChange =
+        () => {
+          setAnnotationVersion(
+            (value) =>
+              value + 1,
+          )
+        }
+
+      const handleStorage =
+        (
+          event:
+            StorageEvent,
+        ) => {
+          if (
+            event.key ===
+            'tribal-battle-village-annotations-v1'
+          ) {
+            handleChange()
+          }
+        }
+
+      window.addEventListener(
+        VILLAGE_ANNOTATIONS_CHANGED_EVENT,
+        handleChange,
+      )
+
+      window.addEventListener(
+        'storage',
+        handleStorage,
+      )
+
+      return () => {
+        window.removeEventListener(
+          VILLAGE_ANNOTATIONS_CHANGED_EVENT,
+          handleChange,
+        )
+
+        window.removeEventListener(
+          'storage',
+          handleStorage,
+        )
+      }
+    },
+    [],
+  )
+
   const players =
     useMemo(
       () =>
@@ -294,16 +386,34 @@ function PlayerVillageIntelligencePanel({
       [items],
     )
 
+  const annotations =
+    useMemo(
+      () => {
+        void annotationVersion
+
+        return loadVillageAnnotations()
+      },
+      [annotationVersion],
+    )
+
   const filteredPlayers =
     useMemo(
       () =>
-        filterPlayerVillageIntelligence(
+        filterPlayersWithVillageFilters(
           players,
-          search,
+          annotations,
+          {
+            search,
+            selectedTags,
+            tagMode,
+          },
         ),
       [
         players,
+        annotations,
         search,
+        selectedTags,
+        tagMode,
       ],
     )
 
@@ -523,28 +633,27 @@ function PlayerVillageIntelligencePanel({
         </div>
       </div>
 
-      <div className="player-intelligence-toolbar">
-        <label>
-          <span>
-            Search player, village or coordinates
-          </span>
-
-          <input
-            type="search"
-            value={search}
-            placeholder="SolRain, Salvhigard, 501|516..."
-            onChange={(
-              event,
+      <VillageFilterControls
+        search={search}
+        onSearchChange={setSearch}
+        selectedTags={selectedTags}
+        onSelectedTagsChange={setSelectedTags}
+        tagMode={tagMode}
+        onTagModeChange={setTagMode}
+        resultCount={
+          filteredPlayers.reduce(
+            (
+              total,
+              player,
             ) =>
-              setSearch(
-                event
-                  .target
-                  .value,
-              )
-            }
-          />
-        </label>
+              total +
+              player.villageCount,
+            0,
+          )
+        }
+      />
 
+      <div className="player-intelligence-toolbar">
         <label className="player-intelligence-threshold">
           <span>
             Watch alert at
@@ -1072,6 +1181,23 @@ function PlayerVillageIntelligencePanel({
 
                               <button
                                 type="button"
+                                onClick={() =>
+                                  setAnnotatedVillage(
+                                    annotatedVillage ===
+                                    village.key
+                                      ? null
+                                      : village.key,
+                                  )
+                                }
+                              >
+                                {annotatedVillage ===
+                                village.key
+                                  ? 'Hide Notes'
+                                  : 'Notes & Tags'}
+                              </button>
+
+                              <button
+                                type="button"
                                 className={
                                   watched
                                     ? 'player-intelligence-watch-button active'
@@ -1111,6 +1237,13 @@ function PlayerVillageIntelligencePanel({
                               onLoadDefense={
                                 onLoadDefense
                               }
+                            />
+                          )}
+
+                          {annotatedVillage ===
+                            village.key && (
+                            <VillageNotesTagsPanel
+                              village={village}
                             />
                           )}
 

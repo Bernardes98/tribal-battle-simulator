@@ -1,0 +1,128 @@
+.village-filter-controls {
+  display: grid;
+  gap: 9px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #9c7147;
+  background: #c49769;
+}
+
+.village-filter-controls-top {
+  display: flex;
+  align-items: end;
+  gap: 9px;
+}
+
+.village-filter-controls-top > label {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+}
+
+.village-filter-controls-top > label > span,
+.village-filter-mode > span {
+  color: #5d391e;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.village-filter-controls input,
+.village-filter-controls select {
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 9px;
+  border: 1px solid #7b5532;
+  background: #ead2ad;
+  color: #2c1a0d;
+  outline: none;
+}
+
+.village-filter-attention {
+  flex: 0 0 165px !important;
+}
+
+.village-filter-mode {
+  display: grid;
+  gap: 4px;
+}
+
+.village-filter-mode > div {
+  display: flex;
+}
+
+.village-filter-mode button,
+.village-filter-clear,
+.village-filter-tags button {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid #76502f;
+  background: #b98554;
+  color: #4a2b15;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.village-filter-mode button + button {
+  border-left: 0;
+}
+
+.village-filter-mode button.active,
+.village-filter-tags button.active {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+.village-filter-clear {
+  min-height: 36px;
+}
+
+.village-filter-tags-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.village-filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.village-filter-result-count {
+  flex: 0 0 auto;
+  color: #5c391e;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .village-filter-controls-top {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .village-filter-controls-top > label {
+    min-width: 220px;
+  }
+
+  .village-filter-attention {
+    flex: 1 1 165px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .village-filter-controls-top {
+    display: grid;
+  }
+
+  .village-filter-controls-top > label {
+    min-width: 0;
+  }
+
+  .village-filter-tags-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
