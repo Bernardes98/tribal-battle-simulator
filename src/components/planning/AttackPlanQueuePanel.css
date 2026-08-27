@@ -1,0 +1,432 @@
+#attack-plans {
+  scroll-margin-top: 90px;
+}
+
+.attack-plan-queue {
+  margin-top: 22px;
+  border: 1px solid #76502f;
+  background: #cba273;
+  color: #2c1a0d;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 238, 204, 0.35);
+}
+
+.attack-plan-queue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #76502f;
+  background: #a87444;
+}
+
+.attack-plan-queue-eyebrow {
+  color: #673e1c;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.attack-plan-queue-header h3 {
+  margin: 3px 0 4px;
+  color: #261507;
+}
+
+.attack-plan-queue-header p {
+  max-width: 760px;
+  margin: 0;
+  color: #59371d;
+  font-size: 12px;
+}
+
+.attack-plan-queue-header-actions {
+  display: flex;
+  gap: 7px;
+}
+
+.attack-plan-queue button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.attack-plan-queue button:hover:not(:disabled) {
+  background: #b98652;
+}
+
+.attack-plan-queue button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.attack-plan-queue-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      5,
+      minmax(0, 1fr)
+    );
+  border-bottom: 1px solid #966a40;
+  background: #c99e6e;
+}
+
+.attack-plan-queue-summary > div {
+  display: grid;
+  gap: 2px;
+  padding: 9px 12px;
+  border-right: 1px solid #ab7f52;
+}
+
+.attack-plan-queue-summary > div:last-child {
+  border-right: 0;
+}
+
+.attack-plan-queue-summary span {
+  color: #704927;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-plan-queue-summary strong {
+  color: #2d190b;
+  font-size: 17px;
+}
+
+.attack-plan-queue-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  padding: 10px 18px;
+  border-bottom: 1px solid #986b41;
+  background: #c39464;
+}
+
+.attack-plan-queue-toolbar label {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+}
+
+.attack-plan-queue-toolbar label:nth-child(2) {
+  flex: 0 0 170px;
+}
+
+.attack-plan-queue-toolbar label span,
+.attack-plan-editor label > span {
+  color: #5e3b20;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-plan-queue-toolbar input,
+.attack-plan-queue-toolbar select,
+.attack-plan-editor input,
+.attack-plan-editor select,
+.attack-plan-editor textarea {
+  width: 100%;
+  min-height: 35px;
+  padding: 6px 9px;
+  border: 1px solid #7b5532;
+  background: #ead2ad;
+  color: #2c1a0d;
+  outline: none;
+}
+
+.attack-plan-queue-toolbar > span {
+  margin-left: auto;
+  padding-bottom: 7px;
+  color: #624024;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.attack-plan-queue-list {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+}
+
+.attack-plan-card {
+  border: 1px solid #91663d;
+  background: #dfbd8e;
+}
+
+.attack-plan-card.status-ready {
+  border-color: #6f742c;
+  box-shadow:
+    inset 5px 0 0 #7c8430;
+}
+
+.attack-plan-card.status-sent {
+  border-color: #7b5728;
+  box-shadow:
+    inset 5px 0 0 #947036;
+}
+
+.attack-plan-card.status-completed {
+  opacity: 0.82;
+}
+
+.attack-plan-card.status-cancelled {
+  opacity: 0.68;
+}
+
+.attack-plan-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #ae8355;
+  background: #cfa678;
+}
+
+.attack-plan-target {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.attack-plan-target > span {
+  color: #77502f;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-plan-target > strong {
+  overflow: hidden;
+  color: #2c190c;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attack-plan-target > small {
+  color: #694628;
+  font-size: 9px;
+}
+
+.attack-plan-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.attack-plan-badges > span {
+  padding: 4px 7px;
+  border: 1px solid #694422;
+  background: #8a582b;
+  color: #fff0cf;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-plan-badges .status-ready {
+  background: #6f742c;
+}
+
+.attack-plan-badges .status-sent {
+  background: #8d6832;
+}
+
+.attack-plan-badges .status-completed {
+  background: #60723b;
+}
+
+.attack-plan-badges .status-cancelled {
+  background: #8a4633;
+}
+
+.attack-plan-metrics {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      5,
+      minmax(0, 1fr)
+    );
+  border-bottom: 1px solid #b48a5b;
+}
+
+.attack-plan-metrics > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-right: 1px solid #b48a5b;
+}
+
+.attack-plan-metrics > div:last-child {
+  border-right: 0;
+}
+
+.attack-plan-metrics span {
+  color: #78512f;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-plan-metrics strong {
+  color: #2e1a0d;
+  font-size: 11px;
+}
+
+.attack-plan-metrics small {
+  color: #704a2b;
+  font-size: 8px;
+}
+
+.attack-plan-army {
+  padding: 8px 10px;
+  border-bottom: 1px solid #b48a5b;
+  background: rgba(
+    239,
+    214,
+    177,
+    0.4
+  );
+  color: #604026;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.attack-plan-card-actions {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 7px;
+  padding: 10px 12px;
+}
+
+.attack-plan-card-actions .primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+.attack-plan-card-actions .danger {
+  background: #8d4a34;
+  color: #fff1d0;
+}
+
+.attack-plan-editor {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  gap: 9px;
+  padding: 12px;
+  border-top: 1px solid #a77c50;
+  background: #d1aa77;
+}
+
+.attack-plan-editor label {
+  display: grid;
+  gap: 4px;
+}
+
+.attack-plan-editor textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.attack-plan-note {
+  grid-column: 1 / -1;
+}
+
+.attack-plan-note small {
+  justify-self: end;
+  color: #725032;
+  font-size: 8px;
+}
+
+.attack-plan-queue-empty {
+  display: grid;
+  gap: 6px;
+  margin: 18px;
+  padding: 20px;
+  border: 1px dashed #8c623b;
+  background: #d8b384;
+  color: #57371d;
+  text-align: center;
+}
+
+.attack-plan-queue-note {
+  padding: 9px 18px;
+  border-top: 1px solid #94663b;
+  background: #c29260;
+  color: #5e3c21;
+  font-size: 9px;
+}
+
+@media (max-width: 900px) {
+  .attack-plan-queue-summary,
+  .attack-plan-metrics {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+  .attack-plan-editor {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 720px) {
+  .attack-plan-queue-header,
+  .attack-plan-queue-toolbar,
+  .attack-plan-card-top {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .attack-plan-queue-header-actions {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .attack-plan-queue-summary,
+  .attack-plan-metrics {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .attack-plan-badges {
+    justify-content: flex-start;
+  }
+
+  .attack-plan-card-actions,
+  .attack-plan-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .attack-plan-note {
+    grid-column: auto;
+  }
+}

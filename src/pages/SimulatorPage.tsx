@@ -21,6 +21,7 @@ import PlayerVillageIntelligencePanel from '../components/intelligence/PlayerVil
 import WatchlistDashboardPanel from '../components/intelligence/WatchlistDashboardPanel'
 import TargetRankingDashboardPanel from '../components/intelligence/TargetRankingDashboardPanel'
 import AttackCandidateAnalyzerPanel from '../components/intelligence/AttackCandidateAnalyzerPanel'
+import AttackPlanQueuePanel from '../components/planning/AttackPlanQueuePanel'
 
 import { units } from '../data/units'
 
@@ -1277,6 +1278,57 @@ function SimulatorPage() {
     )
   }
 
+  const handleAttackPlanOpen = (
+    input: BattleSimulationInput,
+    metadata: ReportMetadata | null,
+    source: SimulationHistorySource,
+  ) => {
+    setHistorySource(source)
+    setReportMetadata(metadata)
+
+    setAttacker({
+      ...input.attacker,
+    })
+
+    setDefender({
+      ...input.defender,
+    })
+
+    setAttackerModifiers({
+      ...input.attackerModifiers,
+    })
+
+    setDefenderModifiers({
+      ...input.defenderModifiers,
+    })
+
+    setAttackerPaladinWeapons({
+      ...input.attackerPaladinWeapons,
+    })
+
+    setDefenderPaladinWeapons({
+      ...input.defenderPaladinWeapons,
+    })
+
+    setSiegeSettings({
+      ...input.siegeSettings,
+    })
+
+    clearResults()
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById('simulator')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+      },
+      50,
+    )
+  }
+
 
   const simulationInput =
     buildSimulationInput()
@@ -1330,6 +1382,10 @@ function SimulatorPage() {
 
             <a href="#army-library">
               Armies
+            </a>
+
+            <a href="#attack-plans">
+              Plans
             </a>
 
             <a href="#attack-candidate-analyzer">
@@ -1485,6 +1541,10 @@ function SimulatorPage() {
           reportMetadata={reportMetadata}
           onApplyAttacker={handleArmyLibraryAttacker}
           onApplyDefender={handleArmyLibraryDefender}
+        />
+
+        <AttackPlanQueuePanel
+          onOpenPlan={handleAttackPlanOpen}
         />
 
         <AttackCandidateAnalyzerPanel

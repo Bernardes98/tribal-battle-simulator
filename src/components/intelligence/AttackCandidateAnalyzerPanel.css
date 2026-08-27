@@ -436,7 +436,7 @@
   display: grid;
   grid-template-columns:
     repeat(
-      6,
+      7,
       minmax(0, 1fr)
     );
   gap: 7px;
@@ -583,4 +583,11 @@
   .attack-candidate-card-actions {
     grid-template-columns: 1fr;
   }
+}
+
+
+.attack-candidate-card-actions
+.plan-added {
+  background: #64783a;
+  color: #fff4d3;
 }

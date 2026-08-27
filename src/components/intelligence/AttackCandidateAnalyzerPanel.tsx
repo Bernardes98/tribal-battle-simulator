@@ -42,6 +42,10 @@ import {
 } from '../../domain/intelligence/targetScoring'
 
 import {
+  addAttackPlanFromCandidate,
+} from '../../domain/planning/attackPlan'
+
+import {
   listSimulationHistory,
 } from '../../services/simulationHistoryApi'
 
@@ -239,6 +243,13 @@ function AttackCandidateAnalyzerPanel({
   ] = useState<
     string[]
   >([])
+
+  const [
+    lastPlannedVillageKey,
+    setLastPlannedVillageKey,
+  ] = useState<
+    string | null
+  >(null)
 
   const load =
     async () => {
@@ -1203,6 +1214,45 @@ function AttackCandidateAnalyzerPanel({
                   </div>
 
                   <div className="attack-candidate-card-actions">
+                    <button
+                      type="button"
+                      className={
+                        lastPlannedVillageKey ===
+                        candidate.villageKey
+                          ? 'plan-added'
+                          : undefined
+                      }
+                      onClick={() => {
+                        addAttackPlanFromCandidate(
+                          input,
+                          candidate,
+                        )
+
+                        setLastPlannedVillageKey(
+                          candidate.villageKey,
+                        )
+
+                        window.setTimeout(
+                          () =>
+                            setLastPlannedVillageKey(
+                              (
+                                current,
+                              ) =>
+                                current ===
+                                candidate.villageKey
+                                  ? null
+                                  : current,
+                            ),
+                          1600,
+                        )
+                      }}
+                    >
+                      {lastPlannedVillageKey ===
+                      candidate.villageKey
+                        ? 'Added ✓'
+                        : 'Add to Plan'}
+                    </button>
+
                     <button
                       type="button"
                       className={
