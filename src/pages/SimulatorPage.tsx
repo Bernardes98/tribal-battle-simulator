@@ -1491,6 +1491,7 @@ function SimulatorPage() {
           input={simulationInput}
           refreshToken={historyRefreshToken}
           onLoadDefense={handleIntelligenceLoadDefense}
+          onApplyArmy={applyArmy}
         />
 
         <TargetRankingDashboardPanel

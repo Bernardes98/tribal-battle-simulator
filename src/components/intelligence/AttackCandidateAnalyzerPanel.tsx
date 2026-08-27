@@ -50,6 +50,7 @@ import type {
 } from '../../services/simulationHistoryApi'
 
 import type {
+  Army,
   BattleSimulationInput,
 } from '../../types/Battle'
 
@@ -58,6 +59,7 @@ import type {
 } from '../../types/ReportMetadata'
 
 import TargetBattlePreviewPanel from './TargetBattlePreviewPanel'
+import RecommendedAttackCompositionPanel from './RecommendedAttackCompositionPanel'
 
 import './AttackCandidateAnalyzerPanel.css'
 
@@ -68,6 +70,9 @@ interface AttackCandidateAnalyzerPanelProps {
     input: BattleSimulationInput,
     metadata: ReportMetadata | null,
     source: SimulationHistorySource,
+  ) => void
+  onApplyArmy: (
+    army: Army,
   ) => void
 }
 
@@ -153,6 +158,7 @@ function AttackCandidateAnalyzerPanel({
   input,
   refreshToken,
   onLoadDefense,
+  onApplyArmy,
 }: AttackCandidateAnalyzerPanelProps) {
   const [
     history,
@@ -215,6 +221,13 @@ function AttackCandidateAnalyzerPanel({
   const [
     previewVillageKey,
     setPreviewVillageKey,
+  ] = useState<
+    string | null
+  >(null)
+
+  const [
+    recommendationVillageKey,
+    setRecommendationVillageKey,
   ] = useState<
     string | null
   >(null)
@@ -1098,6 +1111,23 @@ function AttackCandidateAnalyzerPanel({
                     <button
                       type="button"
                       onClick={() =>
+                        setRecommendationVillageKey(
+                          recommendationVillageKey ===
+                          candidate.villageKey
+                            ? null
+                            : candidate.villageKey,
+                        )
+                      }
+                    >
+                      {recommendationVillageKey ===
+                      candidate.villageKey
+                        ? 'Hide Recommendation'
+                        : 'Recommend Army'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
                         onLoadDefense(
                           village.latest.input,
                           village.latest.metadata,
@@ -1150,6 +1180,24 @@ function AttackCandidateAnalyzerPanel({
                     <TargetBattlePreviewPanel
                       candidate={
                         candidate
+                      }
+                      onLoadTarget={
+                        onLoadDefense
+                      }
+                    />
+                  )}
+
+                  {recommendationVillageKey ===
+                    candidate.villageKey && (
+                    <RecommendedAttackCompositionPanel
+                      input={
+                        input
+                      }
+                      candidate={
+                        candidate
+                      }
+                      onApplyArmy={
+                        onApplyArmy
                       }
                       onLoadTarget={
                         onLoadDefense
