@@ -38,6 +38,7 @@ import type {
 } from '../../types/ReportMetadata'
 
 import AdvancedWavePlannerPanel from './AdvancedWavePlannerPanel'
+import NobleConquestPlannerPanel from './NobleConquestPlannerPanel'
 
 import './AttackPlanQueuePanel.css'
 
@@ -1093,6 +1094,15 @@ function AttackPlanQueuePanel({
                             plan.reportMetadata,
                             plan.source,
                           )
+                        }
+                      />
+
+                      <NobleConquestPlannerPanel
+                        plan={
+                          plan
+                        }
+                        currentInput={
+                          currentInput
                         }
                       />
                     </div>

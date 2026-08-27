@@ -1,0 +1,288 @@
+.noble-conquest-planner {
+  grid-column: 1 / -1;
+  margin-top: 12px;
+  border: 1px solid #795333;
+  background: #c79b69;
+}
+
+.noble-conquest-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border-bottom: 1px solid #93683f;
+  background: #b98554;
+}
+
+.noble-conquest-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.noble-conquest-header > div > span,
+.noble-conquest-settings span,
+.noble-conquest-projection span,
+.noble-conquest-train-config span {
+  color: #66401f;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.noble-conquest-header strong {
+  color: #2d190c;
+}
+
+.noble-conquest-header small {
+  max-width: 720px;
+  color: #684527;
+  font-size: 9px;
+}
+
+.noble-conquest-target {
+  padding: 4px 7px;
+  border: 1px solid #694422;
+  background: #8a582b;
+  color: #fff0cf;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.noble-conquest-planner button {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.noble-conquest-planner button:hover {
+  background: #b98652;
+}
+
+.noble-conquest-planner button.active,
+.noble-conquest-planner button.primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+.noble-conquest-settings {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      6,
+      minmax(0, 1fr)
+    );
+  gap: 7px;
+  padding: 10px;
+  border-bottom: 1px solid #9f7448;
+  background: #d0a675;
+}
+
+.noble-conquest-settings label {
+  display: grid;
+  gap: 4px;
+}
+
+.noble-conquest-settings input {
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid #7b5532;
+  background: #ead2ad;
+  color: #2c1a0d;
+  outline: none;
+}
+
+.noble-conquest-settings small {
+  color: #705033;
+  font-size: 8px;
+}
+
+.noble-conquest-recommendations {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  border-bottom: 1px solid #9f7448;
+  background: #a77c50;
+}
+
+.noble-conquest-recommendations button {
+  display: grid;
+  gap: 2px;
+  min-height: 66px;
+  border: 0;
+  border-radius: 0;
+  background: #d2aa77;
+  text-align: left;
+}
+
+.noble-conquest-recommendations button.safe {
+  background: #c9cb8d;
+}
+
+.noble-conquest-recommendations span {
+  color: #76512f;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.noble-conquest-recommendations strong {
+  color: #2d190c;
+  font-size: 15px;
+}
+
+.noble-conquest-recommendations small {
+  color: #6e492c;
+  font-size: 8px;
+}
+
+.noble-conquest-projection {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  border-bottom: 1px solid #9f7448;
+}
+
+.noble-conquest-projection > div {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  border-right: 1px solid #aa7e50;
+  background: #d0a675;
+}
+
+.noble-conquest-projection > div:last-child {
+  border-right: 0;
+}
+
+.noble-conquest-projection strong {
+  color: #2e1a0d;
+  font-size: 14px;
+}
+
+.noble-conquest-projection .positive {
+  background: #c9cb8d;
+}
+
+.noble-conquest-projection .negative {
+  background: #d2a17c;
+}
+
+.noble-conquest-train-config {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border-bottom: 1px solid #9f7448;
+  background: #cda374;
+}
+
+.noble-conquest-train-config > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.noble-conquest-train-config strong {
+  color: #3b2614;
+  font-size: 10px;
+}
+
+.noble-conquest-escort-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.noble-conquest-timeline-wrap {
+  overflow-x: auto;
+}
+
+.noble-conquest-timeline {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+
+.noble-conquest-timeline th,
+.noble-conquest-timeline td {
+  padding: 7px 9px;
+  border-right: 1px solid #b58a59;
+  border-bottom: 1px solid #b58a59;
+  text-align: center;
+}
+
+.noble-conquest-timeline th {
+  background: #c79b69;
+  color: #5b391f;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.noble-conquest-timeline td {
+  background: #dab684;
+  color: #3e2815;
+  font-weight: 800;
+}
+
+.noble-conquest-timeline td.conquered {
+  background: #c9cb8d;
+  color: #44521f;
+}
+
+.noble-conquest-actions {
+  padding: 10px;
+}
+
+.noble-conquest-actions button {
+  width: 100%;
+}
+
+.noble-conquest-note {
+  padding: 8px 10px;
+  border-top: 1px solid #9f7448;
+  background: #c49a69;
+  color: #604027;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+@media (max-width: 1050px) {
+  .noble-conquest-settings {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 720px) {
+  .noble-conquest-header,
+  .noble-conquest-train-config {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .noble-conquest-settings,
+  .noble-conquest-recommendations,
+  .noble-conquest-projection {
+    grid-template-columns: 1fr;
+  }
+
+  .noble-conquest-escort-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

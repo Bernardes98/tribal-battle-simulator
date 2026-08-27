@@ -1142,6 +1142,136 @@ export const replaceAttackPlanWaveFromCurrent =
     )
   }
 
+export interface NobleTrainWaveOptions {
+  count: number
+  firstOffsetSeconds: number
+  intervalSeconds: number
+  useCurrentArmyAsEscort: boolean
+}
+
+export const addNobleTrainWaves =
+  (
+    planId: string,
+    currentInput:
+      BattleSimulationInput,
+    options:
+      NobleTrainWaveOptions,
+  ): AttackPlan | null => {
+    return updatePlanWaves(
+      planId,
+      (plan) => {
+        const count =
+          Math.max(
+            1,
+            Math.min(
+              20,
+              Math.round(
+                options.count,
+              ),
+            ),
+          )
+
+        const firstOffsetSeconds =
+          Math.max(
+            0,
+            Math.round(
+              options.firstOffsetSeconds,
+            ),
+          )
+
+        const intervalSeconds =
+          Math.max(
+            1,
+            Math.round(
+              options.intervalSeconds,
+            ),
+          )
+
+        const waves:
+          AttackPlanWave[] =
+          Array.from(
+            {
+              length:
+                count,
+            },
+            (
+              _,
+              index,
+            ) => {
+              const attacker =
+                options.useCurrentArmyAsEscort
+                  ? {
+                      ...currentInput.attacker,
+                    }
+                  : createEmptyArmy(
+                      currentInput.attacker,
+                    )
+
+              attacker[
+                'nobleman'
+              ] = 1
+
+              const waveInput:
+                BattleSimulationInput = {
+                attacker,
+
+                defender: {
+                  ...plan.simulationInput.defender,
+                },
+
+                attackerModifiers: {
+                  ...currentInput.attackerModifiers,
+                },
+
+                defenderModifiers: {
+                  ...plan.simulationInput.defenderModifiers,
+                },
+
+                attackerPaladinWeapons: {
+                  ...currentInput.attackerPaladinWeapons,
+                },
+
+                defenderPaladinWeapons: {
+                  ...plan.simulationInput.defenderPaladinWeapons,
+                },
+
+                siegeSettings: {
+                  ...currentInput.siegeSettings,
+                },
+              }
+
+              const wave =
+                createWave(
+                  waveInput,
+                  plan.waves.length +
+                    index +
+                    1,
+                  'CONQUER',
+                  `Noble ${index + 1}`,
+                )
+
+              return {
+                ...wave,
+
+                offsetSeconds:
+                  firstOffsetSeconds +
+                  index *
+                    intervalSeconds,
+
+                note:
+                  `Noble train ${index + 1}/${count}`,
+              }
+            },
+          )
+
+        return [
+          ...plan.waves,
+          ...waves,
+        ]
+      },
+    )
+  }
+
 export const removeAttackPlan =
   (
     planId: string,
