@@ -1544,6 +1544,7 @@ function SimulatorPage() {
         />
 
         <AttackPlanQueuePanel
+          currentInput={simulationInput}
           onOpenPlan={handleAttackPlanOpen}
         />
 

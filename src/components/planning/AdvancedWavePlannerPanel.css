@@ -1,0 +1,383 @@
+.advanced-wave-planner {
+  margin-top: 12px;
+  border: 1px solid #795333;
+  background: #c79b69;
+}
+
+.advanced-wave-planner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 12px;
+  border-bottom: 1px solid #93683f;
+  background: #b98554;
+}
+
+.advanced-wave-planner-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.advanced-wave-planner-header span,
+.advanced-wave-fields span,
+.advanced-wave-note > span,
+.advanced-wave-army-header span {
+  color: #66401f;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.advanced-wave-planner-header strong {
+  color: #2d190c;
+}
+
+.advanced-wave-planner-header small {
+  color: #684527;
+  font-size: 9px;
+}
+
+.advanced-wave-planner button {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.advanced-wave-planner button:hover:not(:disabled) {
+  background: #b98652;
+}
+
+.advanced-wave-planner button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.advanced-wave-planner button.primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+.advanced-wave-planner button.danger {
+  background: #8d4a34;
+  color: #fff1d0;
+}
+
+.advanced-wave-planner-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  border-bottom: 1px solid #9f7448;
+}
+
+.advanced-wave-planner-summary > div {
+  display: grid;
+  gap: 1px;
+  padding: 8px 10px;
+  border-right: 1px solid #aa7e50;
+  background: #d0a675;
+}
+
+.advanced-wave-planner-summary > div:last-child {
+  border-right: 0;
+}
+
+.advanced-wave-planner-summary span {
+  color: #77502e;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.advanced-wave-planner-summary strong {
+  color: #2e1a0d;
+  font-size: 13px;
+}
+
+.advanced-wave-list {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.advanced-wave-card {
+  border: 1px solid #8d6138;
+  background: #dfbd8e;
+}
+
+.advanced-wave-card.status-ready {
+  box-shadow:
+    inset 4px 0 0 #7b812f;
+}
+
+.advanced-wave-card.status-sent {
+  box-shadow:
+    inset 4px 0 0 #8d6832;
+}
+
+.advanced-wave-card.status-completed {
+  opacity: 0.82;
+}
+
+.advanced-wave-card.status-cancelled {
+  opacity: 0.68;
+}
+
+.advanced-wave-card-top {
+  display: grid;
+  grid-template-columns:
+    auto
+    minmax(
+      160px,
+      1fr
+    )
+    auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 10px;
+  border-bottom: 1px solid #ae8355;
+  background: #cfa678;
+}
+
+.advanced-wave-order {
+  display: grid;
+  gap: 1px;
+  text-align: center;
+}
+
+.advanced-wave-order strong {
+  color: #533117;
+  font-size: 15px;
+}
+
+.advanced-wave-order span {
+  color: #75502f;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.advanced-wave-title {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.advanced-wave-title > span {
+  color: #75502f;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.advanced-wave-title > strong {
+  overflow: hidden;
+  color: #2d190c;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.advanced-wave-title > small {
+  color: #6b4729;
+  font-size: 8px;
+}
+
+.advanced-wave-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.advanced-wave-badges span {
+  padding: 3px 5px;
+  border: 1px solid #694422;
+  background: #8a582b;
+  color: #fff0cf;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.advanced-wave-badges .status-ready {
+  background: #6f742c;
+}
+
+.advanced-wave-badges .status-sent {
+  background: #8d6832;
+}
+
+.advanced-wave-badges .status-completed {
+  background: #60723b;
+}
+
+.advanced-wave-badges .status-cancelled {
+  background: #8a4633;
+}
+
+.advanced-wave-actions {
+  display: grid;
+  grid-template-columns:
+    1.3fr
+    1.3fr
+    1fr
+    1fr
+    44px
+    44px
+    0.8fr;
+  gap: 5px;
+  padding: 8px 9px;
+}
+
+.advanced-wave-editor {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border-top: 1px solid #a77c50;
+  background: #d4ae7d;
+}
+
+.advanced-wave-fields {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 7px;
+}
+
+.advanced-wave-fields label,
+.advanced-wave-army-grid label,
+.advanced-wave-note {
+  display: grid;
+  gap: 4px;
+}
+
+.advanced-wave-fields input,
+.advanced-wave-fields select,
+.advanced-wave-army-grid input,
+.advanced-wave-note textarea {
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid #7b5532;
+  background: #ead2ad;
+  color: #2c1a0d;
+  outline: none;
+}
+
+.advanced-wave-fields small {
+  color: #705033;
+  font-size: 8px;
+}
+
+.advanced-wave-army-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.advanced-wave-army-header > div {
+  display: grid;
+  gap: 1px;
+}
+
+.advanced-wave-army-header strong {
+  color: #3b2614;
+  font-size: 10px;
+}
+
+.advanced-wave-army-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 6px;
+}
+
+.advanced-wave-army-grid label > span {
+  color: #6c4729;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.advanced-wave-note textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.advanced-wave-note small {
+  justify-self: end;
+  color: #705033;
+  font-size: 8px;
+}
+
+.advanced-wave-editor-note {
+  padding: 7px 8px;
+  border: 1px dashed #966a40;
+  background: #cba374;
+  color: #604027;
+  font-size: 8px;
+}
+
+@media (max-width: 1050px) {
+  .advanced-wave-actions {
+    grid-template-columns:
+      repeat(
+        4,
+        minmax(0, 1fr)
+      );
+  }
+
+  .advanced-wave-fields,
+  .advanced-wave-army-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 720px) {
+  .advanced-wave-planner-header,
+  .advanced-wave-army-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .advanced-wave-planner-summary {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .advanced-wave-card-top {
+    grid-template-columns:
+      auto
+      minmax(0, 1fr);
+  }
+
+  .advanced-wave-badges {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .advanced-wave-actions,
+  .advanced-wave-fields,
+  .advanced-wave-army-grid {
+    grid-template-columns: 1fr;
+  }
+}

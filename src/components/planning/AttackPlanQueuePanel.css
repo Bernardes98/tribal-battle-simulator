@@ -430,3 +430,9 @@
     grid-column: auto;
   }
 }
+
+
+.attack-plan-editor
+.advanced-wave-planner {
+  grid-column: 1 / -1;
+}

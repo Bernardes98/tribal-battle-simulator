@@ -37,9 +37,12 @@ import type {
   ReportMetadata,
 } from '../../types/ReportMetadata'
 
+import AdvancedWavePlannerPanel from './AdvancedWavePlannerPanel'
+
 import './AttackPlanQueuePanel.css'
 
 interface AttackPlanQueuePanelProps {
+  currentInput: BattleSimulationInput
   onOpenPlan: (
     input: BattleSimulationInput,
     metadata: ReportMetadata | null,
@@ -201,25 +204,46 @@ const armySummary = (
 const armyTotals = (
   plan: AttackPlan,
 ) => {
-  return units.reduce(
+  return plan.waves.reduce(
     (
       total,
-      unit,
+      wave,
     ) => {
-      const quantity =
-        plan.simulationInput
-          .attacker[
-            unit.id
-          ] ?? 0
+      const waveTotals =
+        units.reduce(
+          (
+            waveTotal,
+            unit,
+          ) => {
+            const quantity =
+              wave.simulationInput
+                .attacker[
+                  unit.id
+                ] ?? 0
+
+            return {
+              units:
+                waveTotal.units +
+                quantity,
+              provisions:
+                waveTotal.provisions +
+                quantity *
+                  unit.provisions,
+            }
+          },
+          {
+            units: 0,
+            provisions: 0,
+          },
+        )
 
       return {
         units:
           total.units +
-          quantity,
+          waveTotals.units,
         provisions:
           total.provisions +
-          quantity *
-            unit.provisions,
+          waveTotals.provisions,
       }
     },
     {
@@ -230,6 +254,7 @@ const armyTotals = (
 }
 
 function AttackPlanQueuePanel({
+  currentInput,
   onOpenPlan,
 }: AttackPlanQueuePanelProps) {
   const [
@@ -808,9 +833,11 @@ function AttackPlanQueuePanel({
                       </strong>
 
                       <small>
-                        {
-                          plan.candidateStatus
-                        }
+                        {plan.waves.length}{' '}
+                        {plan.waves.length ===
+                        1
+                          ? 'wave'
+                          : 'waves'}
                       </small>
                     </div>
 
@@ -848,7 +875,8 @@ function AttackPlanQueuePanel({
                       className="primary"
                       onClick={() =>
                         onOpenPlan(
-                          plan.simulationInput,
+                          plan.waves[0]?.simulationInput ??
+                            plan.simulationInput,
                           plan.reportMetadata,
                           plan.source,
                         )
@@ -1049,6 +1077,24 @@ function AttackPlanQueuePanel({
                           /1000
                         </small>
                       </label>
+
+                      <AdvancedWavePlannerPanel
+                        plan={
+                          plan
+                        }
+                        currentInput={
+                          currentInput
+                        }
+                        onOpenWave={(
+                          waveInput,
+                        ) =>
+                          onOpenPlan(
+                            waveInput,
+                            plan.reportMetadata,
+                            plan.source,
+                          )
+                        }
+                      />
                     </div>
                   )}
                 </article>

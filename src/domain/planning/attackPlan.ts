@@ -7,6 +7,7 @@ import type {
 } from '../../services/simulationHistoryApi'
 
 import type {
+  Army,
   BattleSimulationInput,
 } from '../../types/Battle'
 
@@ -36,6 +37,13 @@ export type AttackPlanObjective =
   | 'SCOUT'
   | 'CUSTOM'
 
+export type AttackPlanWaveStatus =
+  | 'PLANNED'
+  | 'READY'
+  | 'SENT'
+  | 'COMPLETED'
+  | 'CANCELLED'
+
 export const ATTACK_PLAN_STATUSES:
   AttackPlanStatus[] = [
     'PLANNED',
@@ -56,12 +64,32 @@ export const ATTACK_PLAN_OBJECTIVES:
     'CUSTOM',
   ]
 
+export const ATTACK_PLAN_WAVE_STATUSES:
+  AttackPlanWaveStatus[] = [
+    'PLANNED',
+    'READY',
+    'SENT',
+    'COMPLETED',
+    'CANCELLED',
+  ]
+
 export interface AttackPlanTarget {
   villageKey: string
   playerName: string
   villageName: string
   x: number | null
   y: number | null
+}
+
+export interface AttackPlanWave {
+  id: string
+  order: number
+  label: string
+  objective: AttackPlanObjective
+  status: AttackPlanWaveStatus
+  offsetSeconds: number
+  note: string
+  simulationInput: BattleSimulationInput
 }
 
 export interface AttackPlan {
@@ -85,22 +113,242 @@ export interface AttackPlan {
   simulationInput: BattleSimulationInput
   reportMetadata: ReportMetadata | null
   source: SimulationHistorySource
+  waves: AttackPlanWave[]
 }
 
 const generateId =
-  (): string => {
+  (prefix: string): string => {
     if (
       typeof crypto !==
         'undefined' &&
       'randomUUID' in
         crypto
     ) {
-      return crypto.randomUUID()
+      return `${prefix}-${crypto.randomUUID()}`
     }
 
-    return `plan-${Date.now()}-${Math.random()
+    return `${prefix}-${Date.now()}-${Math.random()
       .toString(36)
       .slice(2, 9)}`
+  }
+
+const cloneInput =
+  (
+    input:
+      BattleSimulationInput,
+  ): BattleSimulationInput => {
+    return {
+      attacker: {
+        ...input.attacker,
+      },
+
+      defender: {
+        ...input.defender,
+      },
+
+      attackerModifiers: {
+        ...input.attackerModifiers,
+      },
+
+      defenderModifiers: {
+        ...input.defenderModifiers,
+      },
+
+      attackerPaladinWeapons: {
+        ...input.attackerPaladinWeapons,
+      },
+
+      defenderPaladinWeapons: {
+        ...input.defenderPaladinWeapons,
+      },
+
+      siegeSettings: {
+        ...input.siegeSettings,
+      },
+    }
+  }
+
+const createEmptyArmy =
+  (
+    reference:
+      Army,
+  ): Army => {
+    return Object.fromEntries(
+      Object.keys(
+        reference,
+      ).map(
+        (unitId) => [
+          unitId,
+          0,
+        ],
+      ),
+    ) as Army
+  }
+
+const createWave =
+  (
+    simulationInput:
+      BattleSimulationInput,
+    order: number,
+    objective:
+      AttackPlanObjective,
+    label?: string,
+  ): AttackPlanWave => {
+    return {
+      id:
+        generateId(
+          'wave',
+        ),
+
+      order,
+
+      label:
+        label ??
+        `Wave ${order}`,
+
+      objective,
+
+      status:
+        'PLANNED',
+
+      offsetSeconds:
+        Math.max(
+          0,
+          (
+            order -
+            1
+          ) *
+            5,
+        ),
+
+      note:
+        '',
+
+      simulationInput:
+        cloneInput(
+          simulationInput,
+        ),
+    }
+  }
+
+const normalizeWaves =
+  (
+    value:
+      Partial<AttackPlan>,
+  ): AttackPlanWave[] => {
+    if (
+      Array.isArray(
+        value.waves,
+      ) &&
+      value.waves.length >
+        0
+    ) {
+      return value.waves
+        .filter(
+          (
+            wave,
+          ): wave is AttackPlanWave =>
+            Boolean(
+              wave &&
+                typeof wave ===
+                  'object' &&
+                typeof wave.id ===
+                  'string' &&
+                typeof wave.simulationInput ===
+                  'object',
+            ),
+        )
+        .sort(
+          (
+            left,
+            right,
+          ) =>
+            left.order -
+            right.order,
+        )
+        .map(
+          (
+            wave,
+            index,
+          ) => ({
+            ...wave,
+            order:
+              index + 1,
+            label:
+              typeof wave.label ===
+                'string' &&
+              wave.label.trim()
+                ? wave.label.slice(
+                    0,
+                    80,
+                  )
+                : `Wave ${index + 1}`,
+            note:
+              typeof wave.note ===
+                'string'
+                ? wave.note.slice(
+                    0,
+                    1000,
+                  )
+                : '',
+            offsetSeconds:
+              Math.max(
+                0,
+                Math.round(
+                  Number(
+                    wave.offsetSeconds,
+                  ) || 0,
+                ),
+              ),
+            simulationInput:
+              cloneInput(
+                wave.simulationInput,
+              ),
+          }),
+        )
+    }
+
+    if (
+      value.simulationInput
+    ) {
+      return [
+        createWave(
+          value.simulationInput,
+          1,
+          value.objective ??
+            'CLEAR_DEFENSE',
+          'Main Wave',
+        ),
+      ]
+    }
+
+    return []
+  }
+
+const normalizePlan =
+  (
+    value:
+      AttackPlan,
+  ): AttackPlan => {
+    return {
+      ...value,
+      note:
+        typeof value.note ===
+          'string'
+          ? value.note.slice(
+              0,
+              1000,
+            )
+          : '',
+      simulationInput:
+        cloneInput(
+          value.simulationInput,
+        ),
+      waves:
+        normalizeWaves(
+          value,
+        ),
+    }
   }
 
 const emitChange =
@@ -178,6 +426,9 @@ export const loadAttackPlans =
                   'object',
             ),
         )
+        .map(
+          normalizePlan,
+        )
         .sort(
           (
             left,
@@ -210,7 +461,9 @@ const saveAllAttackPlans =
     window.localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify(
-        plans,
+        plans.map(
+          normalizePlan,
+        ),
       ),
     )
 
@@ -277,10 +530,18 @@ export const addAttackPlanFromCandidate =
     const now =
       new Date().toISOString()
 
+    const simulationInput =
+      buildSimulationInput(
+        currentInput,
+        candidate,
+      )
+
     const plan:
       AttackPlan = {
         id:
-          generateId(),
+          generateId(
+            'plan',
+          ),
 
         createdAt:
           now,
@@ -336,9 +597,8 @@ export const addAttackPlanFromCandidate =
             .defenderLossPercent,
 
         simulationInput:
-          buildSimulationInput(
-            currentInput,
-            candidate,
+          cloneInput(
+            simulationInput,
           ),
 
         reportMetadata:
@@ -348,14 +608,20 @@ export const addAttackPlanFromCandidate =
         source:
           village.latest
             .source,
-      }
 
-    const plans =
-      loadAttackPlans()
+        waves: [
+          createWave(
+            simulationInput,
+            1,
+            'CLEAR_DEFENSE',
+            'Main Wave',
+          ),
+        ],
+      }
 
     saveAllAttackPlans([
       plan,
-      ...plans,
+      ...loadAttackPlans(),
     ])
 
     return plan
@@ -418,6 +684,464 @@ export const updateAttackPlan =
     return updated
   }
 
+const updatePlanWaves =
+  (
+    planId: string,
+    updater:
+      (
+        plan:
+          AttackPlan,
+      ) =>
+        AttackPlanWave[],
+  ): AttackPlan | null => {
+    const plans =
+      loadAttackPlans()
+
+    let updated:
+      AttackPlan | null =
+        null
+
+    const next =
+      plans.map(
+        (plan) => {
+          if (
+            plan.id !==
+            planId
+          ) {
+            return plan
+          }
+
+          const waves =
+            updater(
+              plan,
+            )
+              .sort(
+                (
+                  left,
+                  right,
+                ) =>
+                  left.order -
+                  right.order,
+              )
+              .map(
+                (
+                  wave,
+                  index,
+                ) => ({
+                  ...wave,
+                  order:
+                    index + 1,
+                }),
+              )
+
+          updated = {
+            ...plan,
+            waves,
+            updatedAt:
+              new Date().toISOString(),
+          }
+
+          return updated
+        },
+      )
+
+    saveAllAttackPlans(
+      next,
+    )
+
+    return updated
+  }
+
+export const addAttackPlanWave =
+  (
+    planId: string,
+    currentInput:
+      BattleSimulationInput,
+  ): AttackPlan | null => {
+    return updatePlanWaves(
+      planId,
+      (plan) => {
+        const order =
+          plan.waves.length +
+          1
+
+        const waveInput:
+          BattleSimulationInput = {
+          attacker: {
+            ...currentInput.attacker,
+          },
+
+          defender: {
+            ...plan.simulationInput.defender,
+          },
+
+          attackerModifiers: {
+            ...currentInput.attackerModifiers,
+          },
+
+          defenderModifiers: {
+            ...plan.simulationInput.defenderModifiers,
+          },
+
+          attackerPaladinWeapons: {
+            ...currentInput.attackerPaladinWeapons,
+          },
+
+          defenderPaladinWeapons: {
+            ...plan.simulationInput.defenderPaladinWeapons,
+          },
+
+          siegeSettings: {
+            ...currentInput.siegeSettings,
+          },
+        }
+
+        return [
+          ...plan.waves,
+          createWave(
+            waveInput,
+            order,
+            'CLEAR_DEFENSE',
+          ),
+        ]
+      },
+    )
+  }
+
+export const duplicateAttackPlanWave =
+  (
+    planId: string,
+    waveId: string,
+  ): AttackPlan | null => {
+    return updatePlanWaves(
+      planId,
+      (plan) => {
+        const index =
+          plan.waves.findIndex(
+            (wave) =>
+              wave.id ===
+              waveId,
+          )
+
+        if (
+          index <
+          0
+        ) {
+          return plan.waves
+        }
+
+        const source =
+          plan.waves[
+            index
+          ]
+
+        const duplicate:
+          AttackPlanWave = {
+          ...source,
+          id:
+            generateId(
+              'wave',
+            ),
+          label:
+            `${source.label} Copy`.slice(
+              0,
+              80,
+            ),
+          status:
+            'PLANNED',
+          simulationInput:
+            cloneInput(
+              source.simulationInput,
+            ),
+        }
+
+        const next = [
+          ...plan.waves,
+        ]
+
+        next.splice(
+          index + 1,
+          0,
+          duplicate,
+        )
+
+        return next
+      },
+    )
+  }
+
+export const removeAttackPlanWave =
+  (
+    planId: string,
+    waveId: string,
+  ): AttackPlan | null => {
+    return updatePlanWaves(
+      planId,
+      (plan) => {
+        if (
+          plan.waves.length <=
+          1
+        ) {
+          return plan.waves
+        }
+
+        return plan.waves.filter(
+          (wave) =>
+            wave.id !==
+            waveId,
+        )
+      },
+    )
+  }
+
+export const moveAttackPlanWave =
+  (
+    planId: string,
+    waveId: string,
+    direction:
+      | 'UP'
+      | 'DOWN',
+  ): AttackPlan | null => {
+    return updatePlanWaves(
+      planId,
+      (plan) => {
+        const next = [
+          ...plan.waves,
+        ]
+
+        const index =
+          next.findIndex(
+            (wave) =>
+              wave.id ===
+              waveId,
+          )
+
+        if (
+          index <
+          0
+        ) {
+          return next
+        }
+
+        const targetIndex =
+          direction ===
+          'UP'
+            ? index - 1
+            : index + 1
+
+        if (
+          targetIndex <
+            0 ||
+          targetIndex >=
+            next.length
+        ) {
+          return next
+        }
+
+        const current =
+          next[
+            index
+          ]
+
+        next[
+          index
+        ] =
+          next[
+            targetIndex
+          ]
+
+        next[
+          targetIndex
+        ] =
+          current
+
+        return next
+      },
+    )
+  }
+
+export const updateAttackPlanWave =
+  (
+    planId: string,
+    waveId: string,
+    patch:
+      Partial<
+        Pick<
+          AttackPlanWave,
+          | 'label'
+          | 'objective'
+          | 'status'
+          | 'offsetSeconds'
+          | 'note'
+        >
+      >,
+  ): AttackPlan | null => {
+    return updatePlanWaves(
+      planId,
+      (plan) =>
+        plan.waves.map(
+          (wave) => {
+            if (
+              wave.id !==
+              waveId
+            ) {
+              return wave
+            }
+
+            return {
+              ...wave,
+              ...patch,
+              label:
+                patch.label !==
+                undefined
+                  ? patch.label.slice(
+                      0,
+                      80,
+                    )
+                  : wave.label,
+              note:
+                patch.note !==
+                undefined
+                  ? patch.note.slice(
+                      0,
+                      1000,
+                    )
+                  : wave.note,
+              offsetSeconds:
+                patch.offsetSeconds !==
+                undefined
+                  ? Math.max(
+                      0,
+                      Math.round(
+                        patch.offsetSeconds,
+                      ),
+                    )
+                  : wave.offsetSeconds,
+            }
+          },
+        ),
+    )
+  }
+
+export const updateAttackPlanWaveArmy =
+  (
+    planId: string,
+    waveId: string,
+    army: Army,
+  ): AttackPlan | null => {
+    return updatePlanWaves(
+      planId,
+      (plan) =>
+        plan.waves.map(
+          (wave) =>
+            wave.id ===
+            waveId
+              ? {
+                  ...wave,
+                  simulationInput: {
+                    ...wave.simulationInput,
+                    attacker: {
+                      ...army,
+                    },
+                  },
+                }
+              : wave,
+        ),
+    )
+  }
+
+export const clearAttackPlanWaveArmy =
+  (
+    planId: string,
+    waveId: string,
+  ): AttackPlan | null => {
+    const plan =
+      loadAttackPlans().find(
+        (value) =>
+          value.id ===
+          planId,
+      )
+
+    const wave =
+      plan?.waves.find(
+        (value) =>
+          value.id ===
+          waveId,
+      )
+
+    if (
+      !plan ||
+      !wave
+    ) {
+      return null
+    }
+
+    return updateAttackPlanWaveArmy(
+      planId,
+      waveId,
+      createEmptyArmy(
+        wave.simulationInput
+          .attacker,
+      ),
+    )
+  }
+
+export const replaceAttackPlanWaveFromCurrent =
+  (
+    planId: string,
+    waveId: string,
+    currentInput:
+      BattleSimulationInput,
+  ): AttackPlan | null => {
+    return updatePlanWaves(
+      planId,
+      (plan) =>
+        plan.waves.map(
+          (wave) => {
+            if (
+              wave.id !==
+              waveId
+            ) {
+              return wave
+            }
+
+            return {
+              ...wave,
+              simulationInput: {
+                attacker: {
+                  ...currentInput.attacker,
+                },
+
+                defender: {
+                  ...plan.simulationInput.defender,
+                },
+
+                attackerModifiers: {
+                  ...currentInput.attackerModifiers,
+                },
+
+                defenderModifiers: {
+                  ...plan.simulationInput.defenderModifiers,
+                },
+
+                attackerPaladinWeapons: {
+                  ...currentInput.attackerPaladinWeapons,
+                },
+
+                defenderPaladinWeapons: {
+                  ...plan.simulationInput.defenderPaladinWeapons,
+                },
+
+                siegeSettings: {
+                  ...currentInput.siegeSettings,
+                },
+              },
+            }
+          },
+        ),
+    )
+  }
+
 export const removeAttackPlan =
   (
     planId: string,
@@ -453,7 +1177,9 @@ export const duplicateAttackPlan =
       AttackPlan = {
         ...source,
         id:
-          generateId(),
+          generateId(
+            'plan',
+          ),
         createdAt:
           now,
         updatedAt:
@@ -462,8 +1188,27 @@ export const duplicateAttackPlan =
           'PLANNED',
         plannedAt:
           '',
-        note:
-          source.note,
+        waves:
+          source.waves.map(
+            (
+              wave,
+              index,
+            ) => ({
+              ...wave,
+              id:
+                generateId(
+                  'wave',
+                ),
+              order:
+                index + 1,
+              status:
+                'PLANNED',
+              simulationInput:
+                cloneInput(
+                  wave.simulationInput,
+                ),
+            }),
+          ),
       }
 
     saveAllAttackPlans([
@@ -543,4 +1288,14 @@ export const attackPlanStatusLabel =
     return labels[
       status
     ]
+  }
+
+export const attackPlanWaveStatusLabel =
+  (
+    status:
+      AttackPlanWaveStatus,
+  ): string => {
+    return attackPlanStatusLabel(
+      status,
+    )
   }
