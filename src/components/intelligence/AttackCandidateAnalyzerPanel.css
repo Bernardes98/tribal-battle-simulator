@@ -436,7 +436,7 @@
   display: grid;
   grid-template-columns:
     repeat(
-      5,
+      6,
       minmax(0, 1fr)
     );
   gap: 7px;
@@ -550,4 +550,37 @@
 .attack-candidate-card
 .recommended-attack {
   margin-top: 0;
+}
+
+
+.attack-candidate-card-actions
+.compare-selected {
+  background: #7f7628;
+  color: #fff4d3;
+}
+
+.attack-candidate-compare-hint {
+  margin: 10px 18px 0;
+  padding: 8px 10px;
+  border: 1px dashed #8b633d;
+  background: #d6b080;
+  color: #604027;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  .attack-candidate-card-actions {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 720px) {
+  .attack-candidate-card-actions {
+    grid-template-columns: 1fr;
+  }
 }

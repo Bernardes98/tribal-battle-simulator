@@ -60,6 +60,7 @@ import type {
 
 import TargetBattlePreviewPanel from './TargetBattlePreviewPanel'
 import RecommendedAttackCompositionPanel from './RecommendedAttackCompositionPanel'
+import MultiTargetAttackComparisonPanel from './MultiTargetAttackComparisonPanel'
 
 import './AttackCandidateAnalyzerPanel.css'
 
@@ -231,6 +232,13 @@ function AttackCandidateAnalyzerPanel({
   ] = useState<
     string | null
   >(null)
+
+  const [
+    comparisonVillageKeys,
+    setComparisonVillageKeys,
+  ] = useState<
+    string[]
+  >([])
 
   const load =
     async () => {
@@ -592,6 +600,73 @@ function AttackCandidateAnalyzerPanel({
       ],
     )
 
+  const comparisonCandidates =
+    useMemo(
+      () =>
+        comparisonVillageKeys
+          .map(
+            (villageKey) =>
+              candidates.find(
+                (candidate) =>
+                  candidate.villageKey ===
+                  villageKey,
+              ),
+          )
+          .filter(
+            (
+              candidate,
+            ): candidate is NonNullable<
+              typeof candidate
+            > =>
+              candidate !==
+              undefined,
+          ),
+      [
+        candidates,
+        comparisonVillageKeys,
+      ],
+    )
+
+  const toggleComparison =
+    (
+      villageKey: string,
+    ) => {
+      setComparisonVillageKeys(
+        (
+          current,
+        ) => {
+          if (
+            current.includes(
+              villageKey,
+            )
+          ) {
+            return current.filter(
+              (key) =>
+                key !==
+                villageKey,
+            )
+          }
+
+          if (
+            current.length >=
+            5
+          ) {
+            return [
+              ...current.slice(
+                1,
+              ),
+              villageKey,
+            ]
+          }
+
+          return [
+            ...current,
+            villageKey,
+          ]
+        },
+      )
+    }
+
   return (
     <section
       id="attack-candidate-analyzer"
@@ -778,6 +853,44 @@ function AttackCandidateAnalyzerPanel({
           candidates
         </span>
       </div>
+
+      {comparisonCandidates.length >=
+        2 && (
+        <MultiTargetAttackComparisonPanel
+          candidates={
+            comparisonCandidates
+          }
+          onRemove={(
+            villageKey,
+          ) =>
+            setComparisonVillageKeys(
+              (
+                current,
+              ) =>
+                current.filter(
+                  (key) =>
+                    key !==
+                    villageKey,
+                ),
+            )
+          }
+          onClear={() =>
+            setComparisonVillageKeys(
+              [],
+            )
+          }
+          onLoadTarget={
+            onLoadDefense
+          }
+        />
+      )}
+
+      {comparisonCandidates.length ===
+        1 && (
+        <div className="attack-candidate-compare-hint">
+          1 target selected. Select one more candidate to compare.
+        </div>
+      )}
 
       {error && (
         <div className="attack-candidate-message error">
@@ -1090,6 +1203,28 @@ function AttackCandidateAnalyzerPanel({
                   </div>
 
                   <div className="attack-candidate-card-actions">
+                    <button
+                      type="button"
+                      className={
+                        comparisonVillageKeys.includes(
+                          candidate.villageKey,
+                        )
+                          ? 'compare-selected'
+                          : undefined
+                      }
+                      onClick={() =>
+                        toggleComparison(
+                          candidate.villageKey,
+                        )
+                      }
+                    >
+                      {comparisonVillageKeys.includes(
+                        candidate.villageKey,
+                      )
+                        ? '✓ Comparing'
+                        : 'Compare'}
+                    </button>
+
                     <button
                       type="button"
                       className="primary"
