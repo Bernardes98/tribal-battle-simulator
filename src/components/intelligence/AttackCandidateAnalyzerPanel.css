@@ -436,7 +436,7 @@
   display: grid;
   grid-template-columns:
     repeat(
-      3,
+      4,
       minmax(0, 1fr)
     );
   gap: 7px;
@@ -538,4 +538,10 @@
   .attack-candidate-card-actions {
     grid-template-columns: 1fr;
   }
+}
+
+
+.attack-candidate-card
+.target-battle-preview {
+  margin-top: 0;
 }

@@ -57,6 +57,8 @@ import type {
   ReportMetadata,
 } from '../../types/ReportMetadata'
 
+import TargetBattlePreviewPanel from './TargetBattlePreviewPanel'
+
 import './AttackCandidateAnalyzerPanel.css'
 
 interface AttackCandidateAnalyzerPanelProps {
@@ -209,6 +211,13 @@ function AttackCandidateAnalyzerPanel({
   ] = useState<
     CandidateSort
   >('viability')
+
+  const [
+    previewVillageKey,
+    setPreviewVillageKey,
+  ] = useState<
+    string | null
+  >(null)
 
   const load =
     async () => {
@@ -1072,6 +1081,23 @@ function AttackCandidateAnalyzerPanel({
                       type="button"
                       className="primary"
                       onClick={() =>
+                        setPreviewVillageKey(
+                          previewVillageKey ===
+                          candidate.villageKey
+                            ? null
+                            : candidate.villageKey,
+                        )
+                      }
+                    >
+                      {previewVillageKey ===
+                      candidate.villageKey
+                        ? 'Hide Preview'
+                        : 'Preview Battle'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
                         onLoadDefense(
                           village.latest.input,
                           village.latest.metadata,
@@ -1118,6 +1144,18 @@ function AttackCandidateAnalyzerPanel({
                       Open Ranking
                     </button>
                   </div>
+
+                  {previewVillageKey ===
+                    candidate.villageKey && (
+                    <TargetBattlePreviewPanel
+                      candidate={
+                        candidate
+                      }
+                      onLoadTarget={
+                        onLoadDefense
+                      }
+                    />
+                  )}
                 </article>
               )
             },
