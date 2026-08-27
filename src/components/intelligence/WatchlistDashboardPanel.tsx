@@ -40,6 +40,12 @@ import type {
 } from '../../domain/intelligence/villageFilters'
 
 import {
+  calculateTargetScore,
+  loadTargetScoringSettings,
+  TARGET_SCORING_SETTINGS_CHANGED_EVENT,
+} from '../../domain/intelligence/targetScoring'
+
+import {
   listSimulationHistory,
 } from '../../services/simulationHistoryApi'
 
@@ -57,6 +63,8 @@ import type {
 } from '../../types/ReportMetadata'
 
 import VillageFilterControls from './VillageFilterControls'
+import TargetScoreDetails from './TargetScoreDetails'
+import TargetScoringSettingsPanel from './TargetScoringSettingsPanel'
 
 import './WatchlistDashboardPanel.css'
 
@@ -280,6 +288,30 @@ function WatchlistDashboardPanel({
     WatchlistAttentionFilter
   >('all')
 
+  const [
+    scoringSettings,
+    setScoringSettings,
+  ] = useState(
+    loadTargetScoringSettings,
+  )
+
+  const [
+    scoreDetailsVillage,
+    setScoreDetailsVillage,
+  ] = useState<
+    string | null
+  >(null)
+
+  const [
+    sortMode,
+    setSortMode,
+  ] = useState<
+    | 'score'
+    | 'monitoring'
+    | 'defense'
+    | 'freshness'
+  >('score')
+
   const load =
     async () => {
       try {
@@ -393,6 +425,52 @@ function WatchlistDashboardPanel({
     [],
   )
 
+  useEffect(
+    () => {
+      const handleChange =
+        () => {
+          setScoringSettings(
+            loadTargetScoringSettings(),
+          )
+        }
+
+      window.addEventListener(
+        TARGET_SCORING_SETTINGS_CHANGED_EVENT,
+        handleChange,
+      )
+
+      const handleStorage =
+        (
+          event: StorageEvent,
+        ) => {
+          if (
+            event.key ===
+            'tribal-battle-target-scoring-settings-v1'
+          ) {
+            handleChange()
+          }
+        }
+
+      window.addEventListener(
+        'storage',
+        handleStorage,
+      )
+
+      return () => {
+        window.removeEventListener(
+          TARGET_SCORING_SETTINGS_CHANGED_EVENT,
+          handleChange,
+        )
+
+        window.removeEventListener(
+          'storage',
+          handleStorage,
+        )
+      }
+    },
+    [],
+  )
+
   const players =
     useMemo(
       () =>
@@ -467,6 +545,88 @@ function WatchlistDashboardPanel({
         selectedTags,
         tagMode,
         attentionFilter,
+      ],
+    )
+
+  const scoredEntries =
+    useMemo(
+      () =>
+        filteredEntries.map(
+          (entry) => ({
+            entry,
+            score:
+              calculateTargetScore(
+                entry,
+                annotations[
+                  entry.village.key
+                ] ?? {
+                  villageKey:
+                    entry.village.key,
+                  tags: [],
+                  note: '',
+                  updatedAt:
+                    new Date(0).toISOString(),
+                },
+                scoringSettings,
+              ),
+          }),
+        ),
+      [
+        filteredEntries,
+        annotations,
+        scoringSettings,
+      ],
+    )
+
+  const sortedScoredEntries =
+    useMemo(
+      () => {
+        const values =
+          [...scoredEntries]
+
+        values.sort(
+          (left, right) => {
+            if (sortMode === 'score') {
+              return (
+                right.score.score -
+                left.score.score
+              )
+            }
+
+            if (sortMode === 'defense') {
+              return (
+                left.entry.village.latest.totalTroops -
+                right.entry.village.latest.totalTroops
+              )
+            }
+
+            if (sortMode === 'freshness') {
+              return (
+                left.entry.ageHours -
+                right.entry.ageHours
+              )
+            }
+
+            const order = {
+              critical: 0,
+              increased: 1,
+              recent: 2,
+              stale: 3,
+              normal: 4,
+            }
+
+            return (
+              order[left.entry.attention] -
+              order[right.entry.attention]
+            )
+          },
+        )
+
+        return values
+      },
+      [
+        scoredEntries,
+        sortMode,
       ],
     )
 
@@ -600,6 +760,41 @@ function WatchlistDashboardPanel({
         }
       />
 
+      <div className="watchlist-dashboard-sort-row">
+        <label>
+          <span>Sort by</span>
+
+          <select
+            value={sortMode}
+            onChange={(event) =>
+              setSortMode(
+                event.target.value as
+                  typeof sortMode,
+              )
+            }
+          >
+            <option value="score">
+              Target Score
+            </option>
+            <option value="monitoring">
+              Monitoring Priority
+            </option>
+            <option value="defense">
+              Lowest Defense
+            </option>
+            <option value="freshness">
+              Freshest Report
+            </option>
+          </select>
+        </label>
+
+        <small>
+          Target Score is a configurable planning heuristic, not a battle guarantee.
+        </small>
+      </div>
+
+      <TargetScoringSettingsPanel />
+
       {error && (
         <div className="watchlist-dashboard-message error">
           <strong>
@@ -656,7 +851,7 @@ function WatchlistDashboardPanel({
 
       {entries.length >
         0 &&
-        filteredEntries.length ===
+        sortedScoredEntries.length ===
           0 && (
           <div className="watchlist-dashboard-message">
             <strong>
@@ -669,13 +864,14 @@ function WatchlistDashboardPanel({
           </div>
         )}
 
-      {filteredEntries.length >
+      {sortedScoredEntries.length >
         0 && (
         <div className="watchlist-dashboard-grid">
-          {filteredEntries.map(
-            (
+          {sortedScoredEntries.map(
+            ({
               entry,
-            ) => {
+              score,
+            }) => {
               const {
                 village,
               } = entry
@@ -726,11 +922,18 @@ function WatchlistDashboardPanel({
                         )}
                     </div>
 
-                    <span className="watchlist-dashboard-attention">
-                      {attentionLabel(
-                        entry.attention,
-                      )}
-                    </span>
+                    <div className="watchlist-dashboard-village-badges">
+                      <span className={`watchlist-dashboard-score score-${score.label.toLowerCase()}`}>
+                        {score.score}
+                        /100 · {score.label}
+                      </span>
+
+                      <span className="watchlist-dashboard-attention">
+                        {attentionLabel(
+                          entry.attention,
+                        )}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="watchlist-dashboard-village-metrics">
@@ -885,7 +1088,31 @@ function WatchlistDashboardPanel({
                     >
                       Open Intel
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setScoreDetailsVillage(
+                          scoreDetailsVillage ===
+                          village.key
+                            ? null
+                            : village.key,
+                        )
+                      }
+                    >
+                      {scoreDetailsVillage ===
+                      village.key
+                        ? 'Hide Score'
+                        : 'Score Details'}
+                    </button>
                   </div>
+
+                  {scoreDetailsVillage ===
+                    village.key && (
+                    <TargetScoreDetails
+                      result={score}
+                    />
+                  )}
                 </article>
               )
             },

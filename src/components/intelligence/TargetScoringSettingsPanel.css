@@ -1,0 +1,121 @@
+.target-scoring-settings {
+  border-bottom: 1px solid #8f6238;
+  background: #c49363;
+}
+
+.target-scoring-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 18px;
+}
+
+.target-scoring-settings-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.target-scoring-settings-header span {
+  color: #69401e;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.target-scoring-settings-header strong {
+  color: #2e190b;
+}
+
+.target-scoring-settings-header small {
+  color: #69472a;
+  font-size: 9px;
+}
+
+.target-scoring-settings button {
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.target-scoring-settings button:hover {
+  background: #b98652;
+}
+
+.target-scoring-settings-body {
+  display: grid;
+  gap: 12px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid #9d7145;
+  background: #cda374;
+}
+
+.target-scoring-settings-section {
+  display: grid;
+  gap: 7px;
+}
+
+.target-scoring-settings-section > strong {
+  color: #5a361d;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.target-scoring-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.target-scoring-field {
+  display: grid;
+  gap: 4px;
+}
+
+.target-scoring-field span {
+  color: #6b4728;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.target-scoring-field input {
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid #7b5532;
+  background: #ead2ad;
+  color: #2c1a0d;
+  outline: none;
+}
+
+.target-scoring-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.target-scoring-settings-actions .primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+@media (max-width: 900px) {
+  .target-scoring-settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .target-scoring-settings-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .target-scoring-settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
