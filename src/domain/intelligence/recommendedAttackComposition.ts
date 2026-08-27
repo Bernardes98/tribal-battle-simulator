@@ -407,8 +407,8 @@ export const recommendAttackComposition =
     let iterations = 0
 
     for (
-      let index = 0
-      index < 18
+      let index = 0;
+      index < 18;
       index += 1
     ) {
       iterations += 1
@@ -458,8 +458,8 @@ export const recommendAttackComposition =
       )
 
     for (
-      let pass = 0
-      pass < 2
+      let pass = 0;
+      pass < 2;
       pass += 1
     ) {
       for (
