@@ -19,6 +19,8 @@ import SimulationHistoryPanel from '../components/history/SimulationHistoryPanel
 import ArmyLibraryPanel from '../components/library/ArmyLibraryPanel'
 import PlayerVillageIntelligencePanel from '../components/intelligence/PlayerVillageIntelligencePanel'
 import WatchlistDashboardPanel from '../components/intelligence/WatchlistDashboardPanel'
+import TargetRankingDashboardPanel from '../components/intelligence/TargetRankingDashboardPanel'
+import AttackCandidateAnalyzerPanel from '../components/intelligence/AttackCandidateAnalyzerPanel'
 
 import { units } from '../data/units'
 
@@ -1330,6 +1332,14 @@ function SimulatorPage() {
               Armies
             </a>
 
+            <a href="#attack-candidate-analyzer">
+              Candidates
+            </a>
+
+            <a href="#target-ranking">
+              Targets
+            </a>
+
             <a href="#watchlist-dashboard">
               Watchlist
             </a>
@@ -1475,6 +1485,17 @@ function SimulatorPage() {
           reportMetadata={reportMetadata}
           onApplyAttacker={handleArmyLibraryAttacker}
           onApplyDefender={handleArmyLibraryDefender}
+        />
+
+        <AttackCandidateAnalyzerPanel
+          input={simulationInput}
+          refreshToken={historyRefreshToken}
+          onLoadDefense={handleIntelligenceLoadDefense}
+        />
+
+        <TargetRankingDashboardPanel
+          refreshToken={historyRefreshToken}
+          onLoadDefense={handleIntelligenceLoadDefense}
         />
 
         <WatchlistDashboardPanel

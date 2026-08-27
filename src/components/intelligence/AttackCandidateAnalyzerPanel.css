@@ -1,0 +1,541 @@
+#attack-candidate-analyzer {
+  scroll-margin-top: 90px;
+}
+
+.attack-candidate-analyzer {
+  margin-top: 22px;
+  border: 1px solid #76502f;
+  background: #cba273;
+  color: #2c1a0d;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 238, 204, 0.35);
+}
+
+.attack-candidate-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #76502f;
+  background: #a87444;
+}
+
+.attack-candidate-eyebrow {
+  color: #673e1c;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.attack-candidate-header h3 {
+  margin: 3px 0 4px;
+  color: #261507;
+}
+
+.attack-candidate-header p {
+  max-width: 780px;
+  margin: 0;
+  color: #59371d;
+  font-size: 12px;
+}
+
+.attack-candidate-analyzer button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.attack-candidate-analyzer button:hover:not(:disabled) {
+  background: #b98652;
+}
+
+.attack-candidate-analyzer button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.attack-candidate-attacker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #986b41;
+  background: #c99e6e;
+}
+
+.attack-candidate-attacker > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.attack-candidate-attacker span {
+  color: #704927;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-candidate-attacker strong {
+  color: #2d190b;
+}
+
+.attack-candidate-attacker small {
+  color: #674326;
+  font-size: 9px;
+}
+
+.attack-candidate-status-counts {
+  display: flex;
+  gap: 6px;
+}
+
+.attack-candidate-status-counts > span {
+  display: grid;
+  min-width: 72px;
+  gap: 1px;
+  padding: 6px 8px;
+  border: 1px solid #76502f;
+  background: #af7e50;
+  text-align: center;
+}
+
+.attack-candidate-status-counts > span strong {
+  font-size: 16px;
+}
+
+.attack-candidate-status-counts .safe {
+  background: #8c9a57;
+}
+
+.attack-candidate-status-counts .viable {
+  background: #a49a55;
+}
+
+.attack-candidate-status-counts .luck {
+  background: #b17d4e;
+}
+
+.attack-candidate-status-counts .unfavorable {
+  background: #b06b58;
+}
+
+.attack-candidate-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  padding: 10px 18px;
+  border-bottom: 1px solid #986b41;
+  background: #c39464;
+}
+
+.attack-candidate-toolbar label {
+  display: grid;
+  gap: 4px;
+}
+
+.attack-candidate-toolbar label span {
+  color: #5e3b20;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-candidate-toolbar select {
+  min-width: 190px;
+  min-height: 35px;
+  padding: 6px 9px;
+  border: 1px solid #7b5532;
+  background: #ead2ad;
+  color: #2c1a0d;
+}
+
+.attack-candidate-toolbar > span {
+  margin-left: auto;
+  padding-bottom: 7px;
+  color: #624024;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.attack-candidate-list {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+}
+
+.attack-candidate-card {
+  border: 1px solid #91663d;
+  background: #dfbd8e;
+}
+
+.attack-candidate-card.status-safe {
+  border-color: #687333;
+  box-shadow:
+    inset 5px 0 0 #71813a;
+}
+
+.attack-candidate-card.status-viable {
+  border-color: #807224;
+  box-shadow:
+    inset 5px 0 0 #948632;
+}
+
+.attack-candidate-card.status-luck-dependent {
+  border-color: #915d2d;
+  box-shadow:
+    inset 5px 0 0 #a36b35;
+}
+
+.attack-candidate-card.status-unfavorable {
+  border-color: #8d3c2c;
+  box-shadow:
+    inset 5px 0 0 #9e4431;
+}
+
+.attack-candidate-card-top {
+  display: grid;
+  grid-template-columns:
+    auto
+    minmax(180px, 1fr)
+    auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #ae8355;
+  background: #cfa678;
+}
+
+.attack-candidate-order {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #684323;
+  border-radius: 50%;
+  background: #70451f;
+  color: #fff1d0;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.attack-candidate-village {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.attack-candidate-village span {
+  color: #77502f;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-candidate-village strong {
+  overflow: hidden;
+  color: #2c190c;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attack-candidate-village small {
+  color: #694628;
+}
+
+.attack-candidate-badges {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+}
+
+.attack-candidate-status,
+.attack-candidate-score {
+  padding: 4px 7px;
+  border: 1px solid #694422;
+  background: #8a582b;
+  color: #fff0cf;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-candidate-status.safe {
+  background: #64783a;
+}
+
+.attack-candidate-status.viable {
+  background: #80792d;
+}
+
+.attack-candidate-status.luck-dependent {
+  background: #96602e;
+}
+
+.attack-candidate-status.unfavorable {
+  background: #8e3d2b;
+}
+
+.attack-candidate-score {
+  background: #8c623b;
+}
+
+.attack-candidate-target-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  border-bottom: 1px solid #b48a5b;
+}
+
+.attack-candidate-target-summary > div {
+  display: grid;
+  gap: 1px;
+  padding: 8px 10px;
+  border-right: 1px solid #b48a5b;
+}
+
+.attack-candidate-target-summary > div:last-child {
+  border-right: 0;
+}
+
+.attack-candidate-target-summary span {
+  color: #78512f;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-candidate-target-summary strong {
+  color: #2e1a0d;
+  font-size: 15px;
+}
+
+.attack-candidate-target-summary small {
+  color: #704a2b;
+  font-size: 8px;
+}
+
+.attack-candidate-scenarios {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  background: #aa7e50;
+}
+
+.attack-candidate-scenario {
+  display: grid;
+  gap: 8px;
+  padding: 10px 11px;
+  background: #d7b27f;
+}
+
+.attack-candidate-scenario.winner-attacker {
+  background: #ced095;
+}
+
+.attack-candidate-scenario.winner-defender {
+  background: #d4a27f;
+}
+
+.attack-candidate-scenario-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.attack-candidate-scenario-title span {
+  color: #72502f;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-candidate-scenario-title strong {
+  color: #3a2412;
+}
+
+.attack-candidate-scenario-result {
+  justify-self: start;
+  padding: 3px 6px;
+  border: 1px solid #795333;
+  background: #9a6b3f;
+  color: #fff0cf;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.winner-attacker
+.attack-candidate-scenario-result {
+  background: #60723b;
+}
+
+.winner-defender
+.attack-candidate-scenario-result {
+  background: #8a4633;
+}
+
+.attack-candidate-scenario dl {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  margin: 0;
+  background: rgba(
+    118,
+    80,
+    47,
+    0.22
+  );
+}
+
+.attack-candidate-scenario dl > div {
+  display: grid;
+  gap: 1px;
+  padding: 6px 7px;
+  background: rgba(
+    239,
+    214,
+    177,
+    0.52
+  );
+}
+
+.attack-candidate-scenario dt {
+  color: #765231;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attack-candidate-scenario dd {
+  margin: 0;
+  color: #2e1a0d;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.attack-candidate-card-actions {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  gap: 7px;
+  padding: 10px 12px;
+}
+
+.attack-candidate-card-actions .primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+.attack-candidate-message {
+  display: grid;
+  gap: 7px;
+  margin: 18px;
+  padding: 20px;
+  border: 1px dashed #8c623b;
+  background: #d8b384;
+  color: #57371d;
+  text-align: center;
+}
+
+.attack-candidate-message.error {
+  border-style: solid;
+  border-color: #914b37;
+  background: #d4a078;
+}
+
+.attack-candidate-disclaimer {
+  padding: 9px 18px;
+  border-top: 1px solid #94663b;
+  background: #c29260;
+  color: #5e3c21;
+  font-size: 9px;
+}
+
+@media (max-width: 950px) {
+  .attack-candidate-attacker {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .attack-candidate-status-counts {
+    width: 100%;
+  }
+
+  .attack-candidate-status-counts > span {
+    flex: 1;
+  }
+
+  .attack-candidate-scenarios {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .attack-candidate-header,
+  .attack-candidate-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .attack-candidate-toolbar select {
+    width: 100%;
+  }
+
+  .attack-candidate-toolbar > span {
+    margin-left: 0;
+  }
+
+  .attack-candidate-status-counts {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .attack-candidate-card-top {
+    grid-template-columns:
+      auto
+      minmax(0, 1fr);
+  }
+
+  .attack-candidate-badges {
+    grid-column: 1 / -1;
+    justify-items: start;
+  }
+
+  .attack-candidate-target-summary {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .attack-candidate-card-actions {
+    grid-template-columns: 1fr;
+  }
+}
