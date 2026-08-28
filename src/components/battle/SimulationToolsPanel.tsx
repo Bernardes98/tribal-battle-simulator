@@ -1,12 +1,22 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 
 import {
   copyTextToClipboard,
-  createShortShareUrl,
 } from '../../domain/simulation/simulationShare'
+
+import {
+  createAdvancedShareText,
+  createAdvancedShareUrl,
+  presentationLabel,
+} from '../../domain/simulation/advancedSimulationShare'
+
+import type {
+  SharedSimulationPresentation,
+} from '../../domain/simulation/advancedSimulationShare'
 
 import {
   deleteSimulationPreset,
@@ -23,6 +33,7 @@ import {
 } from '../../services/sharedSimulationApi'
 
 import type {
+  BattleResult,
   BattleSimulationInput,
 } from '../../types/Battle'
 
@@ -30,6 +41,7 @@ import './SimulationToolsPanel.css'
 
 interface SimulationToolsPanelProps {
   input: BattleSimulationInput
+  result: BattleResult | null
 
   onLoad: (
     input: BattleSimulationInput,
@@ -47,25 +59,86 @@ interface Feedback {
 
 interface CreatedShare {
   code: string
-  url: string
 }
 
 const formatDate = (
   value: string,
 ): string => {
-  const date = new Date(value)
+  const date =
+    new Date(
+      value,
+    )
 
   return new Intl.DateTimeFormat(
     'en-US',
     {
-      dateStyle: 'medium',
-      timeStyle: 'short',
+      dateStyle:
+        'medium',
+      timeStyle:
+        'short',
     },
-  ).format(date)
+  ).format(
+    date,
+  )
+}
+
+const resultTitle = (
+  result:
+    BattleResult | null,
+): string => {
+  if (
+    !result
+  ) {
+    return 'Not simulated yet'
+  }
+
+  if (
+    result.winner ===
+    'attacker'
+  ) {
+    return 'Attacker Victory'
+  }
+
+  if (
+    result.winner ===
+    'defender'
+  ) {
+    return 'Defender Victory'
+  }
+
+  return 'Draw'
+}
+
+const percentage = (
+  surviving: number,
+  initial: number,
+): number => {
+  if (
+    initial <=
+    0
+  ) {
+    return 0
+  }
+
+  return Math.max(
+    0,
+    Math.min(
+      100,
+      (
+        (
+          initial -
+          surviving
+        ) /
+        initial
+      ) *
+        100,
+    ),
+  )
 }
 
 function SimulationToolsPanel({
   input,
+  result,
   onLoad,
 }: SimulationToolsPanelProps) {
   const [
@@ -76,12 +149,16 @@ function SimulationToolsPanel({
   const [
     presets,
     setPresets,
-  ] = useState<SimulationPreset[]>([])
+  ] = useState<
+    SimulationPreset[]
+  >([])
 
   const [
     feedback,
     setFeedback,
-  ] = useState<Feedback | null>(null)
+  ] = useState<
+    Feedback | null
+  >(null)
 
   const [
     isSharing,
@@ -91,223 +168,359 @@ function SimulationToolsPanel({
   const [
     createdShare,
     setCreatedShare,
-  ] = useState<CreatedShare | null>(null)
+  ] = useState<
+    CreatedShare | null
+  >(null)
 
-  useEffect(() => {
-    setPresets(
-      getSimulationPresets(),
+  const [
+    presentation,
+    setPresentation,
+  ] = useState<
+    SharedSimulationPresentation
+  >('setup')
+
+  useEffect(
+    () => {
+      setPresets(
+        getSimulationPresets(),
+      )
+    },
+    [],
+  )
+
+  const shareUrl =
+    useMemo(
+      () =>
+        createdShare
+          ? createAdvancedShareUrl(
+              createdShare.code,
+              presentation,
+            )
+          : null,
+      [
+        createdShare,
+        presentation,
+      ],
     )
-  }, [])
 
-  const showFeedback = (
-    type: FeedbackType,
-    message: string,
-  ) => {
-    setFeedback({
-      type,
-      message,
-    })
-
-    window.setTimeout(
+  const shareMessage =
+    useMemo(
       () => {
-        setFeedback(null)
+        if (
+          !createdShare ||
+          !shareUrl
+        ) {
+          return ''
+        }
+
+        return createAdvancedShareText(
+          createdShare.code,
+          shareUrl,
+          presentation,
+          result,
+        )
       },
-      3000,
-    )
-  }
-
-  const handleSavePreset = () => {
-    const name =
-      presetName.trim()
-
-    if (!name) {
-      showFeedback(
-        'error',
-        'Enter a name for the preset.',
-      )
-
-      return
-    }
-
-    saveSimulationPreset(
-      name,
-      input,
+      [
+        createdShare,
+        shareUrl,
+        presentation,
+        result,
+      ],
     )
 
-    setPresets(
-      getSimulationPresets(),
-    )
-
-    setPresetName('')
-
-    showFeedback(
-      'success',
-      'Preset saved successfully.',
-    )
-  }
-
-  const handleDeletePreset = (
-    presetId: string,
-  ) => {
-    deleteSimulationPreset(
-      presetId,
-    )
-
-    setPresets(
-      getSimulationPresets(),
-    )
-
-    showFeedback(
-      'success',
-      'Preset removed.',
-    )
-  }
-
-  const handleLoadPreset = (
-    preset: SimulationPreset,
-  ) => {
-    onLoad(
-      preset.input,
-    )
-
-    showFeedback(
-      'success',
-      `Preset "${preset.name}" loaded.`,
-    )
-  }
-
-  const handleCreateShare = async () => {
-    if (isSharing) {
-      return
-    }
-
-    try {
-      setIsSharing(true)
-
-      const code =
-        await createSharedSimulation(
-          input,
-        )
-
-      const url =
-        createShortShareUrl(
-          code,
-        )
-
-      setCreatedShare({
-        code,
-        url,
+  const showFeedback =
+    (
+      type:
+        FeedbackType,
+      message: string,
+    ) => {
+      setFeedback({
+        type,
+        message,
       })
 
-      await copyTextToClipboard(
-        url,
+      window.setTimeout(
+        () => {
+          setFeedback(
+            null,
+          )
+        },
+        3000,
+      )
+    }
+
+  const handleSavePreset =
+    () => {
+      const name =
+        presetName.trim()
+
+      if (!name) {
+        showFeedback(
+          'error',
+          'Enter a name for the preset.',
+        )
+
+        return
+      }
+
+      saveSimulationPreset(
+        name,
+        input,
+      )
+
+      setPresets(
+        getSimulationPresets(),
+      )
+
+      setPresetName(
+        '',
       )
 
       showFeedback(
         'success',
-        `Share link ${code} created and copied.`,
+        'Preset saved successfully.',
       )
-    } catch (error) {
-      console.error(
-        'Could not create shared simulation:',
-        error,
-      )
-
-      showFeedback(
-        'error',
-        error instanceof Error
-          ? error.message
-          : 'Could not create the share link.',
-      )
-    } finally {
-      setIsSharing(false)
-    }
-  }
-
-  const handleCopyUrl = async () => {
-    if (!createdShare) {
-      return
     }
 
-    try {
-      await copyTextToClipboard(
-        createdShare.url,
+  const handleDeletePreset =
+    (
+      presetId: string,
+    ) => {
+      deleteSimulationPreset(
+        presetId,
+      )
+
+      setPresets(
+        getSimulationPresets(),
       )
 
       showFeedback(
         'success',
-        'Share link copied.',
-      )
-    } catch {
-      showFeedback(
-        'error',
-        'Could not copy the share link.',
+        'Preset removed.',
       )
     }
-  }
 
-  const handleCopyCode = async () => {
-    if (!createdShare) {
-      return
-    }
-
-    try {
-      await copyTextToClipboard(
-        createdShare.code,
+  const handleLoadPreset =
+    (
+      preset:
+        SimulationPreset,
+    ) => {
+      onLoad(
+        preset.input,
       )
 
       showFeedback(
         'success',
-        'Simulation code copied.',
-      )
-    } catch {
-      showFeedback(
-        'error',
-        'Could not copy the simulation code.',
+        `Preset "${preset.name}" loaded.`,
       )
     }
-  }
 
-  const handleOpenShare = () => {
-    if (!createdShare) {
-      return
-    }
-
-    window.open(
-      createdShare.url,
-      '_blank',
-      'noopener,noreferrer',
-    )
-  }
-
-  const handleNativeShare = async () => {
-    if (
-      !createdShare ||
-      !navigator.share
-    ) {
-      return
-    }
-
-    try {
-      await navigator.share({
-        title: 'Tribal Battle Simulation',
-        text: `Battle simulation ${createdShare.code}`,
-        url: createdShare.url,
-      })
-    } catch (error) {
+  const handleCreateShare =
+    async () => {
       if (
-        error instanceof DOMException &&
-        error.name === 'AbortError'
+        isSharing
       ) {
         return
       }
 
-      showFeedback(
-        'error',
-        'Could not open the share menu.',
+      try {
+        setIsSharing(
+          true,
+        )
+
+        const code =
+          await createSharedSimulation(
+            input,
+          )
+
+        const url =
+          createAdvancedShareUrl(
+            code,
+            presentation,
+          )
+
+        setCreatedShare({
+          code,
+        })
+
+        await copyTextToClipboard(
+          url,
+        )
+
+        showFeedback(
+          'success',
+          `${presentationLabel(presentation)} link ${code} created and copied.`,
+        )
+      } catch (
+        error
+      ) {
+        console.error(
+          'Could not create shared simulation:',
+          error,
+        )
+
+        showFeedback(
+          'error',
+          error instanceof Error
+            ? error.message
+            : 'Could not create the share link.',
+        )
+      } finally {
+        setIsSharing(
+          false,
+        )
+      }
+    }
+
+  const handleCopyUrl =
+    async () => {
+      if (
+        !shareUrl
+      ) {
+        return
+      }
+
+      try {
+        await copyTextToClipboard(
+          shareUrl,
+        )
+
+        showFeedback(
+          'success',
+          'Share link copied.',
+        )
+      } catch {
+        showFeedback(
+          'error',
+          'Could not copy the share link.',
+        )
+      }
+    }
+
+  const handleCopyCode =
+    async () => {
+      if (
+        !createdShare
+      ) {
+        return
+      }
+
+      try {
+        await copyTextToClipboard(
+          createdShare.code,
+        )
+
+        showFeedback(
+          'success',
+          'Simulation code copied.',
+        )
+      } catch {
+        showFeedback(
+          'error',
+          'Could not copy the simulation code.',
+        )
+      }
+    }
+
+  const handleCopyMessage =
+    async () => {
+      if (
+        !shareMessage
+      ) {
+        return
+      }
+
+      try {
+        await copyTextToClipboard(
+          shareMessage,
+        )
+
+        showFeedback(
+          'success',
+          'Battle share message copied.',
+        )
+      } catch {
+        showFeedback(
+          'error',
+          'Could not copy the battle share message.',
+        )
+      }
+    }
+
+  const handleOpenShare =
+    () => {
+      if (
+        !shareUrl
+      ) {
+        return
+      }
+
+      window.open(
+        shareUrl,
+        '_blank',
+        'noopener,noreferrer',
       )
     }
-  }
+
+  const handleNativeShare =
+    async () => {
+      if (
+        !createdShare ||
+        !shareUrl ||
+        !navigator.share
+      ) {
+        return
+      }
+
+      try {
+        await navigator.share({
+          title:
+            presentationLabel(
+              presentation,
+            ),
+          text:
+            shareMessage,
+          url:
+            shareUrl,
+        })
+      } catch (
+        error
+      ) {
+        if (
+          error instanceof
+            DOMException &&
+          error.name ===
+            'AbortError'
+        ) {
+          return
+        }
+
+        showFeedback(
+          'error',
+          'Could not open the share menu.',
+        )
+      }
+    }
+
+  const attackerLoss =
+    result
+      ? percentage(
+          result.attacker
+            .survivingProvisions,
+          result.attacker
+            .initialProvisions,
+        )
+      : null
+
+  const defenderLoss =
+    result
+      ? percentage(
+          result.defender
+            .survivingProvisions,
+          result.defender
+            .initialProvisions,
+        )
+      : null
 
   return (
     <section
@@ -325,24 +538,27 @@ function SimulationToolsPanel({
           </h3>
 
           <p>
-            Keep useful battle setups in this browser or generate a short link that can be opened on another device.
+            Keep useful battle setups in this browser or create a share link that opens the setup or the simulated battle result directly.
           </p>
         </div>
 
         <div className="simulation-tools-badge">
-          SHARE
+          SHARE V48
         </div>
       </div>
 
       {feedback && (
         <div
           className={`simulation-feedback ${
-            feedback.type === 'success'
+            feedback.type ===
+            'success'
               ? 'simulation-feedback-success'
               : 'simulation-feedback-error'
           }`}
         >
-          {feedback.message}
+          {
+            feedback.message
+          }
         </div>
       )}
 
@@ -364,25 +580,39 @@ function SimulationToolsPanel({
             </div>
 
             <span className="preset-count">
-              {presets.length} saved
+              {
+                presets.length
+              }{' '}
+              saved
             </span>
           </div>
 
           <div className="preset-create-row">
             <input
               type="text"
-              value={presetName}
-              maxLength={60}
+              value={
+                presetName
+              }
+              maxLength={
+                60
+              }
               placeholder="Example: Full Off vs Heavy Cavalry"
               aria-label="Preset name"
-              onChange={(event) =>
+              onChange={(
+                event,
+              ) =>
                 setPresetName(
-                  event.target.value,
+                  event
+                    .target
+                    .value,
                 )
               }
-              onKeyDown={(event) => {
+              onKeyDown={(
+                event,
+              ) => {
                 if (
-                  event.key === 'Enter'
+                  event.key ===
+                  'Enter'
                 ) {
                   handleSavePreset()
                 }
@@ -392,13 +622,16 @@ function SimulationToolsPanel({
             <button
               className="save-preset-button"
               type="button"
-              onClick={handleSavePreset}
+              onClick={
+                handleSavePreset
+              }
             >
               Save Preset
             </button>
           </div>
 
-          {presets.length === 0 ? (
+          {presets.length ===
+          0 ? (
             <div className="preset-empty-state">
               <strong>
                 No presets yet
@@ -411,14 +644,20 @@ function SimulationToolsPanel({
           ) : (
             <div className="preset-list">
               {presets.map(
-                (preset) => (
+                (
+                  preset,
+                ) => (
                   <div
                     className="preset-item"
-                    key={preset.id}
+                    key={
+                      preset.id
+                    }
                   >
                     <div className="preset-info">
                       <strong>
-                        {preset.name}
+                        {
+                          preset.name
+                        }
                       </strong>
 
                       <span>
@@ -464,7 +703,7 @@ function SimulationToolsPanel({
           <div className="simulation-tools-section-title">
             <div>
               <span className="simulation-tools-kicker">
-                API
+                ADVANCED SHARE
               </span>
 
               <h4>
@@ -472,25 +711,185 @@ function SimulationToolsPanel({
               </h4>
 
               <p>
-                Store the current setup in the API and get a compact code instead of a huge URL.
+                The same short simulation code can now open either the editable setup or a ready-to-view battle report.
               </p>
             </div>
           </div>
 
+          <div className="advanced-share-presentation">
+            <span>
+              Shared View
+            </span>
+
+            <div>
+              <button
+                type="button"
+                className={
+                  presentation ===
+                  'setup'
+                    ? 'active'
+                    : undefined
+                }
+                onClick={() =>
+                  setPresentation(
+                    'setup',
+                  )
+                }
+              >
+                <strong>
+                  Setup
+                </strong>
+
+                <small>
+                  Load configuration only
+                </small>
+              </button>
+
+              <button
+                type="button"
+                className={
+                  presentation ===
+                  'result-summary'
+                    ? 'active'
+                    : undefined
+                }
+                onClick={() =>
+                  setPresentation(
+                    'result-summary',
+                  )
+                }
+              >
+                <strong>
+                  Result
+                </strong>
+
+                <small>
+                  Open battle report
+                </small>
+              </button>
+
+              <button
+                type="button"
+                className={
+                  presentation ===
+                  'result-full'
+                    ? 'active'
+                    : undefined
+                }
+                onClick={() =>
+                  setPresentation(
+                    'result-full',
+                  )
+                }
+              >
+                <strong>
+                  Full Report
+                </strong>
+
+                <small>
+                  Open army composition
+                </small>
+              </button>
+            </div>
+          </div>
+
+          {presentation !==
+            'setup' && (
+            <div className="advanced-share-result-preview">
+              <div>
+                <span>
+                  Shared Result Preview
+                </span>
+
+                <strong>
+                  {resultTitle(
+                    result,
+                  )}
+                </strong>
+              </div>
+
+              {result ? (
+                <dl>
+                  <div>
+                    <dt>
+                      Attack
+                    </dt>
+
+                    <dd>
+                      {Math.round(
+                        result.attackStrength,
+                      ).toLocaleString()}
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt>
+                      Defense
+                    </dt>
+
+                    <dd>
+                      {Math.round(
+                        result.defenseStrength,
+                      ).toLocaleString()}
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt>
+                      Attacker Loss
+                    </dt>
+
+                    <dd>
+                      {attackerLoss?.toFixed(
+                        1,
+                      )}
+                      %
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt>
+                      Defender Loss
+                    </dt>
+
+                    <dd>
+                      {defenderLoss?.toFixed(
+                        1,
+                      )}
+                      %
+                    </dd>
+                  </div>
+                </dl>
+              ) : (
+                <p>
+                  No local result yet. The receiver will automatically run the shared setup through the battle engine when opening this result link.
+                </p>
+              )}
+            </div>
+          )}
+
           {!createdShare ? (
             <div className="share-create-state">
               <div className="share-preview">
-                <div className="share-icon" aria-hidden="true">
+                <div
+                  className="share-icon"
+                  aria-hidden="true"
+                >
                   ↗
                 </div>
 
                 <div>
                   <strong>
-                    Short battle link
+                    {presentationLabel(
+                      presentation,
+                    )}
                   </strong>
 
                   <span>
-                    Armies, modifiers, Paladin weapons and siege settings are saved together.
+                    {presentation ===
+                    'setup'
+                      ? 'Armies, modifiers, Paladin weapons and siege settings are loaded for editing.'
+                      : 'The shared setup is loaded, simulated automatically and the receiver is taken directly to the battle result.'}
                   </span>
                 </div>
               </div>
@@ -501,35 +900,53 @@ function SimulationToolsPanel({
                 </span>
 
                 <code>
-                  ?s=K8QD3A7X
+                  {presentation ===
+                  'setup'
+                    ? '?s=K8QD3A7X'
+                    : presentation ===
+                        'result-full'
+                      ? '?s=K8QD3A7X&view=result&report=full'
+                      : '?s=K8QD3A7X&view=result&report=summary'}
                 </code>
               </div>
 
               <button
                 className="share-battle-button"
                 type="button"
-                disabled={isSharing}
-                onClick={handleCreateShare}
+                disabled={
+                  isSharing
+                }
+                onClick={
+                  handleCreateShare
+                }
               >
                 {isSharing
                   ? 'Creating Link...'
-                  : 'Create & Copy Share Link'}
+                  : `Create & Copy ${presentationLabel(presentation)} Link`}
               </button>
             </div>
           ) : (
             <div className="share-created-state">
               <div className="share-success-heading">
-                <span className="share-success-mark" aria-hidden="true">
+                <span
+                  className="share-success-mark"
+                  aria-hidden="true"
+                >
                   ✓
                 </span>
 
                 <div>
                   <strong>
-                    Battle link ready
+                    {
+                      presentationLabel(
+                        presentation,
+                      )
+                    }{' '}
+                    link ready
                   </strong>
 
                   <span>
-                    Anyone with this link can load this exact configuration.
+                    Switch Shared View above without creating a new API simulation code.
                   </span>
                 </div>
               </div>
@@ -543,9 +960,13 @@ function SimulationToolsPanel({
                   type="button"
                   className="share-code-value"
                   title="Copy simulation code"
-                  onClick={handleCopyCode}
+                  onClick={
+                    handleCopyCode
+                  }
                 >
-                  {createdShare.code}
+                  {
+                    createdShare.code
+                  }
                 </button>
               </div>
 
@@ -557,18 +978,25 @@ function SimulationToolsPanel({
                 <input
                   type="text"
                   readOnly
-                  value={createdShare.url}
-                  onFocus={(event) =>
+                  value={
+                    shareUrl ??
+                    ''
+                  }
+                  onFocus={(
+                    event,
+                  ) =>
                     event.currentTarget.select()
                   }
                 />
               </label>
 
-              <div className="share-action-grid">
+              <div className="share-action-grid advanced">
                 <button
                   type="button"
                   className="share-action-primary"
-                  onClick={handleCopyUrl}
+                  onClick={
+                    handleCopyUrl
+                  }
                 >
                   Copy Link
                 </button>
@@ -576,42 +1004,73 @@ function SimulationToolsPanel({
                 <button
                   type="button"
                   className="share-action-secondary"
-                  onClick={handleOpenShare}
+                  onClick={
+                    handleCopyMessage
+                  }
+                >
+                  Copy Summary
+                </button>
+
+                <button
+                  type="button"
+                  className="share-action-secondary"
+                  onClick={
+                    handleOpenShare
+                  }
                 >
                   Open Link
                 </button>
 
-                {typeof navigator.share === 'function' && (
+                {typeof navigator.share ===
+                  'function' && (
                   <button
                     type="button"
                     className="share-action-secondary"
-                    onClick={handleNativeShare}
+                    onClick={() =>
+                      void handleNativeShare()
+                    }
                   >
                     Share...
                   </button>
                 )}
               </div>
 
+              <div className="advanced-share-message-preview">
+                <span>
+                  Message Preview
+                </span>
+
+                <pre>
+                  {
+                    shareMessage
+                  }
+                </pre>
+              </div>
+
               <button
                 type="button"
                 className="share-create-another"
-                disabled={isSharing}
-                onClick={handleCreateShare}
+                disabled={
+                  isSharing
+                }
+                onClick={
+                  handleCreateShare
+                }
               >
                 {isSharing
                   ? 'Creating...'
-                  : 'Generate New Link for Current Battle'}
+                  : 'Generate New Code for Current Battle'}
               </button>
             </div>
           )}
 
           <div className="share-note">
             <strong>
-              How it works
+              How V48 sharing works
             </strong>
 
             <p>
-              The URL only carries the short code. The complete configuration is retrieved from the Tribal Battle API when the link is opened.
+              The API still stores only the battle setup behind the short code. Result links add presentation parameters to the URL. When opened, the receiver loads the setup and runs the same battle engine locally, so no backend migration is required.
             </p>
           </div>
         </div>

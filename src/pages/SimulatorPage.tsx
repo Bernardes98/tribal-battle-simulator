@@ -78,6 +78,15 @@ import {
 } from '../domain/simulation/simulationShare'
 
 import {
+  readAdvancedSharePresentationFromUrl,
+} from '../domain/simulation/advancedSimulationShare'
+
+import type {
+  SharedSimulationPresentation,
+} from '../domain/simulation/advancedSimulationShare'
+
+
+import {
   getSharedSimulation,
 } from '../services/sharedSimulationApi'
 
@@ -257,6 +266,13 @@ function SimulatorPage() {
   )
 
   const [
+    sharedPresentation,
+    setSharedPresentation,
+  ] = useState<
+    SharedSimulationPresentation
+  >('setup')
+
+  const [
     historySource,
     setHistorySource,
   ] = useState<SimulationHistorySource>(
@@ -330,6 +346,59 @@ function SimulatorPage() {
             setSiegeSettings({
               ...input.siegeSettings,
             })
+
+            const presentation =
+              readAdvancedSharePresentationFromUrl()
+
+            setSharedPresentation(
+              presentation,
+            )
+
+            if (
+              presentation !==
+              'setup'
+            ) {
+              const result =
+                simulateBattle(
+                  input,
+                )
+
+              setBattleResult(
+                result,
+              )
+
+              setLuckAnalysis(
+                null,
+              )
+
+              setOptimizerResult(
+                null,
+              )
+
+              setAdvancedOptimizerResult(
+                null,
+              )
+
+              setSafeAttackResult(
+                null,
+              )
+
+              window.setTimeout(
+                () => {
+                  document
+                    .getElementById(
+                      'battle-result',
+                    )
+                    ?.scrollIntoView({
+                      behavior:
+                        'smooth',
+                      block:
+                        'start',
+                    })
+                },
+                120,
+              )
+            }
 
             return
           } catch (error) {
@@ -1508,6 +1577,10 @@ function SimulatorPage() {
           <BattleResultPanel
             result={battleResult}
             input={simulationInput}
+            defaultArmyCompositionOpen={
+              sharedPresentation ===
+              'result-full'
+            }
           />
         )}
 
@@ -1604,6 +1677,7 @@ function SimulatorPage() {
 
         <SimulationToolsPanel
           input={simulationInput}
+          result={battleResult}
           onLoad={applySimulationInput}
         />
       </main>

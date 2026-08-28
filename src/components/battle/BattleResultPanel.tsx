@@ -24,6 +24,7 @@ import './BattleResultPanel.css'
 interface BattleResultPanelProps {
   result: BattleResult
   input: BattleSimulationInput
+  defaultArmyCompositionOpen?: boolean
 }
 
 const formatter =
@@ -121,6 +122,7 @@ const signedLuck = (
 function BattleResultPanel({
   result,
   input,
+  defaultArmyCompositionOpen = false,
 }: BattleResultPanelProps) {
   const [
     exportMode,
@@ -145,6 +147,13 @@ function BattleResultPanel({
     exportMessage,
     setExportMessage,
   ] = useState('')
+
+  const [
+    armyCompositionOpen,
+    setArmyCompositionOpen,
+  ] = useState(
+    defaultArmyCompositionOpen,
+  )
 
   const withExportFeedback =
     async (
@@ -849,7 +858,19 @@ function BattleResultPanel({
         </div>
       </div>
 
-      <details className="battle-report-details">
+      <details
+        className="battle-report-details"
+        open={
+          armyCompositionOpen
+        }
+        onToggle={(
+          event,
+        ) =>
+          setArmyCompositionOpen(
+            event.currentTarget.open,
+          )
+        }
+      >
         <summary>
           <span>
             Army Composition
