@@ -589,3 +589,96 @@
     border-bottom: 0;
   }
 }
+
+
+/* V47 — Battle Result Image Export */
+.battle-report-export {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #93643a;
+  background: #bd8c59;
+}
+
+.battle-report-export-mode,
+.battle-report-export-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.battle-report-export-mode > span {
+  margin-right: 2px;
+  color: #57351b;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.battle-report-export button {
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.battle-report-export button:hover:not(:disabled) {
+  background: #b98652;
+}
+
+.battle-report-export button.active,
+.battle-report-export button.primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+.battle-report-export button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.battle-report-export-message {
+  margin-left: auto;
+  color: #4d3019;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.battle-report-export-message.saved,
+.battle-report-export-message.copied {
+  color: #41551e;
+}
+
+.battle-report-export-message.error {
+  color: #812f22;
+}
+
+@media (max-width: 720px) {
+  .battle-report-export {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .battle-report-export-mode,
+  .battle-report-export-actions {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .battle-report-export-mode > span {
+    grid-column: 1 / -1;
+  }
+
+  .battle-report-export-message {
+    margin-left: 0;
+  }
+}

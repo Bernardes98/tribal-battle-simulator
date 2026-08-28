@@ -1,4 +1,18 @@
+import {
+  useState,
+} from 'react'
+
 import { units } from '../../data/units'
+
+import {
+  canCopyBattleResultImage,
+  copyBattleResultImage,
+  downloadBattleResultImage,
+} from '../../domain/export/battleResultImageExport'
+
+import type {
+  BattleResultExportMode,
+} from '../../domain/export/battleResultImageExport'
 
 import type {
   BattleResult,
@@ -108,6 +122,116 @@ function BattleResultPanel({
   result,
   input,
 }: BattleResultPanelProps) {
+  const [
+    exportMode,
+    setExportMode,
+  ] = useState<
+    BattleResultExportMode
+  >('summary')
+
+  const [
+    exportState,
+    setExportState,
+  ] = useState<
+    | 'idle'
+    | 'saving'
+    | 'copying'
+    | 'saved'
+    | 'copied'
+    | 'error'
+  >('idle')
+
+  const [
+    exportMessage,
+    setExportMessage,
+  ] = useState('')
+
+  const withExportFeedback =
+    async (
+      action:
+        'save'
+        | 'copy',
+    ) => {
+      setExportState(
+        action ===
+        'save'
+          ? 'saving'
+          : 'copying',
+      )
+
+      setExportMessage(
+        action ===
+        'save'
+          ? 'Rendering PNG...'
+          : 'Rendering image...',
+      )
+
+      try {
+        if (
+          action ===
+          'save'
+        ) {
+          await downloadBattleResultImage(
+            result,
+            input,
+            exportMode,
+          )
+
+          setExportState(
+            'saved',
+          )
+
+          setExportMessage(
+            'PNG saved.',
+          )
+        } else {
+          await copyBattleResultImage(
+            result,
+            input,
+            exportMode,
+          )
+
+          setExportState(
+            'copied',
+          )
+
+          setExportMessage(
+            'Image copied to clipboard.',
+          )
+        }
+
+        window.setTimeout(
+          () => {
+            setExportState(
+              'idle',
+            )
+
+            setExportMessage(
+              '',
+            )
+          },
+          2200,
+        )
+      } catch (
+        error
+      ) {
+        console.error(
+          'Could not export battle result image:',
+          error,
+        )
+
+        setExportState(
+          'error',
+        )
+
+        setExportMessage(
+          error instanceof Error
+            ? error.message
+            : 'Could not export battle result image.',
+        )
+      }
+    }
+
   const attackerInitial =
     result.attacker
       .initialProvisions
@@ -225,6 +349,108 @@ function BattleResultPanel({
         <span className="battle-report-engine-badge">
           Battle Engine
         </span>
+      </div>
+
+      <div
+        className="battle-report-export"
+        data-export-exclude="true"
+      >
+        <div className="battle-report-export-mode">
+          <span>
+            Export
+          </span>
+
+          <button
+            type="button"
+            className={
+              exportMode ===
+              'summary'
+                ? 'active'
+                : undefined
+            }
+            onClick={() =>
+              setExportMode(
+                'summary',
+              )
+            }
+          >
+            Summary
+          </button>
+
+          <button
+            type="button"
+            className={
+              exportMode ===
+              'full'
+                ? 'active'
+                : undefined
+            }
+            onClick={() =>
+              setExportMode(
+                'full',
+              )
+            }
+          >
+            Full Report
+          </button>
+        </div>
+
+        <div className="battle-report-export-actions">
+          <button
+            type="button"
+            className="primary"
+            disabled={
+              exportState ===
+                'saving' ||
+              exportState ===
+                'copying'
+            }
+            onClick={() =>
+              void withExportFeedback(
+                'save',
+              )
+            }
+          >
+            {exportState ===
+            'saving'
+              ? 'Creating PNG...'
+              : 'Save PNG'}
+          </button>
+
+          <button
+            type="button"
+            disabled={
+              !canCopyBattleResultImage() ||
+              exportState ===
+                'saving' ||
+              exportState ===
+                'copying'
+            }
+            title={
+              canCopyBattleResultImage()
+                ? 'Copy PNG to clipboard'
+                : 'Image clipboard is not supported by this browser'
+            }
+            onClick={() =>
+              void withExportFeedback(
+                'copy',
+              )
+            }
+          >
+            {exportState ===
+            'copying'
+              ? 'Copying...'
+              : 'Copy Image'}
+          </button>
+        </div>
+
+        {exportMessage && (
+          <span className={`battle-report-export-message ${exportState}`}>
+            {
+              exportMessage
+            }
+          </span>
+        )}
       </div>
 
       <div className="battle-report-outcome">
