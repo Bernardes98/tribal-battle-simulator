@@ -1,0 +1,257 @@
+#cloud-sync {
+  scroll-margin-top: 90px;
+}
+
+.cloud-sync-panel {
+  margin: 16px 0;
+  border: 1px solid #76502f;
+  background: #cba273;
+  color: #2d190c;
+}
+
+.cloud-sync-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  border-bottom: 1px solid #94683f;
+  background: #b88453;
+}
+
+.cloud-sync-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.cloud-sync-header > div > span,
+.cloud-sync-overview span,
+.cloud-sync-decision > span {
+  color: #674326;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cloud-sync-header strong {
+  color: #2b180b;
+}
+
+.cloud-sync-header small {
+  max-width: 760px;
+  color: #654326;
+  font-size: 9px;
+}
+
+.cloud-sync-state {
+  padding: 4px 7px;
+  border: 1px solid #694422;
+  background: #8b5a30;
+  color: #fff0cf;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.cloud-sync-state.ready {
+  background: #65733a;
+}
+
+.cloud-sync-guest,
+.cloud-sync-safety {
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  color: #644226;
+}
+
+.cloud-sync-guest strong,
+.cloud-sync-safety strong {
+  color: #382312;
+}
+
+.cloud-sync-guest span,
+.cloud-sync-safety span {
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.cloud-sync-message {
+  padding: 8px 12px;
+  border-bottom: 1px solid #a3784d;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.cloud-sync-message.success {
+  background: #c6c985;
+  color: #46521f;
+}
+
+.cloud-sync-message.error {
+  background: #d3a079;
+  color: #7e3022;
+}
+
+.cloud-sync-message.warning {
+  background: #d6bd78;
+  color: #665018;
+}
+
+.cloud-sync-overview {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: #a87a4b;
+}
+
+.cloud-sync-overview > div {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  background: #d4ad7c;
+}
+
+.cloud-sync-overview strong {
+  color: #2d190c;
+  font-size: 12px;
+}
+
+.cloud-sync-overview small {
+  overflow-wrap: anywhere;
+  color: #684527;
+  font-size: 8px;
+}
+
+.cloud-sync-decision {
+  display: grid;
+  gap: 2px;
+  margin: 10px 12px 0;
+  padding: 9px 10px;
+  border: 1px solid #8d633c;
+  background: #d7b281;
+}
+
+.cloud-sync-decision strong {
+  color: #2d190c;
+}
+
+.cloud-sync-decision small {
+  color: #644326;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.cloud-sync-decision.action-conflict {
+  background: #d3a079;
+}
+
+.cloud-sync-decision.action-upload {
+  background: #d6bd78;
+}
+
+.cloud-sync-decision.action-download,
+.cloud-sync-decision.action-nothing {
+  background: #c8ca88;
+}
+
+.cloud-sync-actions {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  padding: 10px 12px;
+}
+
+.cloud-sync-panel button {
+  min-height: 34px;
+  padding: 6px 9px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.cloud-sync-panel button:hover:not(:disabled) {
+  background: #b98652;
+}
+
+.cloud-sync-panel button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.cloud-sync-panel button.primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+.cloud-sync-details {
+  margin: 0 12px 10px;
+  border: 1px solid #8d633c;
+  background: #d3ac7b;
+}
+
+.cloud-sync-details summary {
+  padding: 8px 9px;
+  cursor: pointer;
+  color: #4d311b;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.cloud-sync-details > div {
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  border-top: 1px solid #a4774a;
+}
+
+.cloud-sync-details code {
+  padding: 4px 6px;
+  background: #e0c092;
+  color: #4e321b;
+  font-size: 8px;
+  overflow-wrap: anywhere;
+}
+
+.cloud-sync-details span {
+  color: #664426;
+  font-size: 9px;
+}
+
+.cloud-sync-safety {
+  margin: 0 12px 10px;
+  border: 1px solid #8d633c;
+  background: #c8a575;
+}
+
+.cloud-sync-delete {
+  margin: 0 12px 12px;
+  background: #94533c !important;
+  color: #fff0da !important;
+}
+
+@media (max-width: 800px) {
+  .cloud-sync-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .cloud-sync-actions {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .cloud-sync-header {
+    flex-direction: column;
+  }
+
+  .cloud-sync-actions {
+    grid-template-columns: 1fr;
+  }
+}

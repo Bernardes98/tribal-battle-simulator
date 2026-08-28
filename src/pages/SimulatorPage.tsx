@@ -24,6 +24,7 @@ import TargetRankingDashboardPanel from '../components/intelligence/TargetRankin
 import AttackCandidateAnalyzerPanel from '../components/intelligence/AttackCandidateAnalyzerPanel'
 import AttackPlanQueuePanel from '../components/planning/AttackPlanQueuePanel'
 import AccountPanel from '../components/account/AccountPanel'
+import CloudSyncPanel from '../components/account/CloudSyncPanel'
 
 import { units } from '../data/units'
 
@@ -1506,6 +1507,10 @@ function SimulatorPage() {
             <a href="#account">
               Account
             </a>
+
+            <a href="#cloud-sync">
+              Cloud
+            </a>
           </nav>
         </div>
       </header>
@@ -1542,6 +1547,8 @@ function SimulatorPage() {
         </section>
 
         <AccountPanel />
+
+        <CloudSyncPanel />
 
         <BattleSetupTable
           attacker={attacker}
