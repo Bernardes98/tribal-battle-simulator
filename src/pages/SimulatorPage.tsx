@@ -1507,6 +1507,7 @@ function SimulatorPage() {
         {battleResult && (
           <BattleResultPanel
             result={battleResult}
+            input={simulationInput}
           />
         )}
 

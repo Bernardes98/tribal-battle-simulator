@@ -1,879 +1,761 @@
 import { units } from '../../data/units'
 
 import type {
-  ArmyValueSummary,
   BattleResult,
+  BattleSimulationInput,
 } from '../../types/Battle'
 
 import './BattleResultPanel.css'
 
 interface BattleResultPanelProps {
   result: BattleResult
+  input: BattleSimulationInput
 }
 
-interface ArmyValueTableProps {
-  title: string
-  side: 'attacker' | 'defender'
-
-  initial: ArmyValueSummary
-  lost: ArmyValueSummary
-  revived: ArmyValueSummary
-  final: ArmyValueSummary
-}
-
-const numberFormatter = new Intl.NumberFormat(
-  'en-US',
-  {
-    maximumFractionDigits: 2,
-  },
-)
-
-const percentageFormatter =
+const formatter =
   new Intl.NumberFormat(
     'en-US',
-    {
-      style: 'percent',
-      maximumFractionDigits: 1,
-    },
   )
 
-function ArmyValueTable({
-  title,
-  side,
-  initial,
-  lost,
-  revived,
-  final,
-}: ArmyValueTableProps) {
-  const rows = [
-    {
-      label: 'Initial',
-      className: 'value-row-initial',
-      value: initial,
-    },
-    {
-      label: 'Lost',
-      className: 'value-row-lost',
-      value: lost,
-    },
-    {
-      label: 'Revived',
-      className: 'value-row-revived',
-      value: revived,
-    },
-    {
-      label: 'Final',
-      className: 'value-row-final',
-      value: final,
-    },
-  ]
+const percentage = (
+  value: number,
+  total: number,
+): number => {
+  if (
+    total <=
+    0
+  ) {
+    return 0
+  }
 
-  return (
-    <div className="army-value-side">
-      <div
-        className={`army-value-side-heading ${
-          side === 'attacker'
-            ? 'army-value-attacker-heading'
-            : 'army-value-defender-heading'
-        }`}
-      >
-        {title}
-      </div>
-
-      <div className="army-value-table-wrapper">
-        <table className="army-value-table">
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Provisions</th>
-              <th>Bash</th>
-              <th>Wood</th>
-              <th>Clay</th>
-              <th>Iron</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.label}
-                className={row.className}
-              >
-                <td>
-                  <strong>
-                    {row.label}
-                  </strong>
-                </td>
-
-                <td>
-                  {numberFormatter.format(
-                    row.value.provisions,
-                  )}
-                </td>
-
-                <td>
-                  {numberFormatter.format(
-                    row.value.bashPoints,
-                  )}
-                </td>
-
-                <td>
-                  {numberFormatter.format(
-                    row.value.resources.wood,
-                  )}
-                </td>
-
-                <td>
-                  {numberFormatter.format(
-                    row.value.resources.clay,
-                  )}
-                </td>
-
-                <td>
-                  {numberFormatter.format(
-                    row.value.resources.iron,
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+  return Math.max(
+    0,
+    Math.min(
+      100,
+      (
+        value /
+        total
+      ) *
+        100,
+    ),
   )
+}
+
+const formatPercent = (
+  value: number,
+): string => {
+  return `${value.toFixed(
+    1,
+  )}%`
+}
+
+const winnerTitle = (
+  winner:
+    BattleResult['winner'],
+): string => {
+  if (
+    winner ===
+    'attacker'
+  ) {
+    return 'Attacker Victory'
+  }
+
+  if (
+    winner ===
+    'defender'
+  ) {
+    return 'Defender Victory'
+  }
+
+  return 'Draw'
+}
+
+const winnerSubtitle = (
+  winner:
+    BattleResult['winner'],
+): string => {
+  if (
+    winner ===
+    'attacker'
+  ) {
+    return 'The attacking army broke through the defense.'
+  }
+
+  if (
+    winner ===
+    'defender'
+  ) {
+    return 'The defending army held the village.'
+  }
+
+  return 'Neither side achieved a decisive victory.'
+}
+
+const signedLuck = (
+  luck: number,
+): string => {
+  if (
+    luck >
+    0
+  ) {
+    return `+${luck}%`
+  }
+
+  return `${luck}%`
 }
 
 function BattleResultPanel({
   result,
+  input,
 }: BattleResultPanelProps) {
-  const winnerText =
-    result.winner === 'attacker'
-      ? 'Attacker Victory'
-      : result.winner === 'defender'
-        ? 'Defender Victory'
-        : 'Draw'
+  const attackerInitial =
+    result.attacker
+      .initialProvisions
 
-  const winnerClass =
-    result.winner === 'attacker'
-      ? 'result-attacker-win'
-      : result.winner === 'defender'
-        ? 'result-defender-win'
-        : 'result-draw'
+  const attackerSurviving =
+    result.attacker
+      .survivingProvisions
+
+  const defenderInitial =
+    result.defender
+      .initialProvisions
+
+  const defenderSurviving =
+    result.defender
+      .survivingProvisions
+
+  const attackerLost =
+    Math.max(
+      0,
+      attackerInitial -
+        attackerSurviving,
+    )
+
+  const defenderLost =
+    Math.max(
+      0,
+      defenderInitial -
+        defenderSurviving,
+    )
+
+  const attackerSurvivalPercent =
+    percentage(
+      attackerSurviving,
+      attackerInitial,
+    )
+
+  const attackerLossPercent =
+    percentage(
+      attackerLost,
+      attackerInitial,
+    )
+
+  const defenderSurvivalPercent =
+    percentage(
+      defenderSurviving,
+      defenderInitial,
+    )
+
+  const defenderLossPercent =
+    percentage(
+      defenderLost,
+      defenderInitial,
+    )
+
+  const strengthRatio =
+    result.defenseStrength >
+    0
+      ? result.attackStrength /
+        result.defenseStrength
+      : result.attackStrength >
+          0
+        ? null
+        : 0
+
+  const initialWall =
+    input.defenderModifiers
+      .wallLevel
+
+  const finalWall =
+    result.siege.wall
+      .finalLevel
+
+  const wallReduction =
+    Math.max(
+      0,
+      initialWall -
+        finalWall,
+    )
+
+  const armyRows =
+    units.filter(
+      (unit) =>
+        (
+          input.attacker[
+            unit.id
+          ] ??
+          0
+        ) >
+          0 ||
+        (
+          input.defender[
+            unit.id
+          ] ??
+          0
+        ) >
+          0,
+    )
 
   return (
     <section
-      className="battle-result-card"
       id="battle-result"
+      className={`battle-report result-${result.winner}`}
     >
-      <div className="result-header">
+      <div className="battle-report-topbar">
         <div>
-          <span className="section-label">
-            BATTLE RESULT
+          <span className="battle-report-kicker">
+            Battle Report
+          </span>
+
+          <strong>
+            Simulation Result
+          </strong>
+        </div>
+
+        <span className="battle-report-engine-badge">
+          Battle Engine
+        </span>
+      </div>
+
+      <div className="battle-report-outcome">
+        <div className="battle-report-outcome-emblem">
+          {result.winner ===
+          'attacker'
+            ? '⚔'
+            : result.winner ===
+                'defender'
+              ? '🛡'
+              : '⚖'}
+        </div>
+
+        <div className="battle-report-outcome-copy">
+          <span>
+            Outcome
           </span>
 
           <h3>
-            Simulation result
+            {winnerTitle(
+              result.winner,
+            )}
           </h3>
 
           <p>
-            Combat, siege, troop
-            recovery and resource
-            results.
+            {winnerSubtitle(
+              result.winner,
+            )}
           </p>
         </div>
 
-        <div
-          className={`winner-badge ${winnerClass}`}
-        >
-          {winnerText}
+        <div className="battle-report-outcome-strength">
+          <span>
+            Strength Ratio
+          </span>
+
+          <strong>
+            {strengthRatio ===
+            null
+              ? '∞'
+              : strengthRatio.toFixed(
+                  2,
+                )}
+            ×
+          </strong>
+
+          <small>
+            Attack / Defense
+          </small>
         </div>
       </div>
 
-      <div className="strength-summary">
-        <div className="strength-card attacker-strength">
+      <div className="battle-report-strength-strip">
+        <div className="attacker">
           <span>
             Attack Strength
           </span>
 
           <strong>
-            {numberFormatter.format(
-              result.attackStrength,
+            {formatter.format(
+              Math.round(
+                result.attackStrength,
+              ),
             )}
           </strong>
         </div>
 
-        <div className="strength-versus">
+        <div className="versus">
           VS
         </div>
 
-        <div className="strength-card defender-strength">
+        <div className="defender">
           <span>
             Defense Strength
           </span>
 
           <strong>
-            {numberFormatter.format(
-              result.defenseStrength,
+            {formatter.format(
+              Math.round(
+                result.defenseStrength,
+              ),
             )}
           </strong>
         </div>
       </div>
 
-      <div className="siege-result-section">
-        <div className="result-section-heading">
-          <span className="section-label">
-            SIEGE RESULT
-          </span>
-
-          <h4>
-            Wall & Catapult
-          </h4>
-
-          <p>
-            Result of the siege
-            equipment after combat.
-          </p>
-        </div>
-
-        <div className="siege-result-grid">
-          <div className="siege-result-card">
-            <div className="siege-card-title">
-              Wall
+      <div className="battle-report-sides">
+        <article className="battle-report-side attacker">
+          <div className="battle-report-side-title">
+            <div className="battle-report-side-icon">
+              ⚔
             </div>
 
-            <div className="level-flow">
-              <div>
-                <span>
-                  Starting
-                </span>
+            <div>
+              <span>
+                Attacker
+              </span>
 
-                <strong>
-                  {
-                    result.siege.wall
-                      .startingLevel
-                  }
-                </strong>
-              </div>
-
-              <b>→</b>
-
-              <div>
-                <span>
-                  Pre-battle
-                </span>
-
-                <strong>
-                  {
-                    result.siege.wall
-                      .preBattleLevel
-                  }
-                </strong>
-              </div>
-
-              <b>→</b>
-
-              <div>
-                <span>
-                  Post-battle
-                </span>
-
-                <strong>
-                  {
-                    result.siege.wall
-                      .postBattleLevel
-                  }
-                </strong>
-              </div>
-
-              <b>→</b>
-
-              <div>
-                <span>
-                  Final
-                </span>
-
-                <strong>
-                  {
-                    result.siege.wall
-                      .finalLevel
-                  }
-                </strong>
-              </div>
+              <strong>
+                {result.winner ===
+                'attacker'
+                  ? 'Victory'
+                  : result.winner ===
+                      'draw'
+                    ? 'Draw'
+                    : 'Defeated'}
+              </strong>
             </div>
           </div>
 
-          <div className="siege-result-card">
-            <div className="siege-card-title">
-              Catapult
+          <div className="battle-report-side-main-stat">
+            <span>
+              Surviving Force
+            </span>
+
+            <strong>
+              {formatPercent(
+                attackerSurvivalPercent,
+              )}
+            </strong>
+
+            <small>
+              {formatter.format(
+                attackerSurviving,
+              )}{' '}
+              provisions survive
+            </small>
+          </div>
+
+          <div className="battle-report-survival-bar">
+            <span
+              style={{
+                width: `${attackerSurvivalPercent}%`,
+              }}
+            />
+          </div>
+
+          <dl className="battle-report-side-stats">
+            <div>
+              <dt>
+                Initial
+              </dt>
+
+              <dd>
+                {formatter.format(
+                  attackerInitial,
+                )}
+              </dd>
             </div>
 
-            <strong className="siege-building-name">
+            <div>
+              <dt>
+                Lost
+              </dt>
+
+              <dd>
+                {formatter.format(
+                  attackerLost,
+                )}
+              </dd>
+            </div>
+
+            <div>
+              <dt>
+                Survived
+              </dt>
+
+              <dd>
+                {formatter.format(
+                  attackerSurviving,
+                )}
+              </dd>
+            </div>
+
+            <div>
+              <dt>
+                Loss Rate
+              </dt>
+
+              <dd>
+                {formatPercent(
+                  attackerLossPercent,
+                )}
+              </dd>
+            </div>
+          </dl>
+        </article>
+
+        <div className="battle-report-crossed">
+          <span>
+            ⚔
+          </span>
+        </div>
+
+        <article className="battle-report-side defender">
+          <div className="battle-report-side-title">
+            <div className="battle-report-side-icon">
+              🛡
+            </div>
+
+            <div>
+              <span>
+                Defender
+              </span>
+
+              <strong>
+                {result.winner ===
+                'defender'
+                  ? 'Victory'
+                  : result.winner ===
+                      'draw'
+                    ? 'Draw'
+                    : 'Defeated'}
+              </strong>
+            </div>
+          </div>
+
+          <div className="battle-report-side-main-stat">
+            <span>
+              Remaining Defense
+            </span>
+
+            <strong>
+              {formatPercent(
+                defenderSurvivalPercent,
+              )}
+            </strong>
+
+            <small>
+              {formatter.format(
+                defenderSurviving,
+              )}{' '}
+              provisions survive
+            </small>
+          </div>
+
+          <div className="battle-report-survival-bar defender">
+            <span
+              style={{
+                width: `${defenderSurvivalPercent}%`,
+              }}
+            />
+          </div>
+
+          <dl className="battle-report-side-stats">
+            <div>
+              <dt>
+                Initial
+              </dt>
+
+              <dd>
+                {formatter.format(
+                  defenderInitial,
+                )}
+              </dd>
+            </div>
+
+            <div>
+              <dt>
+                Lost
+              </dt>
+
+              <dd>
+                {formatter.format(
+                  defenderLost,
+                )}
+              </dd>
+            </div>
+
+            <div>
+              <dt>
+                Survived
+              </dt>
+
+              <dd>
+                {formatter.format(
+                  defenderSurviving,
+                )}
+              </dd>
+            </div>
+
+            <div>
+              <dt>
+                Loss Rate
+              </dt>
+
+              <dd>
+                {formatPercent(
+                  defenderLossPercent,
+                )}
+              </dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+
+      <div className="battle-report-events">
+        <div className="battle-report-event wall">
+          <span className="battle-report-event-icon">
+            🧱
+          </span>
+
+          <div>
+            <span>
+              Wall
+            </span>
+
+            <strong>
+              Level {initialWall}
+              {' → '}
+              Level {finalWall}
+            </strong>
+
+            <small>
+              {wallReduction >
+              0
+                ? `Reduced by ${wallReduction} level${wallReduction === 1 ? '' : 's'}`
+                : 'No wall level reduction'}
+            </small>
+          </div>
+        </div>
+
+        <div className="battle-report-event">
+          <span className="battle-report-event-icon">
+            ☘
+          </span>
+
+          <div>
+            <span>
+              Luck
+            </span>
+
+            <strong>
+              {signedLuck(
+                input.attackerModifiers
+                  .luck,
+              )}
+            </strong>
+
+            <small>
+              attacker battle luck
+            </small>
+          </div>
+        </div>
+
+        <div className="battle-report-event">
+          <span className="battle-report-event-icon">
+            ◆
+          </span>
+
+          <div>
+            <span>
+              Morale
+            </span>
+
+            <strong>
               {
-                result.siege.catapult
-                  .targetName
+                input.attackerModifiers
+                  .morale
+              }
+              %
+            </strong>
+
+            <small>
+              attacker morale
+            </small>
+          </div>
+        </div>
+
+        <div className="battle-report-event">
+          <span className="battle-report-event-icon">
+            ⛪
+          </span>
+
+          <div>
+            <span>
+              Church
+            </span>
+
+            <strong>
+              A{
+                input.attackerModifiers
+                  .churchLevel
+              }
+              {' · '}
+              D{
+                input.defenderModifiers
+                  .churchLevel
               }
             </strong>
 
-            <div className="catapult-level-result">
-              <div>
-                <span>
-                  Starting
-                </span>
-
-                <strong>
-                  {
-                    result.siege.catapult
-                      .startingLevel
-                  }
-                </strong>
-              </div>
-
-              <b>→</b>
-
-              <div>
-                <span>
-                  Final
-                </span>
-
-                <strong>
-                  {
-                    result.siege.catapult
-                      .postLevel
-                  }
-                </strong>
-              </div>
-            </div>
-
-            <div className="siege-calculation-details">
-              <span>
-                Catapult Power
-                <strong>
-                  {numberFormatter.format(
-                    result.siege
-                      .catapult
-                      .attackStrength,
-                  )}
-                </strong>
-              </span>
-
-              <span>
-                Damage
-                <strong>
-                  {numberFormatter.format(
-                    result.siege
-                      .catapult
-                      .damageLevels,
-                  )}
-                </strong>
-              </span>
-            </div>
+            <small>
+              attacker / defender level
+            </small>
           </div>
         </div>
       </div>
 
-      <div className="army-value-section">
-        <div className="result-section-heading">
-          <span className="section-label">
-            ARMY VALUE
+      <details className="battle-report-details">
+        <summary>
+          <span>
+            Army Composition
           </span>
 
-          <h4>
-            Resources & Bash Points
-          </h4>
+          <small>
+            Starting troops used in this simulation
+          </small>
+        </summary>
 
-          <p>
-            Resource value and bash
-            points for each stage of
-            the battle.
-          </p>
+        <div className="battle-report-army-table-wrap">
+          <table className="battle-report-army-table">
+            <thead>
+              <tr>
+                <th>
+                  Unit
+                </th>
+
+                <th>
+                  Attacker
+                </th>
+
+                <th>
+                  Defender
+                </th>
+
+                <th>
+                  Provision / Unit
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {armyRows.map(
+                (unit) => (
+                  <tr
+                    key={
+                      unit.id
+                    }
+                  >
+                    <td>
+                      {
+                        unit.name
+                      }
+                    </td>
+
+                    <td>
+                      {formatter.format(
+                        input.attacker[
+                          unit.id
+                        ] ??
+                          0,
+                      )}
+                    </td>
+
+                    <td>
+                      {formatter.format(
+                        input.defender[
+                          unit.id
+                        ] ??
+                          0,
+                      )}
+                    </td>
+
+                    <td>
+                      {
+                        unit.provisions
+                      }
+                    </td>
+                  </tr>
+                ),
+              )}
+
+              {armyRows.length ===
+                0 && (
+                <tr>
+                  <td
+                    colSpan={
+                      4
+                    }
+                    className="battle-report-empty-row"
+                  >
+                    No units configured.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
+      </details>
 
-        <div className="army-value-columns">
-          <ArmyValueTable
-            title="ATTACKER"
-            side="attacker"
-            initial={
-              result.attacker
-                .initialValue
-            }
-            lost={
-              result.attacker
-                .lostValue
-            }
-            revived={
-              result.attacker
-                .revivedValue
-            }
-            final={
-              result.attacker
-                .survivingValue
-            }
-          />
-
-          <ArmyValueTable
-            title="DEFENDER"
-            side="defender"
-            initial={
-              result.defender
-                .initialValue
-            }
-            lost={
-              result.defender
-                .lostValue
-            }
-            revived={
-              result.defender
-                .revivedValue
-            }
-            final={
-              result.defender
-                .survivingValue
-            }
-          />
-        </div>
-      </div>
-
-      <div className="result-sides">
-        <div className="result-side">
-          <div className="result-side-title attacker-result-title">
-            ATTACKER
-          </div>
-
-          <div className="result-stat-grid">
-            <div>
-              <span>
-                Initial Troops
-              </span>
-
-              <strong>
-                {numberFormatter.format(
-                  result.attacker
-                    .initialUnits,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Troops Lost
-              </span>
-
-              <strong className="loss-value">
-                {numberFormatter.format(
-                  result.attacker
-                    .lostUnits,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Revived
-              </span>
-
-              <strong className="revived-value">
-                {numberFormatter.format(
-                  result.attacker
-                    .revivedUnits,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Final Survivors
-              </span>
-
-              <strong>
-                {numberFormatter.format(
-                  result.attacker
-                    .survivingUnits,
-                )}
-              </strong>
-            </div>
-          </div>
-
-          <div className="provision-summary">
-            <div>
-              <span>
-                Initial Provisions
-              </span>
-
-              <strong>
-                {numberFormatter.format(
-                  result.attacker
-                    .initialProvisions,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Provisions Lost
-              </span>
-
-              <strong className="loss-value">
-                {numberFormatter.format(
-                  result.attacker
-                    .lostProvisions,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Revived Provisions
-              </span>
-
-              <strong className="revived-value">
-                {numberFormatter.format(
-                  result.attacker
-                    .revivedProvisions,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Final Provisions
-              </span>
-
-              <strong>
-                {numberFormatter.format(
-                  result.attacker
-                    .survivingProvisions,
-                )}
-              </strong>
-            </div>
-          </div>
-
-          <div className="result-unit-list">
-            <div className="result-unit-header">
-              <span>Unit</span>
-              <span>Lost</span>
-              <span>Revived</span>
-              <span>Final</span>
-            </div>
-
-            {units
-              .filter(
-                (unit) =>
-                  result.attacker
-                    .initialArmy[
-                    unit.id
-                  ] > 0,
-              )
-              .map((unit) => (
-                <div
-                  className="result-unit-row"
-                  key={unit.id}
-                >
-                  <span>
-                    {unit.name}
-                  </span>
-
-                  <strong className="loss-value">
-                    {numberFormatter.format(
-                      result.attacker
-                        .losses[
-                        unit.id
-                      ],
-                    )}
-                  </strong>
-
-                  <strong className="revived-value">
-                    {numberFormatter.format(
-                      result.attacker
-                        .revived[
-                        unit.id
-                      ],
-                    )}
-                  </strong>
-
-                  <strong>
-                    {numberFormatter.format(
-                      result.attacker
-                        .survivors[
-                        unit.id
-                      ],
-                    )}
-                  </strong>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        <div className="result-side">
-          <div className="result-side-title defender-result-title">
-            DEFENDER
-          </div>
-
-          <div className="result-stat-grid">
-            <div>
-              <span>
-                Initial Troops
-              </span>
-
-              <strong>
-                {numberFormatter.format(
-                  result.defender
-                    .initialUnits,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Troops Lost
-              </span>
-
-              <strong className="loss-value">
-                {numberFormatter.format(
-                  result.defender
-                    .lostUnits,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Revived
-              </span>
-
-              <strong className="revived-value">
-                {numberFormatter.format(
-                  result.defender
-                    .revivedUnits,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Final Survivors
-              </span>
-
-              <strong>
-                {numberFormatter.format(
-                  result.defender
-                    .survivingUnits,
-                )}
-              </strong>
-            </div>
-          </div>
-
-          <div className="provision-summary">
-            <div>
-              <span>
-                Initial Provisions
-              </span>
-
-              <strong>
-                {numberFormatter.format(
-                  result.defender
-                    .initialProvisions,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Provisions Lost
-              </span>
-
-              <strong className="loss-value">
-                {numberFormatter.format(
-                  result.defender
-                    .lostProvisions,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Revived Provisions
-              </span>
-
-              <strong className="revived-value">
-                {numberFormatter.format(
-                  result.defender
-                    .revivedProvisions,
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span>
-                Final Provisions
-              </span>
-
-              <strong>
-                {numberFormatter.format(
-                  result.defender
-                    .survivingProvisions,
-                )}
-              </strong>
-            </div>
-          </div>
-
-          <div className="result-unit-list">
-            <div className="result-unit-header">
-              <span>Unit</span>
-              <span>Lost</span>
-              <span>Revived</span>
-              <span>Final</span>
-            </div>
-
-            {units
-              .filter(
-                (unit) =>
-                  result.defender
-                    .initialArmy[
-                    unit.id
-                  ] > 0,
-              )
-              .map((unit) => (
-                <div
-                  className="result-unit-row"
-                  key={unit.id}
-                >
-                  <span>
-                    {unit.name}
-                  </span>
-
-                  <strong className="loss-value">
-                    {numberFormatter.format(
-                      result.defender
-                        .losses[
-                        unit.id
-                      ],
-                    )}
-                  </strong>
-
-                  <strong className="revived-value">
-                    {numberFormatter.format(
-                      result.defender
-                        .revived[
-                        unit.id
-                      ],
-                    )}
-                  </strong>
-
-                  <strong>
-                    {numberFormatter.format(
-                      result.defender
-                        .survivors[
-                        unit.id
-                      ],
-                    )}
-                  </strong>
-                </div>
-              ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="combat-groups">
-        <div className="result-section-heading">
-          <span className="section-label">
-            COMBAT DETAILS
+      <div className="battle-report-footer">
+        <div>
+          <span>
+            Attacker casualties
           </span>
 
-          <h4>
-            Combat groups
-          </h4>
-
-          <p>
-            Strength and casualty
-            rate by attack group.
-          </p>
-        </div>
-
-        <div className="combat-group-grid">
-          {result.groups.map(
-            (group) => (
-              <div
-                className="combat-group-card"
-                key={group.group}
-              >
-                <strong>
-                  {group.group ===
-                  'infantry'
-                    ? 'Infantry'
-                    : group.group ===
-                        'cavalry'
-                      ? 'Cavalry'
-                      : 'Archer'}
-                </strong>
-
-                <div>
-                  <span>
-                    Attack
-                  </span>
-
-                  <b>
-                    {numberFormatter.format(
-                      group.attackStrength,
-                    )}
-                  </b>
-                </div>
-
-                <div>
-                  <span>
-                    Defense
-                  </span>
-
-                  <b>
-                    {numberFormatter.format(
-                      group.defenseStrength,
-                    )}
-                  </b>
-                </div>
-
-                <div>
-                  <span>
-                    Attacker Loss Rate
-                  </span>
-
-                  <b>
-                    {percentageFormatter.format(
-                      group.attackerLossRate,
-                    )}
-                  </b>
-                </div>
-
-                <div>
-                  <span>
-                    Defender Loss Rate
-                  </span>
-
-                  <b>
-                    {percentageFormatter.format(
-                      group.defenderLossRate,
-                    )}
-                  </b>
-                </div>
-              </div>
-            ),
-          )}
-        </div>
-      </div>
-
-      {result.warnings.length > 0 && (
-        <div className="result-warning">
           <strong>
-            Simulation Notes
+            {formatPercent(
+              attackerLossPercent,
+            )}
           </strong>
-
-          {result.warnings.map(
-            (warning) => (
-              <p key={warning}>
-                {warning}
-              </p>
-            ),
-          )}
         </div>
-      )}
+
+        <div className="battle-report-footer-center">
+          <span>
+            Final Result
+          </span>
+
+          <strong>
+            {winnerTitle(
+              result.winner,
+            )}
+          </strong>
+        </div>
+
+        <div>
+          <span>
+            Defender casualties
+          </span>
+
+          <strong>
+            {formatPercent(
+              defenderLossPercent,
+            )}
+          </strong>
+        </div>
+      </div>
+
+      <div className="battle-report-note">
+        Casualty totals are shown as effective provisions because the current battle result exposes aggregate surviving provisions rather than exact surviving quantities for each unit type.
+      </div>
     </section>
   )
 }
