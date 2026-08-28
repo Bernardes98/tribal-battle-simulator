@@ -1,0 +1,445 @@
+.report-comparison-engine {
+  border: 1px solid #805837;
+  background: #d7b180;
+  color: #2d190c;
+}
+
+.report-comparison-engine-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border-bottom: 1px solid #9c7047;
+  background: #bd8e5d;
+}
+
+.report-comparison-engine-header > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.report-comparison-engine-header > div:first-child > span {
+  color: #653e20;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.report-comparison-engine-header strong {
+  color: #2c190c;
+}
+
+.report-comparison-engine-header small {
+  color: #684527;
+  font-size: 9px;
+}
+
+.report-comparison-engine-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.report-comparison-engine-badges span {
+  padding: 4px 7px;
+  border: 1px solid #694422;
+  background: #8a582b;
+  color: #fff0cf;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.report-comparison-engine-badges .direction-reinforced {
+  background: #8a4633;
+}
+
+.report-comparison-engine-badges .direction-reduced {
+  background: #60723b;
+}
+
+.report-comparison-engine-badges .direction-mixed {
+  background: #8b6632;
+}
+
+.report-comparison-engine-badges .severity-major {
+  background: #853929;
+}
+
+.report-comparison-engine-badges .severity-moderate {
+  background: #96602e;
+}
+
+.report-comparison-engine-badges .severity-minor {
+  background: #80792d;
+}
+
+.report-comparison-engine-selectors {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    minmax(0, 1fr)
+    auto;
+  gap: 8px;
+  align-items: end;
+  padding: 10px 12px;
+  border-bottom: 1px solid #aa7e50;
+  background: #c99f70;
+}
+
+.report-comparison-engine-selectors label {
+  display: grid;
+  gap: 4px;
+}
+
+.report-comparison-engine-selectors label > span {
+  color: #674326;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.report-comparison-engine-selectors select {
+  width: 100%;
+  min-height: 35px;
+  padding: 6px 8px;
+  border: 1px solid #795333;
+  background: #ead2ad;
+  color: #2d190c;
+}
+
+.report-comparison-engine-arrow {
+  align-self: center;
+  padding-top: 14px;
+  color: #59361c;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.report-comparison-engine button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.report-comparison-engine button:hover:not(:disabled) {
+  background: #b98652;
+}
+
+.report-comparison-engine button.primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+.report-comparison-engine button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.report-comparison-engine-time {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(130px, 0.65fr)
+    minmax(0, 1fr);
+  border-bottom: 1px solid #aa7e50;
+}
+
+.report-comparison-engine-time > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-right: 1px solid #b48a5b;
+  background: #d3ab79;
+}
+
+.report-comparison-engine-time > div:last-child {
+  border-right: 0;
+}
+
+.report-comparison-engine-time span,
+.report-comparison-engine-summary span,
+.report-comparison-engine-section-title span {
+  color: #75502f;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.report-comparison-engine-time strong {
+  color: #2d190c;
+  font-size: 10px;
+}
+
+.report-comparison-engine-time small {
+  color: #6c482b;
+  font-size: 8px;
+}
+
+.report-comparison-engine-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  border-bottom: 1px solid #aa7e50;
+}
+
+.report-comparison-engine-summary > div {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  border-right: 1px solid #b48a5b;
+  background: #d8b584;
+}
+
+.report-comparison-engine-summary > div:last-child {
+  border-right: 0;
+}
+
+.report-comparison-engine-summary strong {
+  color: #2d190c;
+  font-size: 13px;
+}
+
+.report-comparison-engine-summary small {
+  color: #684527;
+  font-size: 8px;
+}
+
+.report-comparison-engine .positive {
+  color: #496523 !important;
+}
+
+.report-comparison-engine .negative {
+  color: #913e2b !important;
+}
+
+.report-comparison-engine-insights {
+  display: grid;
+  gap: 1px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #aa7e50;
+  background: #b98c5c;
+}
+
+.report-comparison-engine-insights > div {
+  padding: 6px 8px;
+  border: 1px solid rgba(
+    101,
+    65,
+    34,
+    0.35
+  );
+  background: #d4ad7c;
+  color: #5a391f;
+  font-size: 9px;
+}
+
+.report-comparison-engine-insights > div.positive {
+  background: #c9cb8d;
+}
+
+.report-comparison-engine-insights > div.negative {
+  background: #d2a17c;
+}
+
+.report-comparison-engine-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #aa7e50;
+  background: #c99f70;
+}
+
+.report-comparison-engine-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #55351c;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.report-comparison-engine-toolbar > div {
+  display: flex;
+  gap: 5px;
+}
+
+.report-comparison-engine-table-wrap {
+  overflow-x: auto;
+}
+
+.report-comparison-engine-table {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+
+.report-comparison-engine-table th,
+.report-comparison-engine-table td {
+  padding: 7px 8px;
+  border-right: 1px solid #b58a59;
+  border-bottom: 1px solid #b58a59;
+  text-align: right;
+}
+
+.report-comparison-engine-table th:first-child,
+.report-comparison-engine-table td:first-child,
+.report-comparison-engine-table th:last-child,
+.report-comparison-engine-table td:last-child {
+  text-align: left;
+}
+
+.report-comparison-engine-table th {
+  background: #c79b69;
+  color: #5b391f;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.report-comparison-engine-table td {
+  background: #dab684;
+  color: #3e2815;
+}
+
+.report-comparison-engine-no-rows {
+  padding: 14px !important;
+  color: #6b482b !important;
+  text-align: center !important;
+}
+
+.report-comparison-engine-modifiers {
+  border-top: 1px solid #9f7448;
+}
+
+.report-comparison-engine-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #aa7e50;
+  background: #c89d6b;
+}
+
+.report-comparison-engine-section-title strong {
+  color: #2d190c;
+  font-size: 10px;
+}
+
+.report-comparison-engine-modifier-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      5,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  background: #b58a59;
+}
+
+.report-comparison-engine-modifier-grid > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px 9px;
+  background: #d2aa77;
+}
+
+.report-comparison-engine-modifier-grid span {
+  color: #72502f;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.report-comparison-engine-modifier-grid strong {
+  color: #2d190c;
+  font-size: 10px;
+}
+
+.report-comparison-engine-modifier-grid small {
+  color: #674326;
+  font-size: 8px;
+}
+
+.report-comparison-engine-no-modifiers,
+.report-comparison-engine-message,
+.report-comparison-engine-empty {
+  padding: 14px 12px;
+  background: #d8b584;
+  color: #604027;
+  font-size: 9px;
+  text-align: center;
+}
+
+.report-comparison-engine-note {
+  padding: 8px 10px;
+  border-top: 1px solid #9f7448;
+  background: #c49a69;
+  color: #604027;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+@media (max-width: 950px) {
+  .report-comparison-engine-summary {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .report-comparison-engine-modifier-grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 720px) {
+  .report-comparison-engine-header,
+  .report-comparison-engine-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .report-comparison-engine-badges {
+    justify-content: flex-start;
+  }
+
+  .report-comparison-engine-selectors,
+  .report-comparison-engine-time,
+  .report-comparison-engine-summary,
+  .report-comparison-engine-modifier-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-comparison-engine-arrow {
+    display: none;
+  }
+
+  .report-comparison-engine-toolbar > div {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}

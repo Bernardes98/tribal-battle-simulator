@@ -71,6 +71,7 @@ import type {
 
 import DefenseTrendPanel from './DefenseTrendPanel'
 import ReportTimelinePanel from './ReportTimelinePanel'
+import ReportComparisonEnginePanel from './ReportComparisonEnginePanel'
 import VillageNotesTagsPanel from './VillageNotesTagsPanel'
 import TargetScoreDetails from './TargetScoreDetails'
 
@@ -1213,6 +1214,17 @@ function VillageIntelligenceOverviewPanel({
             <TargetScoreDetails
               result={
                 targetScore
+              }
+            />
+          </div>
+
+          <div className="village-overview-full-section">
+            <ReportComparisonEnginePanel
+              village={
+                selectedVillage
+              }
+              onLoadDefense={
+                onLoadDefense
               }
             />
           </div>
