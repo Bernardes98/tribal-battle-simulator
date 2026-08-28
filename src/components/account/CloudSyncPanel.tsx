@@ -10,6 +10,18 @@ import {
 } from '../../domain/auth/authSession'
 
 import {
+  AUTO_CLOUD_SYNC_SETTINGS_CHANGED_EVENT,
+  AUTO_CLOUD_SYNC_STATUS_EVENT,
+  getAutoCloudSyncStatus,
+  loadAutoCloudSyncSettings,
+  setAutoCloudSyncEnabled,
+} from '../../domain/cloud/autoCloudSync'
+
+import type {
+  AutoCloudSyncStatus,
+} from '../../domain/cloud/autoCloudSync'
+
+import {
   applyCloudPayload,
   collectLocalCloudSnapshot,
   decideSmartSync,
@@ -43,14 +55,19 @@ type SyncStatus =
 
 const formatDateTime =
   (
-    value: string | null,
+    value:
+      string | null,
   ): string => {
-    if (!value) {
+    if (
+      !value
+    ) {
       return 'Never'
     }
 
     const date =
-      new Date(value)
+      new Date(
+        value,
+      )
 
     if (
       Number.isNaN(
@@ -63,10 +80,14 @@ const formatDateTime =
     return new Intl.DateTimeFormat(
       undefined,
       {
-        dateStyle: 'medium',
-        timeStyle: 'short',
+        dateStyle:
+          'medium',
+        timeStyle:
+          'short',
       },
-    ).format(date)
+    ).format(
+      date,
+    )
   }
 
 function CloudSyncPanel() {
@@ -105,6 +126,25 @@ function CloudSyncPanel() {
   )
 
   const [
+    autoEnabled,
+    setAutoEnabled,
+  ] = useState(
+    () =>
+      loadAutoCloudSyncSettings()
+        .enabled,
+  )
+
+  const [
+    autoStatus,
+    setAutoStatus,
+  ] = useState<
+    AutoCloudSyncStatus
+  >(
+    () =>
+      getAutoCloudSyncStatus(),
+  )
+
+  const [
     message,
     setMessage,
   ] = useState<
@@ -124,7 +164,9 @@ function CloudSyncPanel() {
 
         return collectLocalCloudSnapshot()
       },
-      [localVersion],
+      [
+        localVersion,
+      ],
     )
 
   const metadata =
@@ -134,7 +176,9 @@ function CloudSyncPanel() {
 
         return loadCloudSyncMetadata()
       },
-      [localVersion],
+      [
+        localVersion,
+      ],
     )
 
   const decision:
@@ -163,13 +207,19 @@ function CloudSyncPanel() {
             ),
           )
 
-          setCloudLoaded(false)
-          setCloud(null)
+          setCloudLoaded(
+            false,
+          )
+
+          setCloud(
+            null,
+          )
         }
 
       const storage =
         (
-          event: StorageEvent,
+          event:
+            StorageEvent,
         ) => {
           if (
             event.key?.startsWith(
@@ -179,6 +229,44 @@ function CloudSyncPanel() {
             setLocalVersion(
               (value) =>
                 value + 1,
+            )
+          }
+        }
+
+      const autoSettings =
+        () => {
+          setAutoEnabled(
+            loadAutoCloudSyncSettings()
+              .enabled,
+          )
+        }
+
+      const autoStatusChanged =
+        (
+          event:
+            Event,
+        ) => {
+          const customEvent =
+            event as CustomEvent<
+              AutoCloudSyncStatus
+            >
+
+          setAutoStatus(
+            customEvent.detail,
+          )
+
+          setLocalVersion(
+            (value) =>
+              value + 1,
+          )
+
+          if (
+            customEvent.detail
+              .state ===
+              'synced'
+          ) {
+            void refreshCloud(
+              false,
             )
           }
         }
@@ -193,6 +281,16 @@ function CloudSyncPanel() {
         storage,
       )
 
+      window.addEventListener(
+        AUTO_CLOUD_SYNC_SETTINGS_CHANGED_EVENT,
+        autoSettings,
+      )
+
+      window.addEventListener(
+        AUTO_CLOUD_SYNC_STATUS_EVENT,
+        autoStatusChanged,
+      )
+
       return () => {
         window.removeEventListener(
           AUTH_SESSION_CHANGED_EVENT,
@@ -203,36 +301,71 @@ function CloudSyncPanel() {
           'storage',
           storage,
         )
+
+        window.removeEventListener(
+          AUTO_CLOUD_SYNC_SETTINGS_CHANGED_EVENT,
+          autoSettings,
+        )
+
+        window.removeEventListener(
+          AUTO_CLOUD_SYNC_STATUS_EVENT,
+          autoStatusChanged,
+        )
       }
     },
     [],
   )
 
   const refreshCloud =
-    async () => {
-      if (!signedIn) {
+    async (
+      showErrors =
+        true,
+    ) => {
+      if (
+        !signedIn
+      ) {
         return
       }
 
       try {
-        setStatus('loading')
-        setMessage(null)
+        setStatus(
+          'loading',
+        )
+
+        if (
+          showErrors
+        ) {
+          setMessage(
+            null,
+          )
+        }
 
         setCloud(
           await getCloudState(),
         )
 
-        setCloudLoaded(true)
-      } catch (error) {
-        setMessage({
-          type: 'error',
-          text:
-            error instanceof Error
-              ? error.message
-              : 'Could not read cloud data.',
-        })
+        setCloudLoaded(
+          true,
+        )
+      } catch (
+        error
+      ) {
+        if (
+          showErrors
+        ) {
+          setMessage({
+            type:
+              'error',
+            text:
+              error instanceof Error
+                ? error.message
+                : 'Could not read cloud data.',
+          })
+        }
       } finally {
-        setStatus('idle')
+        setStatus(
+          'idle',
+        )
       }
     }
 
@@ -253,100 +386,134 @@ function CloudSyncPanel() {
 
   const uploadLocal =
     async (
-      expectedRevision: number,
-    ) => {
-      try {
-        setStatus('uploading')
-        setMessage(null)
+      expectedRevision:
+        number,
+  ) => {
+    try {
+      setStatus(
+        'uploading',
+      )
 
-        const latestLocal =
-          collectLocalCloudSnapshot()
+      setMessage(
+        null,
+      )
 
-        const saved =
-          await saveCloudState({
-            expectedRevision,
-            payload:
-              latestLocal.payload,
-          })
+      const latestLocal =
+        collectLocalCloudSnapshot()
 
-        setCloud(saved)
-        setCloudLoaded(true)
-
-        markCloudSyncComplete(
-          saved.revision,
-          saved.payload,
-        )
-
-        setLocalVersion(
-          (value) =>
-            value + 1,
-        )
-
-        setMessage({
-          type: 'success',
-          text:
-            `Cloud snapshot saved as revision ${saved.revision}.`,
-        })
-      } catch (error) {
-        setMessage({
-          type: 'error',
-          text:
-            error instanceof Error
-              ? error.message
-              : 'Could not upload local data.',
+      const saved =
+        await saveCloudState({
+          expectedRevision,
+          payload:
+            latestLocal.payload,
         })
 
-        await refreshCloud()
-      } finally {
-        setStatus('idle')
-      }
+      setCloud(
+        saved,
+      )
+
+      setCloudLoaded(
+        true,
+      )
+
+      markCloudSyncComplete(
+        saved.revision,
+        saved.payload,
+      )
+
+      setLocalVersion(
+        (value) =>
+          value + 1,
+      )
+
+      setMessage({
+        type:
+          'success',
+        text:
+          `Cloud snapshot saved as revision ${saved.revision}.`,
+      })
+    } catch (
+      error
+    ) {
+      setMessage({
+        type:
+          'error',
+        text:
+          error instanceof Error
+            ? error.message
+            : 'Could not upload local data.',
+      })
+
+      await refreshCloud(
+        false,
+      )
+    } finally {
+      setStatus(
+        'idle',
+      )
     }
+  }
 
   const downloadCloud =
     async (
-      source: CloudStateResponse,
-    ) => {
-      try {
-        setStatus('downloading')
-        setMessage(null)
+      source:
+        CloudStateResponse,
+  ) => {
+    try {
+      setStatus(
+        'downloading',
+      )
 
-        applyCloudPayload(
-          source.payload,
-        )
+      setMessage(
+        null,
+      )
 
-        markCloudSyncComplete(
-          source.revision,
-          source.payload,
-        )
+      applyCloudPayload(
+        source.payload,
+      )
 
-        setMessage({
-          type: 'success',
-          text:
-            'Cloud data restored. Reloading the simulator so every local-first module reads the restored state.',
-        })
+      markCloudSyncComplete(
+        source.revision,
+        source.payload,
+      )
 
-        window.setTimeout(
-          () =>
-            window.location.reload(),
-          550,
-        )
-      } catch (error) {
-        setStatus('idle')
+      setMessage({
+        type:
+          'success',
+        text:
+          'Cloud data restored. Reloading the simulator so every local-first module reads the restored state.',
+      })
 
-        setMessage({
-          type: 'error',
-          text:
-            error instanceof Error
-              ? error.message
-              : 'Could not restore cloud data.',
-        })
-      }
+      window.setTimeout(
+        () =>
+          window.location.reload(),
+        550,
+      )
+    } catch (
+      error
+    ) {
+      setStatus(
+        'idle',
+      )
+
+      setMessage({
+        type:
+          'error',
+        text:
+          error instanceof Error
+            ? error.message
+            : 'Could not restore cloud data.',
+      })
     }
+  }
 
   const smartSync =
     async () => {
-      if (!cloudLoaded) {
+      if (
+        !cloudLoaded
+      ) {
         await refreshCloud()
+
         return
       }
 
@@ -358,6 +525,7 @@ function CloudSyncPanel() {
           cloud?.revision ??
           0,
         )
+
         return
       }
 
@@ -366,7 +534,10 @@ function CloudSyncPanel() {
           'download' &&
         cloud
       ) {
-        await downloadCloud(cloud)
+        await downloadCloud(
+          cloud,
+        )
+
         return
       }
 
@@ -374,7 +545,9 @@ function CloudSyncPanel() {
         decision.action ===
         'nothing'
       ) {
-        if (cloud) {
+        if (
+          cloud
+        ) {
           markCloudSyncComplete(
             cloud.revision,
             cloud.payload,
@@ -387,16 +560,20 @@ function CloudSyncPanel() {
         )
 
         setMessage({
-          type: 'success',
+          type:
+            'success',
           text:
             'Local and cloud data are already synchronized.',
         })
+
         return
       }
 
       setMessage({
-        type: 'warning',
-        text: decision.reason,
+        type:
+          'warning',
+        text:
+          decision.reason,
       })
     }
 
@@ -411,30 +588,79 @@ function CloudSyncPanel() {
       }
 
       try {
-        setStatus('deleting')
+        setStatus(
+          'deleting',
+        )
 
         await deleteCloudState()
 
-        setCloud(null)
-        setCloudLoaded(true)
+        setCloud(
+          null,
+        )
+
+        setCloudLoaded(
+          true,
+        )
 
         setMessage({
-          type: 'success',
+          type:
+            'success',
           text:
             'Cloud snapshot deleted. Local data is unchanged.',
         })
-      } catch (error) {
+      } catch (
+        error
+      ) {
         setMessage({
-          type: 'error',
+          type:
+            'error',
           text:
             error instanceof Error
               ? error.message
               : 'Could not delete cloud data.',
         })
       } finally {
-        setStatus('idle')
+        setStatus(
+          'idle',
+        )
       }
     }
+
+  const toggleAutomatic =
+    () => {
+      setAutoCloudSyncEnabled(
+        !autoEnabled,
+      )
+    }
+
+  const autoStatusLabel =
+    autoStatus.state ===
+      'synced'
+      ? 'Saved'
+      : autoStatus.state ===
+          'uploading'
+        ? 'Saving'
+        : autoStatus.state ===
+            'downloading'
+          ? 'Restoring'
+          : autoStatus.state ===
+              'checking'
+            ? 'Checking'
+            : autoStatus.state ===
+                'waiting'
+              ? 'Pending'
+              : autoStatus.state ===
+                  'conflict'
+                ? 'Conflict'
+                : autoStatus.state ===
+                    'offline'
+                  ? 'Offline'
+                  : autoStatus.state ===
+                      'error'
+                    ? 'Error'
+                    : autoEnabled
+                      ? 'Ready'
+                      : 'Off'
 
   return (
     <section
@@ -448,11 +674,11 @@ function CloudSyncPanel() {
           </span>
 
           <strong>
-            Local-first synchronization
+            Automatic local-first synchronization
           </strong>
 
           <small>
-            V50 backs up Tribal Battle localStorage intelligence under your authenticated account without changing the individual feature storage formats.
+            V53 saves safe local changes automatically, checks for newer cloud revisions in the background and stops before any ambiguous overwrite.
           </small>
         </div>
 
@@ -477,9 +703,83 @@ function CloudSyncPanel() {
         <>
           {message && (
             <div className={`cloud-sync-message ${message.type}`}>
-              {message.text}
+              {
+                message.text
+              }
             </div>
           )}
+
+          <div className={`cloud-auto-sync-card state-${autoStatus.state}`}>
+            <div className="cloud-auto-sync-main">
+              <div className="cloud-auto-sync-title">
+                <span>
+                  Automatic Sync
+                </span>
+
+                <strong>
+                  {
+                    autoStatusLabel
+                  }
+                </strong>
+              </div>
+
+              <small>
+                {
+                  autoStatus.message
+                }
+              </small>
+            </div>
+
+            <label className="cloud-auto-sync-toggle">
+              <input
+                type="checkbox"
+                checked={
+                  autoEnabled
+                }
+                onChange={
+                  toggleAutomatic
+                }
+              />
+
+              <span>
+                {autoEnabled
+                  ? 'On'
+                  : 'Off'}
+              </span>
+            </label>
+          </div>
+
+          <div className="cloud-auto-sync-rules">
+            <div>
+              <strong>
+                Local change
+              </strong>
+
+              <span>
+                waits about 1.8 seconds, then saves
+              </span>
+            </div>
+
+            <div>
+              <strong>
+                Remote check
+              </strong>
+
+              <span>
+                every 30 seconds while signed in
+              </span>
+            </div>
+
+            <div>
+              <strong>
+                Conflict
+              </strong>
+
+              <span>
+                stops automatically; never picks a winner
+              </span>
+            </div>
+          </div>
 
           <div className="cloud-sync-overview">
             <div>
@@ -488,7 +788,10 @@ function CloudSyncPanel() {
               </span>
 
               <strong>
-                {local.keyCount} data keys
+                {
+                  local.keyCount
+                }{' '}
+                data keys
               </strong>
 
               <small>
@@ -496,7 +799,9 @@ function CloudSyncPanel() {
                   local.approximateBytes,
                 )}
                 {' · '}
-                fingerprint {local.fingerprint}
+                fingerprint {
+                  local.fingerprint
+                }
               </small>
             </div>
 
@@ -516,7 +821,7 @@ function CloudSyncPanel() {
               <small>
                 {cloud
                   ? `${Object.keys(cloud.payload).length} keys · updated ${formatDateTime(cloud.updatedAt)}`
-                  : 'First Smart Sync can create it'}
+                  : 'Automatic sync can create it'}
               </small>
             </div>
 
@@ -532,14 +837,16 @@ function CloudSyncPanel() {
               </strong>
 
               <small>
-                revision {metadata.lastCloudRevision}
+                revision {
+                  metadata.lastCloudRevision
+                }
               </small>
             </div>
           </div>
 
           <div className={`cloud-sync-decision action-${decision.action}`}>
             <span>
-              Smart Sync Decision
+              Current Decision
             </span>
 
             <strong>
@@ -556,7 +863,9 @@ function CloudSyncPanel() {
             </strong>
 
             <small>
-              {decision.reason}
+              {
+                decision.reason
+              }
             </small>
           </div>
 
@@ -565,25 +874,30 @@ function CloudSyncPanel() {
               type="button"
               className="primary"
               disabled={
-                status !== 'idle'
+                status !==
+                'idle'
               }
               onClick={() =>
                 void smartSync()
               }
             >
-              {status === 'uploading'
+              {status ===
+              'uploading'
                 ? 'Uploading...'
-                : status === 'downloading'
+                : status ===
+                    'downloading'
                   ? 'Downloading...'
-                  : status === 'loading'
+                  : status ===
+                      'loading'
                     ? 'Checking Cloud...'
-                    : 'Smart Sync'}
+                    : 'Sync Now'}
             </button>
 
             <button
               type="button"
               disabled={
-                status !== 'idle'
+                status !==
+                'idle'
               }
               onClick={() =>
                 void uploadLocal(
@@ -598,7 +912,8 @@ function CloudSyncPanel() {
             <button
               type="button"
               disabled={
-                status !== 'idle' ||
+                status !==
+                  'idle' ||
                 !cloud
               }
               onClick={() => {
@@ -608,7 +923,9 @@ function CloudSyncPanel() {
                     'Replace this browser cloud-eligible Tribal Battle data with the cloud snapshot?',
                   )
                 ) {
-                  void downloadCloud(cloud)
+                  void downloadCloud(
+                    cloud,
+                  )
                 }
               }}
             >
@@ -618,7 +935,8 @@ function CloudSyncPanel() {
             <button
               type="button"
               disabled={
-                status !== 'idle'
+                status !==
+                'idle'
               }
               onClick={() =>
                 void refreshCloud()
@@ -640,13 +958,20 @@ function CloudSyncPanel() {
                 .sort()
                 .map(
                   (key) => (
-                    <code key={key}>
-                      {key}
+                    <code
+                      key={
+                        key
+                      }
+                    >
+                      {
+                        key
+                      }
                     </code>
                   ),
                 )}
 
-              {local.keyCount === 0 && (
+              {local.keyCount ===
+                0 && (
                 <span>
                   No cloud-eligible local keys yet.
                 </span>
@@ -656,11 +981,11 @@ function CloudSyncPanel() {
 
           <div className="cloud-sync-safety">
             <strong>
-              Conflict-safe by default
+              Manual controls remain available
             </strong>
 
             <span>
-              Smart Sync never guesses when both sides changed. In that case it stops and lets you explicitly choose which copy wins. Upload uses optimistic revision checking so an outdated browser cannot silently overwrite a newer cloud revision.
+              Automatic mode only performs the same conflict-safe decisions from V50. If both local and cloud changed, it stops. Upload Local and Download Cloud remain explicit recovery options.
             </span>
           </div>
 
@@ -668,7 +993,8 @@ function CloudSyncPanel() {
             type="button"
             className="cloud-sync-delete"
             disabled={
-              status !== 'idle' ||
+              status !==
+                'idle' ||
               !cloud
             }
             onClick={() =>

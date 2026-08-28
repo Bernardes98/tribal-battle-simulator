@@ -26,6 +26,7 @@ import AttackPlanQueuePanel from '../components/planning/AttackPlanQueuePanel'
 import AccountPanel from '../components/account/AccountPanel'
 import AccountDashboardPanel from '../components/account/AccountDashboardPanel'
 import CloudSyncPanel from '../components/account/CloudSyncPanel'
+import AutoCloudSyncAgent from '../components/account/AutoCloudSyncAgent'
 import HistoryOwnershipPanel from '../components/account/HistoryOwnershipPanel'
 
 import { units } from '../data/units'
@@ -1555,6 +1556,8 @@ function SimulatorPage() {
             Configure both armies and the most important battle settings in one compact comparison table.
           </p>
         </section>
+
+        <AutoCloudSyncAgent />
 
         <AccountPanel />
 

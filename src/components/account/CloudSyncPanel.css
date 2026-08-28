@@ -255,3 +255,136 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* V53 — Automatic Cloud Sync */
+.cloud-auto-sync-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 12px 0;
+  padding: 10px;
+  border: 1px solid #8d633c;
+  background: #d2aa78;
+}
+
+.cloud-auto-sync-card.state-synced {
+  background: #c8ca88;
+}
+
+.cloud-auto-sync-card.state-waiting,
+.cloud-auto-sync-card.state-checking,
+.cloud-auto-sync-card.state-uploading,
+.cloud-auto-sync-card.state-downloading {
+  background: #d6bd78;
+}
+
+.cloud-auto-sync-card.state-conflict,
+.cloud-auto-sync-card.state-error {
+  background: #d3a079;
+}
+
+.cloud-auto-sync-card.state-offline {
+  background: #c4aa83;
+}
+
+.cloud-auto-sync-main {
+  display: grid;
+  gap: 3px;
+}
+
+.cloud-auto-sync-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.cloud-auto-sync-title > span {
+  color: #674326;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cloud-auto-sync-title strong {
+  color: #2d190c;
+  font-size: 13px;
+}
+
+.cloud-auto-sync-main small {
+  color: #654326;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.cloud-auto-sync-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 72px;
+  padding: 6px 8px;
+  border: 1px solid #75502f;
+  background: #b98652;
+  cursor: pointer;
+}
+
+.cloud-auto-sync-toggle input {
+  width: 15px;
+  height: 15px;
+  accent-color: #70451f;
+}
+
+.cloud-auto-sync-toggle span {
+  color: #3b2513;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.cloud-auto-sync-rules {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  margin: 8px 12px 0;
+  background: #ad8051;
+}
+
+.cloud-auto-sync-rules > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  background: #d1a978;
+}
+
+.cloud-auto-sync-rules strong {
+  color: #3b2513;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.cloud-auto-sync-rules span {
+  color: #684527;
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+@media (max-width: 720px) {
+  .cloud-auto-sync-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cloud-auto-sync-toggle {
+    justify-content: center;
+  }
+
+  .cloud-auto-sync-rules {
+    grid-template-columns: 1fr;
+  }
+}
