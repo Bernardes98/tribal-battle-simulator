@@ -1,0 +1,535 @@
+#village-overview {
+  scroll-margin-top: 90px;
+}
+
+.village-overview {
+  margin-top: 22px;
+  border: 1px solid #76502f;
+  background: #cba273;
+  color: #2c1a0d;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 238, 204, 0.35);
+}
+
+.village-overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #76502f;
+  background: #a87444;
+}
+
+.village-overview-eyebrow {
+  color: #673e1c;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.village-overview-header h3 {
+  margin: 3px 0 4px;
+  color: #261507;
+}
+
+.village-overview-header p {
+  max-width: 760px;
+  margin: 0;
+  color: #59371d;
+  font-size: 12px;
+}
+
+.village-overview button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.village-overview button:hover:not(:disabled) {
+  background: #b98652;
+}
+
+.village-overview button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.village-overview button.primary {
+  background: #70451f;
+  color: #fff1d0;
+}
+
+.village-overview-selector {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1fr)
+    minmax(280px, 1.4fr)
+    auto;
+  gap: 10px;
+  align-items: end;
+  padding: 10px 18px;
+  border-bottom: 1px solid #986b41;
+  background: #c39464;
+}
+
+.village-overview-selector label {
+  display: grid;
+  gap: 4px;
+}
+
+.village-overview-selector label > span {
+  color: #5e3b20;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.village-overview-selector input,
+.village-overview-selector select {
+  width: 100%;
+  min-height: 35px;
+  padding: 6px 9px;
+  border: 1px solid #7b5532;
+  background: #ead2ad;
+  color: #2c1a0d;
+}
+
+.village-overview-selector > span {
+  padding-bottom: 7px;
+  color: #624024;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.village-overview-identity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 18px;
+  border-bottom: 1px solid #986b41;
+  background: #d0a675;
+}
+
+.village-overview-identity > div:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.village-overview-identity > div:first-child > span {
+  color: #77502f;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.village-overview-identity > div:first-child > strong {
+  overflow: hidden;
+  color: #2d190c;
+  font-size: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.village-overview-identity > div:first-child > small {
+  color: #684527;
+  font-size: 9px;
+}
+
+.village-overview-identity-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.village-overview-identity-actions > span {
+  align-self: center;
+  padding: 3px 6px;
+  border: 1px solid #795333;
+  background: #9a6b3f;
+  color: #fff0cf;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.village-overview-identity-actions button.watching {
+  background: #6f742c;
+  color: #fff1d0;
+}
+
+.village-overview-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      6,
+      minmax(0, 1fr)
+    );
+  border-bottom: 1px solid #986b41;
+}
+
+.village-overview-summary > div {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  border-right: 1px solid #b48a5b;
+  background: #d7b17f;
+}
+
+.village-overview-summary > div:last-child {
+  border-right: 0;
+}
+
+.village-overview-summary span,
+.village-overview-card-header span,
+.village-overview-intel-list dt,
+.village-overview-plans-header span,
+.village-overview-plan-metrics span {
+  color: #76512f;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.village-overview-summary strong {
+  color: #2d190c;
+  font-size: 15px;
+}
+
+.village-overview-summary small {
+  color: #704a2b;
+  font-size: 8px;
+}
+
+.village-overview .positive {
+  color: #496523;
+}
+
+.village-overview .negative {
+  color: #913e2b;
+}
+
+.village-overview-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 10px;
+  padding: 12px 18px 0;
+}
+
+.village-overview-card {
+  border: 1px solid #8c6038;
+  background: #d9b684;
+}
+
+.village-overview-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-bottom: 1px solid #aa7e50;
+  background: #c89d6b;
+}
+
+.village-overview-card-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.village-overview-card-header strong {
+  color: #2d190c;
+}
+
+.village-overview-card-header > span {
+  padding: 3px 6px;
+  border: 1px solid #785333;
+  background: #9a6b3f;
+  color: #fff0cf;
+}
+
+.village-overview-defense-list {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  background: #b58a59;
+}
+
+.village-overview-defense-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+  background: #d2aa77;
+}
+
+.village-overview-defense-list span {
+  color: #664326;
+  font-size: 9px;
+}
+
+.village-overview-defense-list strong {
+  color: #2d190c;
+}
+
+.village-overview-intel-list {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  margin: 0;
+  background: #b58a59;
+}
+
+.village-overview-intel-list > div {
+  display: grid;
+  gap: 2px;
+  padding: 7px 9px;
+  background: #d2aa77;
+}
+
+.village-overview-intel-list dd {
+  margin: 0;
+  color: #2d190c;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.village-overview-note-preview {
+  max-height: 86px;
+  overflow: auto;
+  padding: 8px 9px;
+  border-top: 1px solid #b58a59;
+  color: #5f3f25;
+  font-size: 9px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.village-overview-full-section {
+  margin: 12px 18px 0;
+}
+
+.village-overview-full-section
+.target-score-details,
+.village-overview-full-section
+.defense-trend,
+.village-overview-full-section
+.village-notes-tags,
+.village-overview-full-section
+.report-timeline {
+  margin: 0;
+}
+
+.village-overview-plans {
+  margin: 12px 18px 0;
+  border: 1px solid #8c6038;
+  background: #d9b684;
+}
+
+.village-overview-plans-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-bottom: 1px solid #aa7e50;
+  background: #c89d6b;
+}
+
+.village-overview-plans-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.village-overview-plans-header strong {
+  color: #2d190c;
+}
+
+.village-overview-plan-list {
+  display: grid;
+  gap: 7px;
+  padding: 9px;
+}
+
+.village-overview-plan-list article {
+  border: 1px solid #a37649;
+  background: #d4ad7c;
+}
+
+.village-overview-plan-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  padding: 8px 9px;
+  border-bottom: 1px solid #b58a59;
+}
+
+.village-overview-plan-top > div {
+  display: grid;
+  gap: 1px;
+}
+
+.village-overview-plan-top > div > span {
+  color: #76512f;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.village-overview-plan-top > div > strong {
+  color: #2d190c;
+}
+
+.village-overview-plan-top small {
+  color: #6b4729;
+  font-size: 8px;
+}
+
+.village-overview-plan-top > span {
+  padding: 3px 5px;
+  border: 1px solid #795333;
+  background: #9a6b3f;
+  color: #fff0cf;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.village-overview-plan-metrics {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  background: #b58a59;
+}
+
+.village-overview-plan-metrics > div {
+  display: grid;
+  gap: 2px;
+  padding: 7px 8px;
+  background: #d2aa77;
+}
+
+.village-overview-plan-metrics strong {
+  color: #2d190c;
+  font-size: 10px;
+}
+
+.village-overview-plan-list p {
+  margin: 0;
+  padding: 8px 9px;
+  border-top: 1px solid #b58a59;
+  color: #5f3f25;
+  font-size: 9px;
+  white-space: pre-wrap;
+}
+
+.village-overview-card-empty,
+.village-overview-message {
+  padding: 18px;
+  color: #604027;
+  font-size: 10px;
+  text-align: center;
+}
+
+.village-overview-message {
+  display: grid;
+  gap: 6px;
+  margin: 18px;
+  border: 1px dashed #8c623b;
+  background: #d8b384;
+}
+
+.village-overview-message.error {
+  border-style: solid;
+  border-color: #914b37;
+  background: #d4a078;
+}
+
+.village-overview-footer-note {
+  margin-top: 12px;
+  padding: 9px 18px;
+  border-top: 1px solid #94663b;
+  background: #c29260;
+  color: #5e3c21;
+  font-size: 9px;
+}
+
+@media (max-width: 1050px) {
+  .village-overview-summary {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+  .village-overview-plan-metrics {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 760px) {
+  .village-overview-header,
+  .village-overview-identity,
+  .village-overview-plans-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .village-overview-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .village-overview-selector > span {
+    padding-bottom: 0;
+  }
+
+  .village-overview-identity-actions {
+    justify-content: flex-start;
+  }
+
+  .village-overview-summary,
+  .village-overview-grid,
+  .village-overview-plan-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .village-overview-defense-list,
+  .village-overview-intel-list {
+    grid-template-columns: 1fr;
+  }
+
+  .village-overview-full-section,
+  .village-overview-plans {
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+}
