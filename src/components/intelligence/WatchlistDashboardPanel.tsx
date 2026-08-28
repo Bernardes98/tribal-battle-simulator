@@ -46,8 +46,8 @@ import {
 } from '../../domain/intelligence/targetScoring'
 
 import {
-  listSimulationHistory,
-} from '../../services/simulationHistoryApi'
+  listIntelligenceHistory,
+} from '../../services/intelligenceApi'
 
 import type {
   SimulationHistorySource,
@@ -233,7 +233,7 @@ function WatchlistDashboardPanel({
   ] = useState<
     Awaited<
       ReturnType<
-        typeof listSimulationHistory
+        typeof listIntelligenceHistory
       >
     >
   >([])
@@ -319,7 +319,7 @@ function WatchlistDashboardPanel({
         setError(null)
 
         const history =
-          await listSimulationHistory()
+          await listIntelligenceHistory()
 
         setItems(history)
         setWatchSettings(

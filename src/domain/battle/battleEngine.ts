@@ -7,6 +7,7 @@ import { units } from '../../data/units'
 
 import type {
   Army,
+  ArmyValueSummary,
   BattleResult,
   BattleSideResult,
   BattleSimulationInput,
@@ -1818,6 +1819,7 @@ export const simulateBattle = (
       initialAttacker,
       currentAttacker,
       attackerRevived,
+      'attacker',
     )
 
   const defenderResult =
@@ -1825,6 +1827,7 @@ export const simulateBattle = (
       initialDefender,
       currentDefender,
       defenderRevived,
+      'defender',
     )
 
   const attackStrength =

@@ -1,3 +1,8 @@
+import {
+  deleteServerIntelligenceAnnotation,
+  saveServerIntelligenceAnnotation,
+} from '../../services/intelligenceApi'
+
 export const VILLAGE_ANNOTATIONS_CHANGED_EVENT =
   'tribal-battle-village-annotations-changed'
 
@@ -153,6 +158,17 @@ export const saveVillageAnnotation = (
     ),
   )
 
+  void saveServerIntelligenceAnnotation({
+    villageKey: annotation.villageKey,
+    tags: annotation.tags,
+    note: annotation.note,
+  }).catch((error) => {
+    console.warn(
+      'Could not persist village annotation to server-side intelligence:',
+      error,
+    )
+  })
+
   return annotation
 }
 
@@ -174,6 +190,15 @@ export const deleteVillageAnnotation = (
       VILLAGE_ANNOTATIONS_CHANGED_EVENT,
     ),
   )
+
+  void deleteServerIntelligenceAnnotation(
+    villageKey,
+  ).catch((error) => {
+    console.warn(
+      'Could not delete village annotation from server-side intelligence:',
+      error,
+    )
+  })
 }
 
 export const toggleVillageTag = (

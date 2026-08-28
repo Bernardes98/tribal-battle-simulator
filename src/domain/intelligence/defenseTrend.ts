@@ -2,7 +2,7 @@ import { units } from '../../data/units'
 
 import type {
   UnitId,
-} from '../../types/Battle'
+} from '../../types/Unit'
 
 import type {
   VillageIntelligence,

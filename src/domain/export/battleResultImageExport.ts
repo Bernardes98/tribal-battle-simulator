@@ -227,32 +227,6 @@ const rect = (
   )
 }
 
-const line = (
-  context:
-    CanvasRenderingContext2D,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  color =
-    theme.border,
-): void => {
-  context.beginPath()
-  context.moveTo(
-    x1,
-    y1,
-  )
-  context.lineTo(
-    x2,
-    y2,
-  )
-  context.strokeStyle =
-    color
-  context.lineWidth =
-    1
-  context.stroke()
-}
-
 const drawStat = (
   context:
     CanvasRenderingContext2D,

@@ -978,6 +978,9 @@ export const optimizeArmyComposition = (
     }
   }
 
+  const winningBest =
+    best as TemplateSearchResult
+
   return {
     success: true,
 
@@ -987,16 +990,16 @@ export const optimizeArmyComposition = (
     luck,
 
     recommendedArmy:
-      best.army,
+      winningBest.army,
 
     currentProvisions,
 
     recommendedProvisions:
-      best.provisions,
+      winningBest.provisions,
 
     provisionDifference:
       currentProvisions -
-      best.provisions,
+      winningBest.provisions,
 
     simulations,
 
@@ -1006,10 +1009,10 @@ export const optimizeArmyComposition = (
     winningTemplates,
 
     bestTemplate:
-      best.template.name,
+      winningBest.template.name,
 
     battleResult:
-      best.result,
+      winningBest.result,
 
     message:
       'A winning composition was found successfully.',

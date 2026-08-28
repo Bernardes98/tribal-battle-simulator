@@ -46,8 +46,8 @@ import {
 } from '../../domain/intelligence/targetRanking'
 
 import {
-  listSimulationHistory,
-} from '../../services/simulationHistoryApi'
+  listIntelligenceHistory,
+} from '../../services/intelligenceApi'
 
 import type {
   SimulationHistorySource,
@@ -142,7 +142,7 @@ function TargetRankingDashboardPanel({
   ] = useState<
     Awaited<
       ReturnType<
-        typeof listSimulationHistory
+        typeof listIntelligenceHistory
       >
     >
   >([])
@@ -225,7 +225,7 @@ function TargetRankingDashboardPanel({
         setError(null)
 
         setItems(
-          await listSimulationHistory(),
+          await listIntelligenceHistory(),
         )
 
         setWatchSettings(

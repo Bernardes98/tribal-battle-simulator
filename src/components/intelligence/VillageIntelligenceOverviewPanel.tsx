@@ -43,10 +43,6 @@ import {
   loadAttackPlans,
 } from '../../domain/planning/attackPlan'
 
-import type {
-  AttackPlan,
-} from '../../domain/planning/attackPlan'
-
 import {
   calculateConquestProjection,
   loadConquestPlannerSettings,
@@ -54,8 +50,8 @@ import {
 } from '../../domain/planning/conquestPlanner'
 
 import {
-  listSimulationHistory,
-} from '../../services/simulationHistoryApi'
+  listIntelligenceHistory,
+} from '../../services/intelligenceApi'
 
 import type {
   SimulationHistorySource,
@@ -236,7 +232,7 @@ function VillageIntelligenceOverviewPanel({
   ] = useState<
     Awaited<
       ReturnType<
-        typeof listSimulationHistory
+        typeof listIntelligenceHistory
       >
     >
   >([])
@@ -280,7 +276,7 @@ function VillageIntelligenceOverviewPanel({
         )
 
         setHistory(
-          await listSimulationHistory(),
+          await listIntelligenceHistory(),
         )
       } catch (
         loadError

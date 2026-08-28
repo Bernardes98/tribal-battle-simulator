@@ -2,8 +2,11 @@ import { units } from '../../data/units'
 
 import type {
   Army,
-  UnitId,
 } from '../../types/Battle'
+
+import type {
+  UnitId,
+} from '../../types/Unit'
 
 export interface UnitDefenseChange {
   unitId: UnitId

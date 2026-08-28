@@ -673,7 +673,7 @@ const detectBattleRowsFromLossText = (
           defenderLossCenter,
         )
 
-  const attacker =
+  const attacker: ReportRowTemplate =
     attackerQuantityCenter === null
       ? fallbackAttacker
       : {
@@ -687,7 +687,7 @@ const detectBattleRowsFromLossText = (
             : 'battle-regular',
         }
 
-  const defender =
+  const defender: ReportRowTemplate =
     defenderQuantityCenter === null
       ? fallbackDefender
       : {

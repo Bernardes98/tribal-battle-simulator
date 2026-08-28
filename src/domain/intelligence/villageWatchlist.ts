@@ -1,3 +1,7 @@
+import {
+  saveServerIntelligenceWatchlist,
+} from '../../services/intelligenceApi'
+
 import type {
   VillageIntelligence,
 } from './playerVillageIntelligence'
@@ -132,6 +136,18 @@ export const saveVillageWatchlistSettings =
         VILLAGE_WATCHLIST_CHANGED_EVENT,
       ),
     )
+
+    void saveServerIntelligenceWatchlist({
+      watchedVillageKeys:
+        [...new Set(settings.watchedVillageKeys)],
+      alertThresholdPercent:
+        clampThreshold(settings.alertThresholdPercent),
+    }).catch((error) => {
+      console.warn(
+        'Could not persist watchlist to server-side intelligence:',
+        error,
+      )
+    })
   }
 
 export const toggleVillageWatch =

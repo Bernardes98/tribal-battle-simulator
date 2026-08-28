@@ -46,8 +46,8 @@ import {
 } from '../../domain/planning/attackPlan'
 
 import {
-  listSimulationHistory,
-} from '../../services/simulationHistoryApi'
+  listIntelligenceHistory,
+} from '../../services/intelligenceApi'
 
 import type {
   SimulationHistorySource,
@@ -171,7 +171,7 @@ function AttackCandidateAnalyzerPanel({
   ] = useState<
     Awaited<
       ReturnType<
-        typeof listSimulationHistory
+        typeof listIntelligenceHistory
       >
     >
   >([])
@@ -258,7 +258,7 @@ function AttackCandidateAnalyzerPanel({
         setError(null)
 
         setHistory(
-          await listSimulationHistory(),
+          await listIntelligenceHistory(),
         )
 
         setWatchSettings(

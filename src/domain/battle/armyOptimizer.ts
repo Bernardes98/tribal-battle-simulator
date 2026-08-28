@@ -10,10 +10,6 @@ import type {
   BattleSimulationInput,
 } from '../../types/Battle'
 
-import type {
-  UnitId,
-} from '../../types/Unit'
-
 export type ArmyOptimizerMode =
   | 'currentLuck'
   | 'worstCase'
