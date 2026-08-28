@@ -25,6 +25,7 @@ import AttackCandidateAnalyzerPanel from '../components/intelligence/AttackCandi
 import AttackPlanQueuePanel from '../components/planning/AttackPlanQueuePanel'
 import AccountPanel from '../components/account/AccountPanel'
 import CloudSyncPanel from '../components/account/CloudSyncPanel'
+import HistoryOwnershipPanel from '../components/account/HistoryOwnershipPanel'
 
 import { units } from '../data/units'
 
@@ -1511,6 +1512,10 @@ function SimulatorPage() {
             <a href="#cloud-sync">
               Cloud
             </a>
+
+            <a href="#history-ownership">
+              Account History
+            </a>
           </nav>
         </div>
       </header>
@@ -1549,6 +1554,15 @@ function SimulatorPage() {
         <AccountPanel />
 
         <CloudSyncPanel />
+
+        <HistoryOwnershipPanel
+          onClaimed={() =>
+            setHistoryRefreshToken(
+              (value) =>
+                value + 1,
+            )
+          }
+        />
 
         <BattleSetupTable
           attacker={attacker}

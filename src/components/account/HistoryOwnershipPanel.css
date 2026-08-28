@@ -1,0 +1,214 @@
+#history-ownership {
+  scroll-margin-top: 90px;
+}
+
+.history-ownership-panel {
+  margin: 16px 0;
+  border: 1px solid #76502f;
+  background: #cba273;
+  color: #2d190c;
+}
+
+.history-ownership-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  border-bottom: 1px solid #94683f;
+  background: #b88453;
+}
+
+.history-ownership-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.history-ownership-header > div > span,
+.history-ownership-flow span,
+.history-ownership-client > span {
+  color: #674326;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.history-ownership-header strong {
+  color: #2b180b;
+}
+
+.history-ownership-header small {
+  max-width: 760px;
+  color: #654326;
+  font-size: 9px;
+}
+
+.history-ownership-state {
+  padding: 4px 7px;
+  border: 1px solid #694422;
+  background: #8b5a30;
+  color: #fff0cf;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.history-ownership-state.account {
+  background: #65733a;
+}
+
+.history-ownership-message {
+  padding: 8px 12px;
+  border-bottom: 1px solid #a3784d;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.history-ownership-message.success {
+  background: #c6c985;
+  color: #46521f;
+}
+
+.history-ownership-message.error {
+  background: #d3a079;
+  color: #7e3022;
+}
+
+.history-ownership-body {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.history-ownership-flow {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    minmax(0, 1fr);
+  align-items: stretch;
+  gap: 6px;
+}
+
+.history-ownership-flow > div:not(.history-ownership-arrow) {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border: 1px solid #94683f;
+  background: #d5b07e;
+}
+
+.history-ownership-flow strong {
+  color: #2d190c;
+  font-size: 12px;
+}
+
+.history-ownership-flow small {
+  color: #674529;
+  font-size: 8px;
+}
+
+.history-ownership-arrow {
+  display: grid;
+  place-items: center;
+  color: #6d4727;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.history-ownership-client {
+  display: grid;
+  gap: 4px;
+  padding: 9px 10px;
+  border: 1px solid #94683f;
+  background: #c99e6e;
+}
+
+.history-ownership-client code {
+  overflow-wrap: anywhere;
+  color: #3e2815;
+  font-size: 9px;
+}
+
+.history-ownership-account-actions,
+.history-ownership-guest-note,
+.history-ownership-safety {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #94683f;
+  background: #d2aa78;
+}
+
+.history-ownership-account-actions > div,
+.history-ownership-guest-note,
+.history-ownership-safety {
+  gap: 2px;
+}
+
+.history-ownership-account-actions > div {
+  display: grid;
+}
+
+.history-ownership-account-actions strong,
+.history-ownership-guest-note strong,
+.history-ownership-safety strong {
+  color: #3b2513;
+  font-size: 9px;
+}
+
+.history-ownership-account-actions span,
+.history-ownership-guest-note span,
+.history-ownership-safety span {
+  color: #674529;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.history-ownership-guest-note,
+.history-ownership-safety {
+  display: grid;
+}
+
+.history-ownership-safety {
+  background: #c7a474;
+}
+
+.history-ownership-panel button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #684323;
+  background: #70451f;
+  color: #fff1d0;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.history-ownership-panel button:hover:not(:disabled) {
+  background: #82552c;
+}
+
+.history-ownership-panel button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (max-width: 720px) {
+  .history-ownership-header,
+  .history-ownership-account-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .history-ownership-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .history-ownership-arrow {
+    min-height: 28px;
+    transform: rotate(90deg);
+  }
+}
