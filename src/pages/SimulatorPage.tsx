@@ -23,6 +23,7 @@ import WatchlistDashboardPanel from '../components/intelligence/WatchlistDashboa
 import TargetRankingDashboardPanel from '../components/intelligence/TargetRankingDashboardPanel'
 import AttackCandidateAnalyzerPanel from '../components/intelligence/AttackCandidateAnalyzerPanel'
 import AttackPlanQueuePanel from '../components/planning/AttackPlanQueuePanel'
+import AccountPanel from '../components/account/AccountPanel'
 
 import { units } from '../data/units'
 
@@ -1501,6 +1502,10 @@ function SimulatorPage() {
             <a href="#simulation-tools">
               Presets
             </a>
+
+            <a href="#account">
+              Account
+            </a>
           </nav>
         </div>
       </header>
@@ -1535,6 +1540,8 @@ function SimulatorPage() {
             Configure both armies and the most important battle settings in one compact comparison table.
           </p>
         </section>
+
+        <AccountPanel />
 
         <BattleSetupTable
           attacker={attacker}
