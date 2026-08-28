@@ -152,6 +152,72 @@
   background: #c19462;
 }
 
+
+.account-security-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.3fr)
+    minmax(280px, 0.7fr);
+  gap: 1px;
+  background: #a77a4c;
+}
+
+.account-password-form,
+.account-security-danger {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 11px;
+  background: #d5af7e;
+}
+
+.account-security-danger {
+  background: #cfa07a;
+}
+
+.account-security-card-heading {
+  display: grid;
+  gap: 2px;
+}
+
+.account-security-card-heading strong {
+  color: #342010;
+  font-size: 10px;
+}
+
+.account-security-card-heading small,
+.account-security-danger p {
+  margin: 0;
+  color: #69472a;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.account-password-form label {
+  display: grid;
+  gap: 4px;
+}
+
+.account-password-form label > span {
+  color: #684527;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.account-password-form input {
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 8px;
+  border: 1px solid #795333;
+  background: #ead2ad;
+  color: #2c1a0d;
+}
+
+.account-password-form button,
+.account-security-danger button {
+  justify-self: start;
+}
+
 .account-dashboard-sessions {
   display: grid;
   gap: 1px;
@@ -282,6 +348,10 @@
     grid-template-columns:
       minmax(0, 1fr)
       auto;
+  }
+
+  .account-security-grid {
+    grid-template-columns: 1fr;
   }
 
   .account-dashboard-sessions dl {

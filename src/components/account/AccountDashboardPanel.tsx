@@ -42,8 +42,10 @@ import {
 } from '../../services/simulationHistoryApi'
 
 import {
+  changeAccountPassword,
   listAccountSessions,
   revokeAccountSession,
+  revokeAllAccountSessions,
   revokeOtherAccountSessions,
 } from '../../services/authApi'
 
@@ -245,6 +247,26 @@ function AccountDashboardPanel() {
       text: string
     } | null
   >(null)
+
+  const [
+    currentPassword,
+    setCurrentPassword,
+  ] = useState('')
+
+  const [
+    newPassword,
+    setNewPassword,
+  ] = useState('')
+
+  const [
+    confirmPassword,
+    setConfirmPassword,
+  ] = useState('')
+
+  const [
+    changingPassword,
+    setChangingPassword,
+  ] = useState(false)
 
   const localSnapshot =
     useMemo(
@@ -571,6 +593,161 @@ function AccountDashboardPanel() {
       }
     }
 
+  const changePassword =
+    async (
+      event:
+        React.FormEvent<HTMLFormElement>,
+    ) => {
+      event.preventDefault()
+
+      const current =
+        loadAuthSession()
+
+      if (
+        !current ||
+        changingPassword
+      ) {
+        return
+      }
+
+      if (
+        newPassword !==
+        confirmPassword
+      ) {
+        setMessage({
+          type:
+            'error',
+          text:
+            'New password and confirmation do not match.',
+        })
+
+        return
+      }
+
+      if (
+        newPassword.length < 8
+      ) {
+        setMessage({
+          type:
+            'error',
+          text:
+            'New password must contain at least 8 characters.',
+        })
+
+        return
+      }
+
+      try {
+        setChangingPassword(
+          true,
+        )
+
+        setMessage(
+          null,
+        )
+
+        const result =
+          await changeAccountPassword(
+            current.token,
+            {
+              currentPassword,
+              newPassword,
+            },
+          )
+
+        setCurrentPassword(
+          '',
+        )
+
+        setNewPassword(
+          '',
+        )
+
+        setConfirmPassword(
+          '',
+        )
+
+        setMessage({
+          type:
+            'success',
+          text:
+            `Password changed. ${result.revokedSessions} other session${result.revokedSessions === 1 ? '' : 's'} signed out.`,
+        })
+
+        await refresh()
+      } catch (
+        error
+      ) {
+        setMessage({
+          type:
+            'error',
+          text:
+            error instanceof Error
+              ? error.message
+              : 'Could not change the password.',
+        })
+      } finally {
+        setChangingPassword(
+          false,
+        )
+      }
+    }
+
+  const revokeAllSessions =
+    async () => {
+      const current =
+        loadAuthSession()
+
+      if (
+        !current
+      ) {
+        return
+      }
+
+      if (
+        !window.confirm(
+          'Sign out every active session, including this browser?',
+        )
+      ) {
+        return
+      }
+
+      try {
+        setMutatingSessionId(
+          'all',
+        )
+
+        const result =
+          await revokeAllAccountSessions(
+            current.token,
+          )
+
+        setMessage({
+          type:
+            'success',
+          text:
+            `${result.revokedCount} session${result.revokedCount === 1 ? '' : 's'} signed out.`,
+        })
+
+        clearAuthSession()
+      } catch (
+        error
+      ) {
+        setMessage({
+          type:
+            'error',
+          text:
+            error instanceof Error
+              ? error.message
+              : 'Could not sign out all sessions.',
+        })
+      } finally {
+        setMutatingSessionId(
+          null,
+        )
+      }
+    }
+
   if (
     !session
   ) {
@@ -598,6 +775,14 @@ function AccountDashboardPanel() {
             Guest
           </span>
         </div>
+
+        {message && (
+          <div className={`account-dashboard-message ${message.type}`}>
+            {
+              message.text
+            }
+          </div>
+        )}
 
         <div className="account-dashboard-guest">
           Account statistics and session management become available after sign in.
@@ -776,7 +961,161 @@ function AccountDashboardPanel() {
       <div className="account-dashboard-section-heading">
         <div>
           <span>
-            Security
+            Account Security
+          </span>
+
+          <strong>
+            Password & account access
+          </strong>
+
+          <small>
+            Changing your password keeps this browser signed in and revokes every other session.
+          </small>
+        </div>
+      </div>
+
+      <div className="account-security-grid">
+        <form
+          className="account-password-form"
+          onSubmit={
+            (event) =>
+              void changePassword(
+                event,
+              )
+          }
+        >
+          <div className="account-security-card-heading">
+            <strong>
+              Change Password
+            </strong>
+
+            <small>
+              Your current password is required.
+            </small>
+          </div>
+
+          <label>
+            <span>
+              Current password
+            </span>
+
+            <input
+              type="password"
+              autoComplete="current-password"
+              minLength={8}
+              maxLength={72}
+              required
+              value={
+                currentPassword
+              }
+              onChange={
+                (event) =>
+                  setCurrentPassword(
+                    event.target.value,
+                  )
+              }
+            />
+          </label>
+
+          <label>
+            <span>
+              New password
+            </span>
+
+            <input
+              type="password"
+              autoComplete="new-password"
+              minLength={8}
+              maxLength={72}
+              required
+              value={
+                newPassword
+              }
+              onChange={
+                (event) =>
+                  setNewPassword(
+                    event.target.value,
+                  )
+              }
+            />
+          </label>
+
+          <label>
+            <span>
+              Confirm new password
+            </span>
+
+            <input
+              type="password"
+              autoComplete="new-password"
+              minLength={8}
+              maxLength={72}
+              required
+              value={
+                confirmPassword
+              }
+              onChange={
+                (event) =>
+                  setConfirmPassword(
+                    event.target.value,
+                  )
+              }
+            />
+          </label>
+
+          <button
+            type="submit"
+            disabled={
+              changingPassword ||
+              mutatingSessionId !==
+                null
+            }
+          >
+            {changingPassword
+              ? 'Changing...'
+              : 'Change Password'}
+          </button>
+        </form>
+
+        <div className="account-security-danger">
+          <div className="account-security-card-heading">
+            <strong>
+              Sign Out Everywhere
+            </strong>
+
+            <small>
+              Immediately revoke every active session, including this browser.
+            </small>
+          </div>
+
+          <p>
+            Use this if you think your account is open on a device you no longer control. You will need to sign in again here afterward.
+          </p>
+
+          <button
+            type="button"
+            className="danger"
+            disabled={
+              mutatingSessionId !==
+                null ||
+              changingPassword
+            }
+            onClick={() =>
+              void revokeAllSessions()
+            }
+          >
+            {mutatingSessionId ===
+            'all'
+              ? 'Signing Out...'
+              : 'Sign Out Everywhere'}
+          </button>
+        </div>
+      </div>
+
+      <div className="account-dashboard-section-heading">
+        <div>
+          <span>
+            Sessions
           </span>
 
           <strong>

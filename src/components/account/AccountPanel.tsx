@@ -16,7 +16,9 @@ import type {
 
 import {
   AUTH_SESSION_CHANGED_EVENT,
+  AUTH_SESSION_INVALID_EVENT,
   clearAuthSession,
+  consumeAuthSessionNotice,
   loadAuthSession,
   saveAuthSession,
   updateStoredAuthUser,
@@ -120,7 +122,21 @@ function AccountPanel() {
         | 'error'
       text: string
     } | null
-  >(null)
+  >(
+    () => {
+      const notice =
+        consumeAuthSessionNotice()
+
+      return notice
+        ? {
+            type:
+              'error' as const,
+            text:
+              notice,
+          }
+        : null
+    },
+  )
 
   const syncFromStorage =
     () => {
@@ -140,15 +156,41 @@ function AccountPanel() {
 
   useEffect(
     () => {
+      const handleInvalidSession =
+        (event: Event) => {
+          const customEvent =
+            event as CustomEvent<{
+              message?: string
+            }>
+
+          consumeAuthSessionNotice()
+
+          showMessage(
+            'error',
+            customEvent.detail?.message ||
+              'Your session is no longer active. Please sign in again.',
+          )
+        }
+
       window.addEventListener(
         AUTH_SESSION_CHANGED_EVENT,
         syncFromStorage,
+      )
+
+      window.addEventListener(
+        AUTH_SESSION_INVALID_EVENT,
+        handleInvalidSession,
       )
 
       return () => {
         window.removeEventListener(
           AUTH_SESSION_CHANGED_EVENT,
           syncFromStorage,
+        )
+
+        window.removeEventListener(
+          AUTH_SESSION_INVALID_EVENT,
+          handleInvalidSession,
         )
       }
     },
@@ -181,8 +223,19 @@ function AccountPanel() {
             updateStoredAuthUser(
               current,
             )
-          } catch {
-            clearAuthSession()
+          } catch (
+            error
+          ) {
+            if (
+              loadAuthSession()
+            ) {
+              showMessage(
+                'error',
+                error instanceof Error
+                  ? error.message
+                  : 'Could not verify the current session.',
+              )
+            }
           } finally {
             setChecking(
               false,

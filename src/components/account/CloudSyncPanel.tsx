@@ -37,11 +37,14 @@ import type {
 import {
   deleteCloudState,
   getCloudState,
+  listCloudStateVersions,
+  restoreCloudStateVersion,
   saveCloudState,
 } from '../../services/cloudSyncApi'
 
 import type {
   CloudStateResponse,
+  CloudStateVersionResponse,
 } from '../../services/cloudSyncApi'
 
 import './CloudSyncPanel.css'
@@ -51,6 +54,7 @@ type SyncStatus =
   | 'loading'
   | 'uploading'
   | 'downloading'
+  | 'restoring'
   | 'deleting'
 
 const formatDateTime =
@@ -90,6 +94,76 @@ const formatDateTime =
     )
   }
 
+const formatRelativeTime =
+  (
+    value: string,
+  ): string => {
+    const timestamp =
+      new Date(value)
+        .getTime()
+
+    if (
+      Number.isNaN(timestamp)
+    ) {
+      return value
+    }
+
+    const seconds =
+      Math.round(
+        (timestamp - Date.now()) /
+        1000,
+      )
+
+    const formatter =
+      new Intl.RelativeTimeFormat(
+        undefined,
+        {
+          numeric: 'auto',
+        },
+      )
+
+    if (
+      Math.abs(seconds) < 60
+    ) {
+      return formatter.format(
+        seconds,
+        'second',
+      )
+    }
+
+    const minutes =
+      Math.round(seconds / 60)
+
+    if (
+      Math.abs(minutes) < 60
+    ) {
+      return formatter.format(
+        minutes,
+        'minute',
+      )
+    }
+
+    const hours =
+      Math.round(minutes / 60)
+
+    if (
+      Math.abs(hours) < 24
+    ) {
+      return formatter.format(
+        hours,
+        'hour',
+      )
+    }
+
+    const days =
+      Math.round(hours / 24)
+
+    return formatter.format(
+      days,
+      'day',
+    )
+  }
+
 function CloudSyncPanel() {
   const [
     signedIn,
@@ -107,6 +181,13 @@ function CloudSyncPanel() {
   ] = useState<
     CloudStateResponse | null
   >(null)
+
+  const [
+    cloudVersions,
+    setCloudVersions,
+  ] = useState<
+    CloudStateVersionResponse[]
+  >([])
 
   const [
     cloudLoaded,
@@ -213,6 +294,10 @@ function CloudSyncPanel() {
 
           setCloud(
             null,
+          )
+
+          setCloudVersions(
+            [],
           )
         }
 
@@ -340,8 +425,21 @@ function CloudSyncPanel() {
           )
         }
 
+        const [
+          nextCloud,
+          nextVersions,
+        ] =
+          await Promise.all([
+            getCloudState(),
+            listCloudStateVersions(),
+          ])
+
         setCloud(
-          await getCloudState(),
+          nextCloud,
+        )
+
+        setCloudVersions(
+          nextVersions,
         )
 
         setCloudLoaded(
@@ -414,6 +512,10 @@ function CloudSyncPanel() {
 
       setCloudLoaded(
         true,
+      )
+
+      setCloudVersions(
+        await listCloudStateVersions(),
       )
 
       markCloudSyncComplete(
@@ -507,6 +609,95 @@ function CloudSyncPanel() {
     }
   }
 
+  const restoreVersion =
+    async (
+      version:
+        CloudStateVersionResponse,
+    ) => {
+      if (
+        version.current ||
+        !window.confirm(
+          `Restore revision ${version.revision}? The current cloud snapshot will be archived first, then this backup will become a new revision and replace this browser's cloud-eligible data.`,
+        )
+      ) {
+        return
+      }
+
+      try {
+        setStatus(
+          'restoring',
+        )
+
+        setMessage(
+          null,
+        )
+
+        const restored =
+          await restoreCloudStateVersion(
+            version.revision,
+            {
+              expectedRevision:
+                cloud?.revision ??
+                0,
+            },
+          )
+
+        applyCloudPayload(
+          restored.payload,
+        )
+
+        markCloudSyncComplete(
+          restored.revision,
+          restored.payload,
+        )
+
+        setCloud(
+          restored,
+        )
+
+        setCloudVersions(
+          await listCloudStateVersions(),
+        )
+
+        setLocalVersion(
+          (value) =>
+            value + 1,
+        )
+
+        setMessage({
+          type:
+            'success',
+          text:
+            `Revision ${version.revision} restored safely as new current revision ${restored.revision}. Reloading the simulator.`,
+        })
+
+        window.setTimeout(
+          () =>
+            window.location.reload(),
+          650,
+        )
+      } catch (
+        error
+      ) {
+        setStatus(
+          'idle',
+        )
+
+        setMessage({
+          type:
+            'error',
+          text:
+            error instanceof Error
+              ? error.message
+              : 'Could not restore this cloud backup.',
+        })
+
+        await refreshCloud(
+          false,
+        )
+      }
+    }
+
   const smartSync =
     async () => {
       if (
@@ -581,7 +772,7 @@ function CloudSyncPanel() {
     async () => {
       if (
         !window.confirm(
-          'Delete the cloud snapshot for this account? Local browser data will not be deleted.',
+          'Delete the current cloud snapshot? V55 will keep it as a recoverable backup, leave local browser data unchanged and turn Automatic Sync off so it is not recreated immediately.',
         )
       ) {
         return
@@ -594,8 +785,20 @@ function CloudSyncPanel() {
 
         await deleteCloudState()
 
+        setAutoCloudSyncEnabled(
+          false,
+        )
+
+        setAutoEnabled(
+          false,
+        )
+
         setCloud(
           null,
+        )
+
+        setCloudVersions(
+          await listCloudStateVersions(),
         )
 
         setCloudLoaded(
@@ -606,7 +809,7 @@ function CloudSyncPanel() {
           type:
             'success',
           text:
-            'Cloud snapshot deleted. Local data is unchanged.',
+            'Current cloud snapshot archived and removed. Automatic Sync is off and the backup remains recoverable below.',
         })
       } catch (
         error
@@ -678,7 +881,7 @@ function CloudSyncPanel() {
           </strong>
 
           <small>
-            V53 saves safe local changes automatically, checks for newer cloud revisions in the background and stops before any ambiguous overwrite.
+            V55 keeps recoverable cloud revisions behind the current snapshot while preserving V53 conflict-safe automatic synchronization.
           </small>
         </div>
 
@@ -946,6 +1149,94 @@ function CloudSyncPanel() {
             </button>
           </div>
 
+          <div className="cloud-backup-versions">
+            <div className="cloud-backup-versions-header">
+              <div>
+                <span>
+                  Cloud Backup Versions
+                </span>
+
+                <strong>
+                  {cloudVersions.length > 0
+                    ? `${cloudVersions.length} revision${cloudVersions.length === 1 ? '' : 's'} available`
+                    : 'No revisions yet'}
+                </strong>
+              </div>
+
+              <small>
+                Recent previous revisions are retained automatically. Restoring never rewinds the revision number: it creates a new current revision.
+              </small>
+            </div>
+
+            <div className="cloud-backup-version-list">
+              {cloudVersions.map(
+                (version) => (
+                  <div
+                    key={`${version.revision}-${version.current ? 'current' : 'backup'}`}
+                    className={`cloud-backup-version-row ${version.current ? 'current' : ''}`}
+                  >
+                    <div>
+                      <strong>
+                        Revision {version.revision}
+                      </strong>
+
+                      <span>
+                        {version.current
+                          ? 'Current'
+                          : 'Backup'}
+                      </span>
+                    </div>
+
+                    <small
+                      title={formatDateTime(
+                        version.snapshotAt,
+                      )}
+                    >
+                      {formatRelativeTime(
+                        version.snapshotAt,
+                      )}
+                      {' · '}
+                      {formatDateTime(
+                        version.snapshotAt,
+                      )}
+                    </small>
+
+                    {version.current ? (
+                      <span className="cloud-backup-current-badge">
+                        Current
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={
+                          status !==
+                          'idle'
+                        }
+                        onClick={() =>
+                          void restoreVersion(
+                            version,
+                          )
+                        }
+                      >
+                        {status ===
+                          'restoring'
+                          ? 'Restoring...'
+                          : 'Restore'}
+                      </button>
+                    )}
+                  </div>
+                ),
+              )}
+
+              {cloudVersions.length ===
+                0 && (
+                <div className="cloud-backup-empty">
+                  Your first successful cloud save will become Revision 1. Older revisions appear here automatically after future changes.
+                </div>
+              )}
+            </div>
+          </div>
+
           <details className="cloud-sync-details">
             <summary>
               Synced localStorage keys
@@ -985,7 +1276,7 @@ function CloudSyncPanel() {
             </strong>
 
             <span>
-              Automatic mode only performs the same conflict-safe decisions from V50. If both local and cloud changed, it stops. Upload Local and Download Cloud remain explicit recovery options.
+              Before every overwrite or deletion, V55 preserves the previous current snapshot as a recoverable revision. Automatic mode still stops on conflicts instead of choosing a winner.
             </span>
           </div>
 
@@ -1001,7 +1292,7 @@ function CloudSyncPanel() {
               void removeCloud()
             }
           >
-            Delete Cloud Snapshot
+            Delete Current Snapshot
           </button>
         </>
       )}

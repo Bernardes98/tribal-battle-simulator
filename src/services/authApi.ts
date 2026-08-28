@@ -1,3 +1,7 @@
+import {
+  readApiError,
+} from './apiError'
+
 export interface AuthUser {
   id: string
   email: string
@@ -23,6 +27,19 @@ export interface RevokeOtherSessionsResponse {
   revokedCount: number
 }
 
+export interface RevokeAllSessionsResponse {
+  revokedCount: number
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+}
+
+export interface ChangePasswordResponse {
+  revokedSessions: number
+}
+
 export interface RegisterAccountRequest {
   displayName: string
   email: string
@@ -45,28 +62,6 @@ const API_BASE_URL = (
 const AUTH_API_URL =
   `${API_BASE_URL}/api/v1/auth`
 
-const readErrorMessage = async (
-  response: Response,
-): Promise<string> => {
-  try {
-    const payload =
-      await response.json() as {
-        message?: string
-        detail?: string
-        error?: string
-      }
-
-    return (
-      payload.message ||
-      payload.detail ||
-      payload.error ||
-      `Request failed (${response.status}).`
-    )
-  } catch {
-    return `Request failed (${response.status}).`
-  }
-}
-
 const request = async <T>(
   path: string,
   init?: RequestInit,
@@ -88,10 +83,8 @@ const request = async <T>(
   if (
     !response.ok
   ) {
-    throw new Error(
-      await readErrorMessage(
-        response,
-      ),
+    throw await readApiError(
+      response,
     )
   }
 
@@ -226,6 +219,45 @@ export const revokeOtherAccountSessions =
   ): Promise<RevokeOtherSessionsResponse> => {
     return request<RevokeOtherSessionsResponse>(
       '/sessions/revoke-others',
+      {
+        method:
+          'POST',
+        headers:
+          bearerHeaders(
+            token,
+          ),
+      },
+    )
+  }
+
+export const changeAccountPassword =
+  (
+    token: string,
+    body: ChangePasswordRequest,
+  ): Promise<ChangePasswordResponse> => {
+    return request<ChangePasswordResponse>(
+      '/password/change',
+      {
+        method:
+          'POST',
+        headers:
+          bearerHeaders(
+            token,
+          ),
+        body:
+          JSON.stringify(
+            body,
+          ),
+      },
+    )
+  }
+
+export const revokeAllAccountSessions =
+  (
+    token: string,
+  ): Promise<RevokeAllSessionsResponse> => {
+    return request<RevokeAllSessionsResponse>(
+      '/sessions/revoke-all',
       {
         method:
           'POST',

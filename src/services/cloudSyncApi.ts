@@ -1,4 +1,8 @@
 import {
+  readApiError,
+} from './apiError'
+
+import {
   getAuthToken,
 } from '../domain/auth/authSession'
 
@@ -8,9 +12,19 @@ export interface CloudStateResponse {
   payload: Record<string, string>
 }
 
+export interface CloudStateVersionResponse {
+  revision: number
+  snapshotAt: string
+  current: boolean
+}
+
 export interface SaveCloudStateRequest {
   expectedRevision: number
   payload: Record<string, string>
+}
+
+export interface RestoreCloudStateRequest {
+  expectedRevision: number
 }
 
 const API_BASE_URL = (
@@ -34,28 +48,6 @@ const requireToken = (): string => {
   return token
 }
 
-const readErrorMessage = async (
-  response: Response,
-): Promise<string> => {
-  try {
-    const body =
-      await response.json() as {
-        message?: string
-        detail?: string
-        error?: string
-      }
-
-    return (
-      body.message ||
-      body.detail ||
-      body.error ||
-      `Request failed (${response.status}).`
-    )
-  } catch {
-    return `Request failed (${response.status}).`
-  }
-}
-
 export const getCloudState =
   async (): Promise<CloudStateResponse | null> => {
     const response =
@@ -75,12 +67,35 @@ export const getCloudState =
     }
 
     if (!response.ok) {
-      throw new Error(
-        await readErrorMessage(response),
+      throw await readApiError(
+        response,
       )
     }
 
     return await response.json() as CloudStateResponse
+  }
+
+export const listCloudStateVersions =
+  async (): Promise<CloudStateVersionResponse[]> => {
+    const response =
+      await fetch(
+        `${CLOUD_API_URL}/versions`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization:
+              `Bearer ${requireToken()}`,
+          },
+        },
+      )
+
+    if (!response.ok) {
+      throw await readApiError(
+        response,
+      )
+    }
+
+    return await response.json() as CloudStateVersionResponse[]
   }
 
 export const saveCloudState =
@@ -104,8 +119,38 @@ export const saveCloudState =
       )
 
     if (!response.ok) {
-      throw new Error(
-        await readErrorMessage(response),
+      throw await readApiError(
+        response,
+      )
+    }
+
+    return await response.json() as CloudStateResponse
+  }
+
+export const restoreCloudStateVersion =
+  async (
+    revision: number,
+    body: RestoreCloudStateRequest,
+  ): Promise<CloudStateResponse> => {
+    const response =
+      await fetch(
+        `${CLOUD_API_URL}/versions/${revision}/restore`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type':
+              'application/json',
+            Authorization:
+              `Bearer ${requireToken()}`,
+          },
+          body:
+            JSON.stringify(body),
+        },
+      )
+
+    if (!response.ok) {
+      throw await readApiError(
+        response,
       )
     }
 
@@ -130,8 +175,8 @@ export const deleteCloudState =
       !response.ok &&
       response.status !== 404
     ) {
-      throw new Error(
-        await readErrorMessage(response),
+      throw await readApiError(
+        response,
       )
     }
   }
