@@ -430,7 +430,7 @@ function AccountPanel() {
             </strong>
 
             <span>
-              V49 does not move your existing local intelligence to the server yet. V50 will use this account to add cloud synchronization without removing local-first behavior.
+              Your account now powers cloud synchronization and account-owned simulation history. Use the Account Dashboard to review intelligence statistics and active sessions.
             </span>
           </div>
         </div>
@@ -446,7 +446,7 @@ function AccountPanel() {
             </strong>
 
             <p>
-              Reports, plans, tags and intelligence continue using the browser as before. Creating an account only establishes secure user identity in this version.
+              Reports, plans, tags and intelligence still work in guest mode. Signing in additionally enables cloud synchronization, account-owned history and session management.
             </p>
 
             <div className="account-security-list">

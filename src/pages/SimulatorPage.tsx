@@ -24,6 +24,7 @@ import TargetRankingDashboardPanel from '../components/intelligence/TargetRankin
 import AttackCandidateAnalyzerPanel from '../components/intelligence/AttackCandidateAnalyzerPanel'
 import AttackPlanQueuePanel from '../components/planning/AttackPlanQueuePanel'
 import AccountPanel from '../components/account/AccountPanel'
+import AccountDashboardPanel from '../components/account/AccountDashboardPanel'
 import CloudSyncPanel from '../components/account/CloudSyncPanel'
 import HistoryOwnershipPanel from '../components/account/HistoryOwnershipPanel'
 
@@ -1509,6 +1510,10 @@ function SimulatorPage() {
               Account
             </a>
 
+            <a href="#account-dashboard">
+              Dashboard
+            </a>
+
             <a href="#cloud-sync">
               Cloud
             </a>
@@ -1552,6 +1557,8 @@ function SimulatorPage() {
         </section>
 
         <AccountPanel />
+
+        <AccountDashboardPanel />
 
         <CloudSyncPanel />
 

@@ -1,0 +1,310 @@
+#account-dashboard {
+  scroll-margin-top: 90px;
+}
+
+.account-dashboard-panel {
+  margin: 16px 0;
+  border: 1px solid #76502f;
+  background: #cba273;
+  color: #2d190c;
+}
+
+.account-dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  border-bottom: 1px solid #94683f;
+  background: #b88453;
+}
+
+.account-dashboard-header > div,
+.account-dashboard-section-heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.account-dashboard-header > div > span,
+.account-dashboard-stats span,
+.account-dashboard-section-heading > div > span {
+  color: #674326;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.account-dashboard-header strong,
+.account-dashboard-section-heading strong {
+  color: #2b180b;
+}
+
+.account-dashboard-header small,
+.account-dashboard-section-heading small {
+  color: #654326;
+  font-size: 9px;
+}
+
+.account-dashboard-state {
+  padding: 4px 7px;
+  border: 1px solid #694422;
+  background: #65733a;
+  color: #fff0cf;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.account-dashboard-state.guest {
+  background: #8b5a30;
+}
+
+.account-dashboard-panel button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #684323;
+  background: #a77545;
+  color: #2b190b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.account-dashboard-panel button:hover:not(:disabled) {
+  background: #b98652;
+}
+
+.account-dashboard-panel button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.account-dashboard-panel button.danger {
+  background: #8b4634;
+  color: #fff0db;
+}
+
+.account-dashboard-panel button.danger-soft {
+  background: #bc7659;
+  color: #432113;
+}
+
+.account-dashboard-message {
+  padding: 8px 12px;
+  border-bottom: 1px solid #a3784d;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.account-dashboard-message.success {
+  background: #c6c985;
+  color: #46521f;
+}
+
+.account-dashboard-message.error {
+  background: #d3a079;
+  color: #7e3022;
+}
+
+.account-dashboard-guest {
+  padding: 14px 12px;
+  color: #604027;
+  font-size: 9px;
+}
+
+.account-dashboard-stats {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  background: #a87a4b;
+}
+
+.account-dashboard-stats > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  background: #d4ad7c;
+}
+
+.account-dashboard-stats strong {
+  color: #2d190c;
+  font-size: 15px;
+}
+
+.account-dashboard-stats small {
+  overflow-wrap: anywhere;
+  color: #684527;
+  font-size: 8px;
+}
+
+.account-dashboard-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-top: 1px solid #94683f;
+  border-bottom: 1px solid #94683f;
+  background: #c19462;
+}
+
+.account-dashboard-sessions {
+  display: grid;
+  gap: 1px;
+  background: #a77a4c;
+}
+
+.account-dashboard-sessions article {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.2fr)
+    minmax(300px, 1.4fr)
+    auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 11px;
+  background: #d5af7e;
+}
+
+.account-dashboard-sessions article.current {
+  box-shadow:
+    inset 5px 0 0 #65733a;
+  background: #d2b67c;
+}
+
+.account-session-device {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-session-icon {
+  display: grid;
+  width: 33px;
+  height: 33px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #7b5432;
+  background: #b78451;
+  color: #fff0d2;
+  font-size: 15px;
+}
+
+.account-session-device > div {
+  display: grid;
+  gap: 1px;
+}
+
+.account-session-device strong {
+  color: #342010;
+  font-size: 10px;
+}
+
+.account-session-device small {
+  color: #69472a;
+  font-size: 8px;
+}
+
+.account-dashboard-sessions dl {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  margin: 0;
+  background: #ad8051;
+}
+
+.account-dashboard-sessions dl > div {
+  display: grid;
+  gap: 1px;
+  padding: 6px 8px;
+  background: #cda474;
+}
+
+.account-dashboard-sessions dt {
+  color: #704b2d;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.account-dashboard-sessions dd {
+  margin: 0;
+  color: #342010;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.account-dashboard-empty {
+  padding: 14px;
+  background: #d5af7e;
+  color: #684527;
+  font-size: 9px;
+  text-align: center;
+}
+
+.account-dashboard-note {
+  display: grid;
+  gap: 2px;
+  padding: 9px 11px;
+  border-top: 1px solid #94683f;
+  background: #c8a575;
+}
+
+.account-dashboard-note strong {
+  color: #3d2814;
+  font-size: 9px;
+}
+
+.account-dashboard-note span {
+  color: #684628;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .account-dashboard-stats {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .account-dashboard-sessions article {
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto;
+  }
+
+  .account-dashboard-sessions dl {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 650px) {
+  .account-dashboard-header,
+  .account-dashboard-section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .account-dashboard-stats,
+  .account-dashboard-sessions dl,
+  .account-dashboard-sessions article {
+    grid-template-columns: 1fr;
+  }
+
+  .account-dashboard-sessions dl {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}

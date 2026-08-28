@@ -11,6 +11,18 @@ export interface AuthSessionResponse {
   user: AuthUser
 }
 
+export interface AuthSessionInfo {
+  id: string
+  userAgent: string | null
+  createdAt: string
+  expiresAt: string
+  current: boolean
+}
+
+export interface RevokeOtherSessionsResponse {
+  revokedCount: number
+}
+
 export interface RegisterAccountRequest {
   displayName: string
   email: string
@@ -93,6 +105,14 @@ const request = async <T>(
   return await response.json() as T
 }
 
+const bearerHeaders =
+  (
+    token: string,
+  ): Record<string, string> => ({
+    Authorization:
+      `Bearer ${token}`,
+  })
+
 export const registerAccount =
   (
     body:
@@ -138,10 +158,10 @@ export const getCurrentAccount =
       {
         method:
           'GET',
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
+        headers:
+          bearerHeaders(
+            token,
+          ),
       },
     )
   }
@@ -155,10 +175,64 @@ export const logoutAccount =
       {
         method:
           'POST',
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
+        headers:
+          bearerHeaders(
+            token,
+          ),
+      },
+    )
+  }
+
+export const listAccountSessions =
+  (
+    token: string,
+  ): Promise<AuthSessionInfo[]> => {
+    return request<AuthSessionInfo[]>(
+      '/sessions',
+      {
+        method:
+          'GET',
+        headers:
+          bearerHeaders(
+            token,
+          ),
+      },
+    )
+  }
+
+export const revokeAccountSession =
+  (
+    token: string,
+    sessionId: string,
+  ): Promise<void> => {
+    return request<void>(
+      `/sessions/${encodeURIComponent(
+        sessionId,
+      )}`,
+      {
+        method:
+          'DELETE',
+        headers:
+          bearerHeaders(
+            token,
+          ),
+      },
+    )
+  }
+
+export const revokeOtherAccountSessions =
+  (
+    token: string,
+  ): Promise<RevokeOtherSessionsResponse> => {
+    return request<RevokeOtherSessionsResponse>(
+      '/sessions/revoke-others',
+      {
+        method:
+          'POST',
+        headers:
+          bearerHeaders(
+            token,
+          ),
       },
     )
   }
