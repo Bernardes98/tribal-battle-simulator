@@ -18,6 +18,10 @@ import {
   parseReportPartyMetadata,
 } from './reportMetadataParser'
 
+import {
+  parseReportModifiers,
+} from './reportModifierParser'
+
 import type {
   ReportPartyMetadata,
 } from '../../types/ReportMetadata'
@@ -1360,6 +1364,58 @@ const readWallLevel = async (
   return null
 }
 
+const readAdvancedReportModifiers = async (
+  worker: Awaited<ReturnType<typeof createWorker>>,
+  source: Awaited<ReturnType<typeof loadReportImage>>,
+  reportType: TribalReportType,
+  headerText: string,
+) => {
+  /*
+   * V44 deliberately keeps the calibrated troop OCR untouched.
+   *
+   * Extra settings are read in one independent sparse-text pass over the
+   * screenshot. Parsing is conservative: values are only accepted when a
+   * known label (Wall/Muralha, Church/Igreja, Morale/Moral) is present.
+   */
+  const fullTextRegion =
+    cropTextRegion(
+      source,
+      {
+        leftRatio:
+          0.015,
+        topByWidth:
+          0.005,
+        widthRatio:
+          0.97,
+        heightByWidth:
+          Math.max(
+            0.20,
+            source.height /
+              source.width -
+              0.015,
+          ),
+      },
+      1.45,
+    )
+
+  await worker.setParameters({
+    tessedit_char_whitelist:
+      '',
+    tessedit_pageseg_mode:
+      PSM.SPARSE_TEXT,
+  })
+
+  const result =
+    await worker.recognize(
+      fullTextRegion,
+    )
+
+  return parseReportModifiers(
+    `${headerText}\n${result.data.text}`,
+    reportType,
+  )
+}
+
 const confidenceFromScore = (
   score: number,
 ): ReportConfidence => {
@@ -1568,6 +1624,26 @@ export const analyzeReportScreenshot = async (
           source,
         )
 
+      setProgress(
+        options,
+        'Reading report settings',
+        95,
+      )
+
+      const detectedModifiers =
+        await readAdvancedReportModifiers(
+          worker,
+          source,
+          reportType,
+          headerResult.data.text,
+        )
+
+      const defenderWallLevel =
+        detectedModifiers
+          .defender
+          .wallLevel ??
+        null
+
       const suspiciousUnits = defender.units.filter(
         (unit) =>
           unit.assumedZero &&
@@ -1626,7 +1702,11 @@ export const analyzeReportScreenshot = async (
           confidenceFromScore(score),
         attacker: null,
         defender,
-        defenderWallLevel: null,
+        defenderWallLevel,
+        attackerModifierPatch:
+          detectedModifiers.attacker,
+        defenderModifierPatch:
+          detectedModifiers.defender,
         metadata,
         warnings,
         sourceWidth: source.width,
@@ -1778,12 +1858,44 @@ export const analyzeReportScreenshot = async (
       93,
     )
 
-    const defenderWallLevel =
+    const specializedWallLevel =
       await readWallLevel(
         worker,
         source,
         detectedBattleRows.defender,
       )
+
+    setProgress(
+      options,
+      'Reading report settings',
+      96,
+    )
+
+    const detectedModifiers =
+      await readAdvancedReportModifiers(
+        worker,
+        source,
+        reportType,
+        headerResult.data.text,
+      )
+
+    const defenderWallLevel =
+      specializedWallLevel ??
+      detectedModifiers
+        .defender
+        .wallLevel ??
+      null
+
+    const defenderModifierPatch = {
+      ...detectedModifiers.defender,
+      ...(defenderWallLevel !==
+      null
+        ? {
+            wallLevel:
+              defenderWallLevel,
+          }
+        : {}),
+    }
 
     const warnings: string[] = []
 
@@ -1871,6 +1983,9 @@ export const analyzeReportScreenshot = async (
       attacker,
       defender,
       defenderWallLevel,
+      attackerModifierPatch:
+        detectedModifiers.attacker,
+      defenderModifierPatch,
       metadata,
       warnings,
       sourceWidth: source.width,

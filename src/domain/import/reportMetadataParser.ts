@@ -71,25 +71,6 @@ const coordinatePatterns = [
   /* Common OCR substitutions for the vertical separator. */
   /\(?\s*(\d{1,3})\s*[Il!]\s*(\d{1,3})\s*\)?/,
   /\(?\s*(\d{1,3})\s*[/\\]\s*(\d{1,3})\s*\)?/,
-  /\(?\s*(\d{1,3})\s*[[\]{}]\s*(\d{1,3})\s*\)?/,
-
-  /*
-   * Some OCR passes lose the vertical bar completely and leave only a
-   * space, for example:
-   *
-   *   (501|516) -> (501 516)
-   */
-  /\(\s*(\d{3})\s+(\d{3})\s*\)/,
-
-  /*
-   * In other passes the separator disappears without leaving whitespace:
-   *
-   *   (501|516) -> (501516)
-   *
-   * Keep this fallback restricted to values inside parentheses so an
-   * unrelated six-digit number is not interpreted as a coordinate.
-   */
-  /\(\s*(\d{3})(\d{3})\s*\)/,
 
   /*
    * Tesseract frequently reads the separator itself as the digit 1:

@@ -1,4 +1,8 @@
-import type { Army } from '../../types/Battle'
+import type {
+  Army,
+  AttackerModifiers,
+  DefenderModifiers,
+} from '../../types/Battle'
 import type { UnitId } from '../../types/Unit'
 import type { ReportMetadata } from '../../types/ReportMetadata'
 
@@ -33,6 +37,20 @@ export interface ReportScreenshotAnalysis {
   attacker: ReportArmyReading | null
   defender: ReportArmyReading
   defenderWallLevel: number | null
+  attackerModifierPatch: Partial<
+    Pick<
+      AttackerModifiers,
+      | 'churchLevel'
+      | 'morale'
+    >
+  >
+  defenderModifierPatch: Partial<
+    Pick<
+      DefenderModifiers,
+      | 'churchLevel'
+      | 'wallLevel'
+    >
+  >
   metadata: ReportMetadata
   warnings: string[]
   sourceWidth: number

@@ -18,6 +18,7 @@ import SafeAttackPanel from '../components/battle/SafeAttackPanel'
 import SimulationHistoryPanel from '../components/history/SimulationHistoryPanel'
 import ArmyLibraryPanel from '../components/library/ArmyLibraryPanel'
 import PlayerVillageIntelligencePanel from '../components/intelligence/PlayerVillageIntelligencePanel'
+import VillageIntelligenceOverviewPanel from '../components/intelligence/VillageIntelligenceOverviewPanel'
 import WatchlistDashboardPanel from '../components/intelligence/WatchlistDashboardPanel'
 import TargetRankingDashboardPanel from '../components/intelligence/TargetRankingDashboardPanel'
 import AttackCandidateAnalyzerPanel from '../components/intelligence/AttackCandidateAnalyzerPanel'
@@ -624,11 +625,19 @@ function SimulatorPage() {
 
   const handleReportAttackerApply = (
     importedArmy: Army,
+    modifierPatch: Partial<AttackerModifiers>,
   ) => {
     setAttacker({
       ...createEmptyArmy(),
       ...importedArmy,
     })
+
+    setAttackerModifiers(
+      (current) => ({
+        ...current,
+        ...modifierPatch,
+      }),
+    )
 
     clearResults()
   }
@@ -655,7 +664,8 @@ function SimulatorPage() {
   const handleReportBothApply = (
     importedAttacker: Army,
     importedDefender: Army,
-    modifierPatch: Partial<DefenderModifiers>,
+    attackerModifierPatch: Partial<AttackerModifiers>,
+    defenderModifierPatch: Partial<DefenderModifiers>,
   ) => {
     setAttacker({
       ...createEmptyArmy(),
@@ -667,10 +677,17 @@ function SimulatorPage() {
       ...importedDefender,
     })
 
+    setAttackerModifiers(
+      (current) => ({
+        ...current,
+        ...attackerModifierPatch,
+      }),
+    )
+
     setDefenderModifiers(
       (current) => ({
         ...current,
-        ...modifierPatch,
+        ...defenderModifierPatch,
       }),
     )
 
@@ -1384,6 +1401,10 @@ function SimulatorPage() {
               Armies
             </a>
 
+            <a href="#village-overview">
+              Overview
+            </a>
+
             <a href="#attack-plans">
               Plans
             </a>
@@ -1541,6 +1562,11 @@ function SimulatorPage() {
           reportMetadata={reportMetadata}
           onApplyAttacker={handleArmyLibraryAttacker}
           onApplyDefender={handleArmyLibraryDefender}
+        />
+
+        <VillageIntelligenceOverviewPanel
+          refreshToken={historyRefreshToken}
+          onLoadDefense={handleIntelligenceLoadDefense}
         />
 
         <AttackPlanQueuePanel
