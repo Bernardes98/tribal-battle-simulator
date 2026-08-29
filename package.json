@@ -13,7 +13,9 @@
     "test:report-import": "playwright test tests/report-import.spec.ts",
     "test:report-import:headed": "playwright test tests/report-import.spec.ts --headed",
     "test:battle-engine": "node node_modules/typescript/bin/tsc -p tsconfig.battle-tests.json && node node_modules/@playwright/test/cli.js test -c playwright.battle.config.ts",
-    "test:regression": "npm run test:battle-engine && npm run test:report-import"
+    "test:regression": "npm run test:battle-engine && npm run test:report-import",
+    "test:smoke": "playwright test tests/production-smoke.spec.ts",
+    "test:ci": "npm run build && npm run test:battle-engine && npm run test:report-import && npm run test:smoke"
   },
   "dependencies": {
     "react": "^19.2.8",

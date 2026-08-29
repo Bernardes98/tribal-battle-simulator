@@ -1,4 +1,8 @@
 import {
+  API_BASE_URL,
+} from '../config/apiConfig'
+
+import {
   readApiError,
 } from './apiError'
 
@@ -51,13 +55,14 @@ export interface LoginAccountRequest {
   password: string
 }
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ||
-  'http://localhost:8080'
-).replace(
-  /\/$/,
-  '',
-)
+export interface ForgotPasswordResponse {
+  message: string
+}
+
+export interface ResetPasswordResponse {
+  revokedSessions: number
+  message: string
+}
 
 const AUTH_API_URL =
   `${API_BASE_URL}/api/v1/auth`
@@ -265,6 +270,38 @@ export const revokeAllAccountSessions =
           bearerHeaders(
             token,
           ),
+      },
+    )
+  }
+
+export const requestPasswordReset =
+  (
+    email: string,
+  ): Promise<ForgotPasswordResponse> => {
+    return request<ForgotPasswordResponse>(
+      '/password/forgot',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          email,
+        }),
+      },
+    )
+  }
+
+export const resetAccountPassword =
+  (
+    token: string,
+    newPassword: string,
+  ): Promise<ResetPasswordResponse> => {
+    return request<ResetPasswordResponse>(
+      '/password/reset',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          token,
+          newPassword,
+        }),
       },
     )
   }

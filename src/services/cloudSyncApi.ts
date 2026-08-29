@@ -1,4 +1,8 @@
 import {
+  API_BASE_URL,
+} from '../config/apiConfig'
+
+import {
   readApiError,
 } from './apiError'
 
@@ -26,11 +30,6 @@ export interface SaveCloudStateRequest {
 export interface RestoreCloudStateRequest {
   expectedRevision: number
 }
-
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ||
-  'http://localhost:8080'
-).replace(/\/$/, '')
 
 const CLOUD_API_URL =
   `${API_BASE_URL}/api/v1/cloud/state`

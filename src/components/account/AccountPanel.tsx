@@ -8,6 +8,8 @@ import {
   loginAccount,
   logoutAccount,
   registerAccount,
+  requestPasswordReset,
+  resetAccountPassword,
 } from '../../services/authApi'
 
 import type {
@@ -29,6 +31,15 @@ import './AccountPanel.css'
 type AccountMode =
   | 'login'
   | 'register'
+  | 'forgot'
+  | 'reset'
+
+const readResetToken =
+  (): string => {
+    return new URLSearchParams(
+      window.location.search,
+    ).get('resetToken') ?? ''
+  }
 
 const formatDate = (
   value: string,
@@ -81,10 +92,20 @@ function AccountPanel() {
   )
 
   const [
+    resetToken,
+    setResetToken,
+  ] = useState(
+    readResetToken,
+  )
+
+  const [
     mode,
     setMode,
   ] = useState<AccountMode>(
-    'login',
+    () =>
+      readResetToken()
+        ? 'reset'
+        : 'login',
   )
 
   const [
@@ -100,6 +121,11 @@ function AccountPanel() {
   const [
     password,
     setPassword,
+  ] = useState('')
+
+  const [
+    confirmPassword,
+    setConfirmPassword,
   ] = useState('')
 
   const [
@@ -283,6 +309,77 @@ function AccountPanel() {
           null,
         )
 
+        if (
+          mode === 'forgot'
+        ) {
+          const response =
+            await requestPasswordReset(
+              email.trim(),
+            )
+
+          showMessage(
+            'success',
+            response.message,
+          )
+
+          return
+        }
+
+        if (
+          mode === 'reset'
+        ) {
+          if (
+            !resetToken
+          ) {
+            throw new Error(
+              'Password reset token is missing.',
+            )
+          }
+
+          if (
+            password !==
+            confirmPassword
+          ) {
+            throw new Error(
+              'Password confirmation does not match.',
+            )
+          }
+
+          const response =
+            await resetAccountPassword(
+              resetToken,
+              password,
+            )
+
+          clearAuthSession()
+          setPassword('')
+          setConfirmPassword('')
+          setResetToken('')
+          setMode('login')
+
+          const url =
+            new URL(
+              window.location.href,
+            )
+
+          url.searchParams.delete(
+            'resetToken',
+          )
+
+          window.history.replaceState(
+            {},
+            '',
+            `${url.pathname}${url.search}${url.hash}`,
+          )
+
+          showMessage(
+            'success',
+            response.message,
+          )
+
+          return
+        }
+
         const session =
           mode ===
           'register'
@@ -405,7 +502,7 @@ function AccountPanel() {
         </div>
       )}
 
-      {user ? (
+      {user && mode !== 'reset' ? (
         <div className="account-signed-in">
           <div className="account-avatar">
             {
@@ -541,49 +638,77 @@ function AccountPanel() {
               handleSubmit
             }
           >
-            <div className="account-form-tabs">
-              <button
-                type="button"
-                className={
-                  mode ===
-                  'login'
-                    ? 'active'
-                    : undefined
-                }
-                onClick={() => {
-                  setMode(
-                    'login',
-                  )
+            {mode === 'forgot' ||
+            mode === 'reset' ? (
+              <div className="account-recovery-header">
+                <div>
+                  <strong>
+                    {mode === 'reset'
+                      ? 'Choose a new password'
+                      : 'Recover your account'}
+                  </strong>
+                  <span>
+                    {mode === 'reset'
+                      ? 'This link is single-use and expires automatically.'
+                      : 'We will send a reset link if the email belongs to an account.'}
+                  </span>
+                </div>
 
-                  setMessage(
-                    null,
-                  )
-                }}
-              >
-                Sign In
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('login')
+                    setMessage(null)
+                  }}
+                >
+                  Back to Sign In
+                </button>
+              </div>
+            ) : (
+              <div className="account-form-tabs">
+                <button
+                  type="button"
+                  className={
+                    mode ===
+                    'login'
+                      ? 'active'
+                      : undefined
+                  }
+                  onClick={() => {
+                    setMode(
+                      'login',
+                    )
 
-              <button
-                type="button"
-                className={
-                  mode ===
-                  'register'
-                    ? 'active'
-                    : undefined
-                }
-                onClick={() => {
-                  setMode(
-                    'register',
-                  )
+                    setMessage(
+                      null,
+                    )
+                  }}
+                >
+                  Sign In
+                </button>
 
-                  setMessage(
-                    null,
-                  )
-                }}
-              >
-                Create Account
-              </button>
-            </div>
+                <button
+                  type="button"
+                  className={
+                    mode ===
+                    'register'
+                      ? 'active'
+                      : undefined
+                  }
+                  onClick={() => {
+                    setMode(
+                      'register',
+                    )
+
+                    setMessage(
+                      null,
+                    )
+                  }}
+                >
+                  Create Account
+                </button>
+              </div>
+            )}
 
             {mode ===
               'register' && (
@@ -617,65 +742,97 @@ function AccountPanel() {
               </label>
             )}
 
-            <label>
-              <span>
-                Email
-              </span>
+            {mode !== 'reset' && (
+              <label>
+                <span>
+                  Email
+                </span>
 
-              <input
-                type="email"
-                required
-                maxLength={
-                  254
-                }
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={
-                  email
-                }
-                onChange={(
-                  event,
-                ) =>
-                  setEmail(
-                    event.target.value,
-                  )
-                }
-              />
-            </label>
+                <input
+                  type="email"
+                  required
+                  maxLength={
+                    254
+                  }
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={
+                    email
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    setEmail(
+                      event.target.value,
+                    )
+                  }
+                />
+              </label>
+            )}
 
-            <label>
-              <span>
-                Password
-              </span>
+            {mode !== 'forgot' && (
+              <label>
+                <span>
+                  {mode === 'reset'
+                    ? 'New Password'
+                    : 'Password'}
+                </span>
 
-              <input
-                type="password"
-                required
-                minLength={
-                  8
-                }
-                maxLength={
-                  72
-                }
-                autoComplete={
-                  mode ===
-                  'register'
-                    ? 'new-password'
-                    : 'current-password'
-                }
-                placeholder="Minimum 8 characters"
-                value={
-                  password
-                }
-                onChange={(
-                  event,
-                ) =>
-                  setPassword(
-                    event.target.value,
-                  )
-                }
-              />
-            </label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  maxLength={72}
+                  autoComplete={
+                    mode === 'login'
+                      ? 'current-password'
+                      : 'new-password'
+                  }
+                  placeholder="Minimum 8 characters"
+                  value={password}
+                  onChange={(event) =>
+                    setPassword(
+                      event.target.value,
+                    )
+                  }
+                />
+              </label>
+            )}
+
+            {mode === 'reset' && (
+              <label>
+                <span>
+                  Confirm New Password
+                </span>
+
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  maxLength={72}
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(event) =>
+                    setConfirmPassword(
+                      event.target.value,
+                    )
+                  }
+                />
+              </label>
+            )}
+
+            {mode === 'login' && (
+              <button
+                type="button"
+                className="account-forgot-password"
+                onClick={() => {
+                  setMode('forgot')
+                  setMessage(null)
+                }}
+              >
+                Forgot password?
+              </button>
+            )}
 
             <button
               type="submit"
@@ -686,14 +843,17 @@ function AccountPanel() {
             >
               {loading
                 ? 'Please wait...'
-                : mode ===
-                    'register'
+                : mode === 'register'
                   ? 'Create Account'
-                  : 'Sign In'}
+                  : mode === 'forgot'
+                    ? 'Send Reset Link'
+                    : mode === 'reset'
+                      ? 'Reset Password'
+                      : 'Sign In'}
             </button>
 
             <small className="account-form-note">
-              V49 uses the Tribal Battle API authentication endpoints. If your backend is not running with the V49 patch yet, the account form will show a connection error while guest mode continues to work.
+              Authentication, password recovery and revocable sessions are handled by the Tribal Battle API. Guest mode remains available when you are signed out.
             </small>
           </form>
         </div>

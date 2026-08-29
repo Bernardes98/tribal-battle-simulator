@@ -1,4 +1,8 @@
 import {
+  API_BASE_URL,
+} from '../config/apiConfig'
+
+import {
   getAuthToken,
   loadAuthSession,
 } from '../domain/auth/authSession'
@@ -46,11 +50,6 @@ export interface ServerIntelligenceAnnotation {
   note: string
   updatedAt: string
 }
-
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ??
-  'http://localhost:8080'
-).replace(/\/$/, '')
 
 const INTELLIGENCE_API_URL =
   `${API_BASE_URL}/api/v1/intelligence`

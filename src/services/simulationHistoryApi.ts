@@ -1,4 +1,8 @@
 import {
+  API_BASE_URL,
+} from '../config/apiConfig'
+
+import {
   readApiError,
 } from './apiError'
 
@@ -79,13 +83,6 @@ export interface BulkDeleteSimulationHistoryResponse {
   deletedCount: number
 }
 
-const API_URL = (
-  import.meta.env.VITE_API_URL ??
-  'http://localhost:8080'
-).replace(
-  /\/$/,
-  '',
-)
 
 const authHeaders =
   (): Record<string, string> => {
@@ -127,7 +124,7 @@ export const createSimulationHistory = async (
 ): Promise<SimulationHistoryItem> => {
   const response =
     await fetch(
-      `${API_URL}/api/v1/simulation-history`,
+      `${API_BASE_URL}/api/v1/simulation-history`,
       {
         method:
           'POST',
@@ -168,7 +165,7 @@ export const listSimulationHistory =
 
     const response =
       await fetch(
-        `${API_URL}/api/v1/simulation-history?clientId=${encodeURIComponent(
+        `${API_BASE_URL}/api/v1/simulation-history?clientId=${encodeURIComponent(
           clientId,
         )}`,
         {
@@ -259,7 +256,7 @@ export const searchSimulationHistory =
 
     const response =
       await fetch(
-        `${API_URL}/api/v1/simulation-history/search?${params.toString()}`,
+        `${API_BASE_URL}/api/v1/simulation-history/search?${params.toString()}`,
         {
           headers: {
             ...authHeaders(),
@@ -288,7 +285,7 @@ export const updateSimulationHistoryFavorite =
 
     const response =
       await fetch(
-        `${API_URL}/api/v1/simulation-history/${encodeURIComponent(
+        `${API_BASE_URL}/api/v1/simulation-history/${encodeURIComponent(
           id,
         )}/favorite?clientId=${encodeURIComponent(
           clientId,
@@ -328,7 +325,7 @@ export const deleteSimulationHistory =
 
     const response =
       await fetch(
-        `${API_URL}/api/v1/simulation-history/${encodeURIComponent(
+        `${API_BASE_URL}/api/v1/simulation-history/${encodeURIComponent(
           id,
         )}?clientId=${encodeURIComponent(
           clientId,
@@ -360,7 +357,7 @@ export const bulkDeleteSimulationHistory =
 
     const response =
       await fetch(
-        `${API_URL}/api/v1/simulation-history/bulk-delete?clientId=${encodeURIComponent(
+        `${API_BASE_URL}/api/v1/simulation-history/bulk-delete?clientId=${encodeURIComponent(
           clientId,
         )}`,
         {
@@ -406,7 +403,7 @@ export const claimBrowserSimulationHistory =
 
     const response =
       await fetch(
-        `${API_URL}/api/v1/simulation-history/claim`,
+        `${API_BASE_URL}/api/v1/simulation-history/claim`,
         {
           method:
             'POST',

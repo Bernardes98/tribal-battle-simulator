@@ -1,3 +1,7 @@
+import {
+  API_BASE_URL,
+} from '../config/apiConfig'
+
 import type {
   Army,
 } from '../types/Battle'
@@ -25,10 +29,6 @@ export interface ArmyPresetItem {
   updatedAt: string
 }
 
-const API_URL = (
-  import.meta.env.VITE_API_URL ??
-  'http://localhost:8080'
-).replace(/\/$/, '')
 
 const readErrorMessage = async (
   response: Response,
@@ -58,7 +58,7 @@ export const createArmyPreset = async (
   context: ReportPartyMetadata | null = null,
 ): Promise<ArmyPresetItem> => {
   const response = await fetch(
-    `${API_URL}/api/v1/army-presets`,
+    `${API_BASE_URL}/api/v1/army-presets`,
     {
       method: 'POST',
       headers: {
@@ -94,7 +94,7 @@ export const listArmyPresets =
       getSimulationHistoryClientId()
 
     const response = await fetch(
-      `${API_URL}/api/v1/army-presets?clientId=${encodeURIComponent(
+      `${API_BASE_URL}/api/v1/army-presets?clientId=${encodeURIComponent(
         clientId,
       )}`,
     )
@@ -116,7 +116,7 @@ export const deleteArmyPreset = async (
     getSimulationHistoryClientId()
 
   const response = await fetch(
-    `${API_URL}/api/v1/army-presets/${encodeURIComponent(
+    `${API_BASE_URL}/api/v1/army-presets/${encodeURIComponent(
       id,
     )}?clientId=${encodeURIComponent(
       clientId,

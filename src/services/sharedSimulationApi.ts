@@ -1,3 +1,7 @@
+import {
+  API_BASE_URL,
+} from '../config/apiConfig'
+
 import type {
   BattleSimulationInput,
 } from '../types/Battle'
@@ -6,10 +10,6 @@ interface CreateSharedSimulationResponse {
   code: string
 }
 
-const API_URL = (
-  import.meta.env.VITE_API_URL ??
-  'http://localhost:8080'
-).replace(/\/$/, '')
 
 const readErrorMessage = async (
   response: Response,
@@ -46,7 +46,7 @@ export const createSharedSimulation = async (
   input: BattleSimulationInput,
 ): Promise<string> => {
   const response = await fetch(
-    `${API_URL}/api/v1/shared-simulations`,
+    `${API_BASE_URL}/api/v1/shared-simulations`,
     {
       method: 'POST',
 
@@ -89,7 +89,7 @@ export const getSharedSimulation = async (
   code: string,
 ): Promise<BattleSimulationInput> => {
   const response = await fetch(
-    `${API_URL}/api/v1/shared-simulations/${encodeURIComponent(
+    `${API_BASE_URL}/api/v1/shared-simulations/${encodeURIComponent(
       code,
     )}`,
     {
