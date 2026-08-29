@@ -67,6 +67,7 @@ const PRIMARY_OCR_SCALE = 12
 const SECONDARY_OCR_SCALE = 14
 const TERTIARY_OCR_SCALE = 14
 const BINARY_OCR_SCALE = 14
+const SPY_REFERENCE_SOURCE_WIDTH = 684
 
 const clamp = (
   value: number,
@@ -891,6 +892,340 @@ const looksLikeTw2Three = (
   )
 }
 
+
+const trimGlyphShape = (
+  glyph: LeadingGlyphShape,
+): LeadingGlyphShape | null => {
+  let left = glyph.width
+  let right = -1
+  let top = glyph.height
+  let bottom = -1
+
+  for (let y = 0; y < glyph.height; y++) {
+    for (let x = 0; x < glyph.width; x++) {
+      if (!glyph.pixels[y * glyph.width + x]) {
+        continue
+      }
+
+      left = Math.min(left, x)
+      right = Math.max(right, x)
+      top = Math.min(top, y)
+      bottom = Math.max(bottom, y)
+    }
+  }
+
+  if (
+    right < left ||
+    bottom < top
+  ) {
+    return null
+  }
+
+  const width = right - left + 1
+  const height = bottom - top + 1
+  const pixels = new Uint8Array(width * height)
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      pixels[y * width + x] =
+        glyph.pixels[
+          (top + y) * glyph.width +
+          left +
+          x
+        ]
+    }
+  }
+
+  return {
+    width,
+    height,
+    pixels,
+  }
+}
+
+/**
+ * At 125% browser/OS scaling the antialiasing can leave a one-pixel bridge
+ * between adjacent TW2 digits. The normal connected-component splitter then
+ * sees "86" as one glyph even though there is still a very clear vertical
+ * valley between the two digits.
+ *
+ * Split that merged component only when OCR already says there are exactly
+ * two digits. This keeps the normal calibrated path untouched and gives the
+ * geometry verifier an isolated leading digit to inspect.
+ */
+const splitMergedTwoDigitGlyph = (
+  glyph: LeadingGlyphShape,
+): LeadingGlyphShape[] => {
+  if (
+    glyph.width < 8 ||
+    glyph.height < 6
+  ) {
+    return []
+  }
+
+  const columnInk = new Uint16Array(glyph.width)
+
+  for (let x = 0; x < glyph.width; x++) {
+    for (let y = 0; y < glyph.height; y++) {
+      columnInk[x] +=
+        glyph.pixels[y * glyph.width + x]
+    }
+  }
+
+  const searchStart = Math.max(
+    1,
+    Math.floor(glyph.width * 0.30),
+  )
+  const searchEnd = Math.min(
+    glyph.width - 2,
+    Math.ceil(glyph.width * 0.70),
+  )
+
+  let bestStart = -1
+  let bestEnd = -1
+  let bestScore = Number.NEGATIVE_INFINITY
+  let x = searchStart
+
+  while (x <= searchEnd) {
+    if (columnInk[x] > 1) {
+      x += 1
+      continue
+    }
+
+    const start = x
+    let ink = 0
+
+    while (
+      x <= searchEnd &&
+      columnInk[x] <= 1
+    ) {
+      ink += columnInk[x]
+      x += 1
+    }
+
+    const end = x - 1
+    const width = end - start + 1
+    const center = (start + end) / 2
+    const centerDistance = Math.abs(
+      center -
+      (glyph.width - 1) / 2,
+    )
+
+    const score =
+      width * 20 -
+      ink * 5 -
+      centerDistance
+
+    if (score > bestScore) {
+      bestScore = score
+      bestStart = start
+      bestEnd = end
+    }
+  }
+
+  if (
+    bestStart <= 0 ||
+    bestEnd >= glyph.width - 1
+  ) {
+    return []
+  }
+
+  const slice = (
+    left: number,
+    right: number,
+  ): LeadingGlyphShape | null => {
+    const width = right - left + 1
+    const pixels = new Uint8Array(
+      width * glyph.height,
+    )
+
+    for (let y = 0; y < glyph.height; y++) {
+      for (let localX = 0; localX < width; localX++) {
+        pixels[y * width + localX] =
+          glyph.pixels[
+            y * glyph.width +
+            left +
+            localX
+          ]
+      }
+    }
+
+    return trimGlyphShape({
+      width,
+      height: glyph.height,
+      pixels,
+    })
+  }
+
+  const first = slice(
+    0,
+    bestStart - 1,
+  )
+  const second = slice(
+    bestEnd + 1,
+    glyph.width - 1,
+  )
+
+  return first && second
+    ? [first, second]
+    : []
+}
+
+const countEnclosedGlyphHoles = (
+  glyph: LeadingGlyphShape,
+): number => {
+  if (
+    glyph.width < 3 ||
+    glyph.height < 4
+  ) {
+    return 0
+  }
+
+  const visited = new Uint8Array(
+    glyph.width * glyph.height,
+  )
+  let holes = 0
+
+  for (let startY = 0; startY < glyph.height; startY++) {
+    for (let startX = 0; startX < glyph.width; startX++) {
+      const startIndex =
+        startY * glyph.width + startX
+
+      if (
+        glyph.pixels[startIndex] ||
+        visited[startIndex]
+      ) {
+        continue
+      }
+
+      const queueX: number[] = [startX]
+      const queueY: number[] = [startY]
+      visited[startIndex] = 1
+      let cursor = 0
+      let touchesBorder = false
+
+      while (cursor < queueX.length) {
+        const x = queueX[cursor]
+        const y = queueY[cursor]
+        cursor += 1
+
+        if (
+          x === 0 ||
+          y === 0 ||
+          x === glyph.width - 1 ||
+          y === glyph.height - 1
+        ) {
+          touchesBorder = true
+        }
+
+        const visit = (
+          nextX: number,
+          nextY: number,
+        ) => {
+          if (
+            nextX < 0 ||
+            nextX >= glyph.width ||
+            nextY < 0 ||
+            nextY >= glyph.height
+          ) {
+            return
+          }
+
+          const index =
+            nextY * glyph.width + nextX
+
+          if (
+            glyph.pixels[index] ||
+            visited[index]
+          ) {
+            return
+          }
+
+          visited[index] = 1
+          queueX.push(nextX)
+          queueY.push(nextY)
+        }
+
+        visit(x - 1, y)
+        visit(x + 1, y)
+        visit(x, y - 1)
+        visit(x, y + 1)
+      }
+
+      if (!touchesBorder) {
+        holes += 1
+      }
+    }
+  }
+
+  return holes
+}
+
+/**
+ * Tesseract occasionally reads the scaled TW2 bitmap "8" as "3". Unlike 3,
+ * an 8 has two enclosed counters (holes), which remain visible in the source
+ * pixels even when OCR classification changes. Use that invariant only for
+ * scaled spy reports and only when OCR already returned a leading 3.
+ */
+const verifyScaledSpyLeadingThreeOrEight = (
+  detectionCanvas: HTMLCanvasElement,
+  candidate: OcrCandidate,
+  scaledSpy: boolean,
+): OcrCandidate => {
+  if (
+    !scaledSpy ||
+    candidate.quantity === null
+  ) {
+    return candidate
+  }
+
+  const quantityText = String(candidate.quantity)
+
+  if (!quantityText.startsWith('3')) {
+    return candidate
+  }
+
+  let glyphs = findDigitGlyphShapes(
+    detectionCanvas,
+  )
+
+  if (
+    glyphs.length === 1 &&
+    quantityText.length === 2
+  ) {
+    glyphs = splitMergedTwoDigitGlyph(
+      glyphs[0],
+    )
+  }
+
+  if (
+    glyphs.length !== quantityText.length ||
+    countEnclosedGlyphHoles(glyphs[0]) < 2
+  ) {
+    return candidate
+  }
+
+  const correctedText =
+    `8${quantityText.slice(1)}`
+  const correctedQuantity = Number(
+    correctedText,
+  )
+
+  if (!Number.isSafeInteger(correctedQuantity)) {
+    return candidate
+  }
+
+  return {
+    quantity: correctedQuantity,
+    rawText:
+      `${candidate.rawText} [TW2 glyph geometry corrected leading 3 -> 8]`,
+    confidence: Math.max(
+      candidate.confidence,
+      94,
+    ),
+  }
+}
+
 const verifyLeadingTwoOrThree = (
   detectionCanvas: HTMLCanvasElement,
   candidate: OcrCandidate,
@@ -1370,7 +1705,27 @@ const readNumberCell = async (
   crop: NormalizedCrop,
   unitId: UnitId,
   verifyBattleLeadingGlyph: boolean,
+  spyProfile: boolean,
 ): Promise<ReportUnitReading> => {
+  /*
+   * Tesseract is very sensitive to the physical bitmap size of the tiny TW2
+   * quantity font. The calibrated screenshot is 684px wide, but browser or
+   * OS scaling can produce the exact same report at 85%/125%. Keeping the
+   * original 12/14/14 passes for the reference size protects the proven
+   * baseline; only scaled spy reports use a lower, resolution-adaptive set of
+   * OCR scales.
+   */
+  const spyWidthRatio =
+    source.width / SPY_REFERENCE_SOURCE_WIDTH
+
+  const scaledSpy =
+    spyProfile &&
+    (spyWidthRatio < 0.92 || spyWidthRatio > 1.08)
+
+  const primaryScale = scaledSpy ? 8 : PRIMARY_OCR_SCALE
+  const secondaryScale = scaledSpy ? 11 : SECONDARY_OCR_SCALE
+  const tertiaryScale = scaledSpy ? 12 : TERTIARY_OCR_SCALE
+  const binaryScale = scaledSpy ? 8 : BINARY_OCR_SCALE
   const detectionCanvas = cropToCanvas(
     source,
     crop,
@@ -1407,7 +1762,7 @@ const readNumberCell = async (
     cropToCanvas(
       source,
       crop,
-      PRIMARY_OCR_SCALE,
+      primaryScale,
       false,
     ),
     1.05,
@@ -1417,7 +1772,7 @@ const readNumberCell = async (
     cropToCanvas(
       source,
       crop,
-      SECONDARY_OCR_SCALE,
+      secondaryScale,
       true,
     ),
     1.0,
@@ -1427,7 +1782,7 @@ const readNumberCell = async (
     cropToCanvas(
       source,
       crop,
-      TERTIARY_OCR_SCALE,
+      tertiaryScale,
       true,
     ),
     1.55,
@@ -1468,7 +1823,7 @@ const readNumberCell = async (
       cropToCanvas(
         source,
         crop,
-        BINARY_OCR_SCALE,
+        binaryScale,
         false,
       ),
     )
@@ -1491,13 +1846,20 @@ const readNumberCell = async (
 
   const selected = chooseCandidate(candidates)
 
+  const scaledSpyVerified =
+    verifyScaledSpyLeadingThreeOrEight(
+      detectionCanvas,
+      selected,
+      scaledSpy,
+    )
+
   const sevenOrTwoVerified =
     verifyBattleLeadingGlyph
       ? verifyTw2TwoOrSeven(
           detectionCanvas,
-          selected,
+          scaledSpyVerified,
         )
-      : selected
+      : scaledSpyVerified
 
   const verified = verifyBattleLeadingGlyph
     ? verifyLeadingTwoOrThree(
@@ -1608,6 +1970,7 @@ export const readArmyRow = async (
       crop,
       unitId,
       isCompactBattleRow,
+      template.profile === 'spy',
     )
 
     army[unitId] = reading.quantity

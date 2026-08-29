@@ -9,22 +9,10 @@ import type {
 
 export interface ParsedReportModifiers {
   attacker:
-    Partial<
-      Pick<
-        AttackerModifiers,
-        | 'churchLevel'
-        | 'morale'
-      >
-    >
+    Partial<AttackerModifiers>
 
   defender:
-    Partial<
-      Pick<
-        DefenderModifiers,
-        | 'churchLevel'
-        | 'wallLevel'
-      >
-    >
+    Partial<DefenderModifiers>
 
   rawText: string
 }
@@ -237,29 +225,140 @@ const readMorale = (
 const readWallLevel = (
   text: string,
 ): number | null => {
-  return readBoundedNumber(
-    text,
-    [
-      /*
-       * Battle event:
-       * "Wall was reduced from level 6 to level 0"
-       * "Muralha foi reduzida do nivel 6 para o nivel 0"
-       *
-       * We intentionally capture the first level = initial wall.
-       */
-      /\b(?:wall|muralha)\b[^\n]{0,100}?\b(?:level|nivel)\b\s*(\d{1,2})\b/,
+  const wallText = text.replace(
+    /\b(?:iron wall|muralha de ferro)\b[^\n]*/g,
+    ' ',
+  )
 
-      /*
-       * Spy/building summary:
-       * "Wall level 8"
-       * "Muralha nível 8"
-       * "Wall: 8"
-       */
+  return readBoundedNumber(
+    wallText,
+    [
+      /\b(?:wall|muralha)\b[^\n]{0,100}?\b(?:level|nivel)\b\s*(\d{1,2})\b/,
       /\b(?:wall|muralha)\b[^0-9\n]{0,35}(\d{1,2})\b/,
     ],
     0,
     20,
   )
+}
+
+const readHospitalLevel = (
+  text: string,
+): number | null => {
+  return readBoundedNumber(
+    text,
+    [
+      /\b(?:hospital)\b[^0-9\n]{0,45}(?:level|nivel|lv\.?)?\s*[:\-]?\s*(\d{1,2})\b/,
+      /\b(?:level|nivel)\b[^0-9\n]{0,18}\bhospital\b[^0-9\n]{0,18}(\d{1,2})\b/,
+    ],
+    0,
+    10,
+  )
+}
+
+const readClinicLevel = (
+  text: string,
+): number | null => {
+  return readBoundedNumber(
+    text,
+    [
+      /\b(?:clinic|clinica)\b[^0-9\n]{0,45}(?:level|nivel|lv\.?)?\s*[:\-]?\s*(\d{1,2})\b/,
+      /\b(?:level|nivel)\b[^0-9\n]{0,18}\b(?:clinic|clinica)\b[^0-9\n]{0,18}(\d{1,2})\b/,
+    ],
+    0,
+    10,
+  )
+}
+
+const readIronWallLevel = (
+  text: string,
+): number | null => {
+  return readBoundedNumber(
+    text,
+    [
+      /\b(?:iron wall|muralha de ferro)\b[^0-9\n]{0,45}(?:level|nivel|lv\.?)?\s*[:\-]?\s*(\d{1,2})\b/,
+      /\b(?:level|nivel)\b[^0-9\n]{0,18}\b(?:iron wall|muralha de ferro)\b[^0-9\n]{0,18}(\d{1,2})\b/,
+    ],
+    0,
+    5,
+  )
+}
+
+const readWeaponMasteryLevel = (
+  text: string,
+): number | null => {
+  const explicitLevel = readBoundedNumber(
+    text,
+    [
+      /\b(?:weapon mastery|maestria em armas)\b[^0-9\n]{0,50}(?:level|nivel|lv\.?)?\s*[:\-]?\s*(\d{1,2})\b/,
+      /\b(?:level|nivel)\b[^0-9\n]{0,18}\b(?:weapon mastery|maestria em armas)\b[^0-9\n]{0,18}(\d{1,2})\b/,
+    ],
+    0,
+    5,
+  )
+
+  if (
+    explicitLevel !==
+    null
+  ) {
+    return explicitLevel
+  }
+
+  const percentage = readBoundedNumber(
+    text,
+    [
+      /\b(?:weapon mastery|maestria em armas)\b[^0-9\n]{0,50}(\d{1,2})\s*%/,
+    ],
+    0,
+    10,
+  )
+
+  if (
+    percentage !== null &&
+    percentage % 2 === 0
+  ) {
+    return percentage / 2
+  }
+
+  return null
+}
+
+const containsAny = (
+  text: string,
+  patterns: RegExp[],
+): boolean => {
+  return patterns.some(
+    (pattern) => pattern.test(text),
+  )
+}
+
+const hasGrandmaster = (
+  text: string,
+): boolean => {
+  return containsAny(
+    text,
+    [
+      /\bgrandmaster\b/,
+      /\bgrao[ -]?mestre\b/,
+    ],
+  )
+}
+
+const hasMedic = (
+  text: string,
+): boolean => {
+  return containsAny(
+    text,
+    [
+      /\bmedic\b/,
+      /\bmedico\b/,
+    ],
+  )
+}
+
+const hasMedicus = (
+  text: string,
+): boolean => {
+  return /\bmedicus\b/.test(text)
 }
 
 const churchContext = (
@@ -290,11 +389,6 @@ const churchContext = (
     return fromSection
   }
 
-  /*
-   * A spy report contains only the defender side in the calibrated importer.
-   * If there is exactly one church reading, assigning it to the defender is
-   * substantially safer than guessing a side in battle reports.
-   */
   if (
     reportType ===
       'spy' &&
@@ -320,6 +414,12 @@ export const parseReportModifiers =
         rawText,
       )
 
+    const attackerSection =
+      findSideSection(
+        text,
+        'attacker',
+      ) || text
+
     const morale =
       readMorale(
         text,
@@ -328,6 +428,26 @@ export const parseReportModifiers =
     const wallLevel =
       readWallLevel(
         text,
+      )
+
+    const hospitalLevel =
+      readHospitalLevel(
+        text,
+      )
+
+    const clinicLevel =
+      readClinicLevel(
+        text,
+      )
+
+    const ironWallLevel =
+      readIronWallLevel(
+        text,
+      )
+
+    const weaponMasteryLevel =
+      readWeaponMasteryLevel(
+        attackerSection,
       )
 
     const attackerChurchLevel =
@@ -360,6 +480,37 @@ export const parseReportModifiers =
               morale,
             }
           : {}),
+
+        ...(hasGrandmaster(
+          attackerSection,
+        )
+          ? {
+              grandmaster: true,
+            }
+          : {}),
+
+        ...(weaponMasteryLevel !==
+        null
+          ? {
+              weaponMasteryLevel,
+            }
+          : {}),
+
+        ...(hasMedic(
+          attackerSection,
+        )
+          ? {
+              medicLevel: 1,
+            }
+          : {}),
+
+        ...(hasMedicus(
+          attackerSection,
+        )
+          ? {
+              medicusLevel: 1,
+            }
+          : {}),
       },
 
       defender: {
@@ -375,6 +526,27 @@ export const parseReportModifiers =
         null
           ? {
               wallLevel,
+            }
+          : {}),
+
+        ...(hospitalLevel !==
+        null
+          ? {
+              hospitalLevel,
+            }
+          : {}),
+
+        ...(clinicLevel !==
+        null
+          ? {
+              clinicLevel,
+            }
+          : {}),
+
+        ...(ironWallLevel !==
+        null
+          ? {
+              ironWallLevel,
             }
           : {}),
       },

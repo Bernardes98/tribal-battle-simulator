@@ -32,6 +32,7 @@ import type {
   Army,
   AttackerModifiers,
   DefenderModifiers,
+  PaladinWeaponLevels,
 } from '../../types/Battle'
 
 import type {
@@ -54,11 +55,13 @@ interface ReportScreenshotImportPanelProps {
   onApplyAttacker: (
     army: Army,
     modifierPatch: Partial<AttackerModifiers>,
+    paladinWeaponPatch: Partial<PaladinWeaponLevels>,
   ) => void
 
   onApplyDefender: (
     army: Army,
     modifierPatch: Partial<DefenderModifiers>,
+    paladinWeaponPatch: Partial<PaladinWeaponLevels>,
   ) => void
 
   onApplyBoth: (
@@ -66,6 +69,8 @@ interface ReportScreenshotImportPanelProps {
     defender: Army,
     attackerModifierPatch: Partial<AttackerModifiers>,
     defenderModifierPatch: Partial<DefenderModifiers>,
+    attackerPaladinWeaponPatch: Partial<PaladinWeaponLevels>,
+    defenderPaladinWeaponPatch: Partial<PaladinWeaponLevels>,
   ) => void
 
   onImportApplied?: (
@@ -87,6 +92,32 @@ const SUPPORTED_IMAGE_TYPES = [
   'image/jpeg',
   'image/webp',
 ]
+
+const PALADIN_WEAPON_KEYS: Array<keyof PaladinWeaponLevels> = [
+  'spearman',
+  'swordsman',
+  'axe',
+  'archer',
+  'lightCavalry',
+  'mountedArcher',
+  'heavyCavalry',
+  'ram',
+  'catapult',
+  'berserker',
+]
+
+const PALADIN_WEAPON_LABELS: Record<keyof PaladinWeaponLevels, string> = {
+  spearman: 'Spearman',
+  swordsman: 'Swordsman',
+  axe: 'Axe Fighter',
+  archer: 'Archer',
+  lightCavalry: 'Light Cavalry',
+  mountedArcher: 'Mounted Archer',
+  heavyCavalry: 'Heavy Cavalry',
+  ram: 'Ram',
+  catapult: 'Catapult',
+  berserker: 'Berserker',
+}
 
 const isEditableTarget = (
   target: EventTarget | null,
@@ -529,6 +560,16 @@ function ReportScreenshotImportPanel({
   >({})
 
   const [
+    editableAttackerPaladinWeaponPatch,
+    setEditableAttackerPaladinWeaponPatch,
+  ] = useState<Partial<PaladinWeaponLevels>>({})
+
+  const [
+    editableDefenderPaladinWeaponPatch,
+    setEditableDefenderPaladinWeaponPatch,
+  ] = useState<Partial<PaladinWeaponLevels>>({})
+
+  const [
     editableMetadata,
     setEditableMetadata,
   ] = useState<ReportMetadata | null>(null)
@@ -586,6 +627,8 @@ function ReportScreenshotImportPanel({
       setEditableWallLevel(null)
       setEditableAttackerModifierPatch({})
       setEditableDefenderModifierPatch({})
+      setEditableAttackerPaladinWeaponPatch({})
+      setEditableDefenderPaladinWeaponPatch({})
       setEditableMetadata(null)
       return
     }
@@ -610,6 +653,14 @@ function ReportScreenshotImportPanel({
 
     setEditableDefenderModifierPatch({
       ...analysis.defenderModifierPatch,
+    })
+
+    setEditableAttackerPaladinWeaponPatch({
+      ...analysis.attackerPaladinWeaponPatch,
+    })
+
+    setEditableDefenderPaladinWeaponPatch({
+      ...analysis.defenderPaladinWeaponPatch,
     })
 
     setEditableMetadata(
@@ -886,6 +937,14 @@ function ReportScreenshotImportPanel({
       ...analysis.defenderModifierPatch,
     })
 
+    setEditableAttackerPaladinWeaponPatch({
+      ...analysis.attackerPaladinWeaponPatch,
+    })
+
+    setEditableDefenderPaladinWeaponPatch({
+      ...analysis.defenderPaladinWeaponPatch,
+    })
+
     setEditableMetadata(
       cloneReportMetadata(
         analysis.metadata,
@@ -941,6 +1000,7 @@ function ReportScreenshotImportPanel({
           side === 'defender'
             ? metadata
             : current?.defender ?? null,
+        timestamp: current?.timestamp ?? null,
       }),
     )
   }
@@ -981,31 +1041,23 @@ function ReportScreenshotImportPanel({
   const attackerPatch =
     (): Partial<AttackerModifiers> => {
       return {
-        ...(editableAttackerModifierPatch.churchLevel !==
-        undefined
-          ? {
-              churchLevel:
-                clampLevel(
-                  editableAttackerModifierPatch.churchLevel,
-                  3,
-                ),
-            }
+        ...(editableAttackerModifierPatch.churchLevel !== undefined
+          ? { churchLevel: clampLevel(editableAttackerModifierPatch.churchLevel, 3) }
           : {}),
-
-        ...(editableAttackerModifierPatch.morale !==
-        undefined
-          ? {
-              morale:
-                Math.max(
-                  1,
-                  Math.min(
-                    100,
-                    Math.trunc(
-                      editableAttackerModifierPatch.morale,
-                    ),
-                  ),
-                ),
-            }
+        ...(editableAttackerModifierPatch.morale !== undefined
+          ? { morale: Math.max(1, Math.min(100, Math.trunc(editableAttackerModifierPatch.morale))) }
+          : {}),
+        ...(editableAttackerModifierPatch.grandmaster !== undefined
+          ? { grandmaster: editableAttackerModifierPatch.grandmaster }
+          : {}),
+        ...(editableAttackerModifierPatch.weaponMasteryLevel !== undefined
+          ? { weaponMasteryLevel: clampLevel(editableAttackerModifierPatch.weaponMasteryLevel, 5) }
+          : {}),
+        ...(editableAttackerModifierPatch.medicLevel !== undefined
+          ? { medicLevel: clampLevel(editableAttackerModifierPatch.medicLevel, 1) }
+          : {}),
+        ...(editableAttackerModifierPatch.medicusLevel !== undefined
+          ? { medicusLevel: clampLevel(editableAttackerModifierPatch.medicusLevel, 1) }
           : {}),
       }
     }
@@ -1013,31 +1065,41 @@ function ReportScreenshotImportPanel({
   const defenderPatch =
     (): Partial<DefenderModifiers> => {
       return {
-        ...(editableDefenderModifierPatch.churchLevel !==
-        undefined
-          ? {
-              churchLevel:
-                clampLevel(
-                  editableDefenderModifierPatch.churchLevel,
-                  3,
-                ),
-            }
+        ...(editableDefenderModifierPatch.churchLevel !== undefined
+          ? { churchLevel: clampLevel(editableDefenderModifierPatch.churchLevel, 3) }
           : {}),
-
-        ...(editableWallLevel !==
-          null &&
-        editableWallLevel !==
-          undefined
-          ? {
-              wallLevel:
-                clampLevel(
-                  editableWallLevel,
-                  20,
-                ),
-            }
+        ...(editableWallLevel !== null && editableWallLevel !== undefined
+          ? { wallLevel: clampLevel(editableWallLevel, 20) }
+          : {}),
+        ...(editableDefenderModifierPatch.hospitalLevel !== undefined
+          ? { hospitalLevel: clampLevel(editableDefenderModifierPatch.hospitalLevel, 10) }
+          : {}),
+        ...(editableDefenderModifierPatch.clinicLevel !== undefined
+          ? { clinicLevel: clampLevel(editableDefenderModifierPatch.clinicLevel, 10) }
+          : {}),
+        ...(editableDefenderModifierPatch.ironWallLevel !== undefined
+          ? { ironWallLevel: clampLevel(editableDefenderModifierPatch.ironWallLevel, 5) }
           : {}),
       }
     }
+
+  const paladinPatch = (
+    patch: Partial<PaladinWeaponLevels>,
+  ): Partial<PaladinWeaponLevels> => {
+    const result: Partial<PaladinWeaponLevels> = {}
+
+    for (const key of PALADIN_WEAPON_KEYS) {
+      const value = patch[key]
+
+      if (value === undefined) {
+        continue
+      }
+
+      result[key] = clampLevel(value, 3)
+    }
+
+    return result
+  }
 
   const handleApplyDefender = () => {
     if (
@@ -1050,6 +1112,9 @@ function ReportScreenshotImportPanel({
     onApplyDefender(
       editableDefender,
       defenderPatch(),
+      paladinPatch(
+        editableDefenderPaladinWeaponPatch,
+      ),
     )
 
     onImportApplied?.(
@@ -1075,6 +1140,9 @@ function ReportScreenshotImportPanel({
     onApplyAttacker(
       editableAttacker,
       attackerPatch(),
+      paladinPatch(
+        editableAttackerPaladinWeaponPatch,
+      ),
     )
 
     onImportApplied?.(
@@ -1101,6 +1169,12 @@ function ReportScreenshotImportPanel({
       editableDefender,
       attackerPatch(),
       defenderPatch(),
+      paladinPatch(
+        editableAttackerPaladinWeaponPatch,
+      ),
+      paladinPatch(
+        editableDefenderPaladinWeaponPatch,
+      ),
     )
 
     onImportApplied?.(
@@ -1299,6 +1373,15 @@ function ReportScreenshotImportPanel({
                   <small>
                     Source {analysis.sourceWidth} × {analysis.sourceHeight}
                   </small>
+
+                  {analysis.metadata.timestamp && (
+                    <small className="report-timestamp">
+                      Report time {analysis.metadata.timestamp.localDateTime.replace('T', ' ')}
+                      {analysis.metadata.timestamp.timezone
+                        ? ` ${analysis.metadata.timestamp.timezone}`
+                        : ''}
+                    </small>
+                  )}
                 </div>
 
                 <div className="report-detection-actions">
@@ -1419,12 +1502,12 @@ function ReportScreenshotImportPanel({
                     </strong>
 
                     <span>
-                      Advanced OCR reads explicit report labels only. Blank fields were not detected and will keep the simulator's current setting.
+                      V58 only auto-applies values with explicit labels and readable levels. Low-confidence detections stay informational and never overwrite your current setup.
                     </span>
                   </div>
 
                   <span className="report-settings-badge">
-                    V44 OCR
+                    V58 OCR
                   </span>
                 </div>
 
@@ -1437,10 +1520,7 @@ function ReportScreenshotImportPanel({
 
                       <div className="report-settings-fields">
                         <label>
-                          <span>
-                            Church
-                          </span>
-
+                          <span>Church</span>
                           <input
                             type="number"
                             min={0}
@@ -1448,37 +1528,21 @@ function ReportScreenshotImportPanel({
                             step={1}
                             aria-label="Attacker church level"
                             placeholder="Not detected"
-                            value={
-                              editableAttackerModifierPatch.churchLevel ??
-                              ''
-                            }
+                            value={editableAttackerModifierPatch.churchLevel ?? ''}
                             onChange={(event) => {
-                              const raw =
-                                event.target.value
-
-                              setEditableAttackerModifierPatch(
-                                (current) => ({
-                                  ...current,
-                                  churchLevel:
-                                    raw === ''
-                                      ? undefined
-                                      : clampLevel(
-                                          Number(
-                                            raw,
-                                          ),
-                                          3,
-                                        ),
-                                }),
-                              )
+                              const raw = event.target.value
+                              setEditableAttackerModifierPatch((current) => ({
+                                ...current,
+                                churchLevel: raw === ''
+                                  ? undefined
+                                  : clampLevel(Number(raw), 3),
+                              }))
                             }}
                           />
                         </label>
 
                         <label>
-                          <span>
-                            Morale
-                          </span>
-
+                          <span>Morale</span>
                           <input
                             type="number"
                             min={1}
@@ -1486,47 +1550,142 @@ function ReportScreenshotImportPanel({
                             step={1}
                             aria-label="Attacker morale"
                             placeholder="Not detected"
-                            value={
-                              editableAttackerModifierPatch.morale ??
-                              ''
-                            }
+                            value={editableAttackerModifierPatch.morale ?? ''}
                             onChange={(event) => {
-                              const raw =
-                                event.target.value
-
-                              setEditableAttackerModifierPatch(
-                                (current) => ({
-                                  ...current,
-                                  morale:
-                                    raw === ''
-                                      ? undefined
-                                      : Math.max(
-                                          1,
-                                          Math.min(
-                                            100,
-                                            Math.trunc(
-                                              Number(
-                                                raw,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                }),
-                              )
+                              const raw = event.target.value
+                              setEditableAttackerModifierPatch((current) => ({
+                                ...current,
+                                morale: raw === ''
+                                  ? undefined
+                                  : Math.max(1, Math.min(100, Math.trunc(Number(raw)))),
+                              }))
                             }}
                           />
+                        </label>
 
-                          {editableAttackerModifierPatch.morale !==
-                            undefined && (
-                            <small>
-                              {
-                                editableAttackerModifierPatch.morale
-                              }
-                              %
-                            </small>
-                          )}
+                        <label>
+                          <span>Weapon Mastery</span>
+                          <input
+                            type="number"
+                            min={0}
+                            max={5}
+                            step={1}
+                            aria-label="Attacker weapon mastery level"
+                            placeholder="Not detected"
+                            value={editableAttackerModifierPatch.weaponMasteryLevel ?? ''}
+                            onChange={(event) => {
+                              const raw = event.target.value
+                              setEditableAttackerModifierPatch((current) => ({
+                                ...current,
+                                weaponMasteryLevel: raw === ''
+                                  ? undefined
+                                  : clampLevel(Number(raw), 5),
+                              }))
+                            }}
+                          />
+                        </label>
+
+                        <label>
+                          <span>Grandmaster</span>
+                          <select
+                            aria-label="Attacker Grandmaster officer"
+                            value={editableAttackerModifierPatch.grandmaster === undefined
+                              ? ''
+                              : editableAttackerModifierPatch.grandmaster
+                                ? '1'
+                                : '0'}
+                            onChange={(event) => {
+                              const raw = event.target.value
+                              setEditableAttackerModifierPatch((current) => ({
+                                ...current,
+                                grandmaster: raw === ''
+                                  ? undefined
+                                  : raw === '1',
+                              }))
+                            }}
+                          >
+                            <option value="">Not detected</option>
+                            <option value="1">Enabled</option>
+                            <option value="0">Disabled</option>
+                          </select>
+                        </label>
+
+                        <label>
+                          <span>Medic</span>
+                          <select
+                            aria-label="Attacker Medic officer"
+                            value={editableAttackerModifierPatch.medicLevel === undefined
+                              ? ''
+                              : String(editableAttackerModifierPatch.medicLevel)}
+                            onChange={(event) => {
+                              const raw = event.target.value
+                              setEditableAttackerModifierPatch((current) => ({
+                                ...current,
+                                medicLevel: raw === ''
+                                  ? undefined
+                                  : clampLevel(Number(raw), 1),
+                              }))
+                            }}
+                          >
+                            <option value="">Not detected</option>
+                            <option value="1">Enabled</option>
+                            <option value="0">Disabled</option>
+                          </select>
+                        </label>
+
+                        <label>
+                          <span>Medicus</span>
+                          <select
+                            aria-label="Attacker Medicus bonus"
+                            value={editableAttackerModifierPatch.medicusLevel === undefined
+                              ? ''
+                              : String(editableAttackerModifierPatch.medicusLevel)}
+                            onChange={(event) => {
+                              const raw = event.target.value
+                              setEditableAttackerModifierPatch((current) => ({
+                                ...current,
+                                medicusLevel: raw === ''
+                                  ? undefined
+                                  : clampLevel(Number(raw), 1),
+                              }))
+                            }}
+                          >
+                            <option value="">Not detected</option>
+                            <option value="1">Enabled</option>
+                            <option value="0">Disabled</option>
+                          </select>
                         </label>
                       </div>
+
+                      {PALADIN_WEAPON_KEYS.some(
+                        (weapon) => editableAttackerPaladinWeaponPatch[weapon] !== undefined,
+                      ) && (
+                        <div className="report-paladin-detections">
+                          <strong>Paladin weapon</strong>
+                          {PALADIN_WEAPON_KEYS
+                            .filter((weapon) => editableAttackerPaladinWeaponPatch[weapon] !== undefined)
+                            .map((weapon) => (
+                              <label key={`attacker-${weapon}`}>
+                                <span>{PALADIN_WEAPON_LABELS[weapon]}</span>
+                                <select
+                                  aria-label={`Attacker ${PALADIN_WEAPON_LABELS[weapon]} Paladin weapon level`}
+                                  value={editableAttackerPaladinWeaponPatch[weapon] ?? 0}
+                                  onChange={(event) =>
+                                    setEditableAttackerPaladinWeaponPatch((current) => ({
+                                      ...current,
+                                      [weapon]: clampLevel(Number(event.target.value), 3),
+                                    }))
+                                  }
+                                >
+                                  <option value={0}>None</option>
+                                  <option value={1}>Level 1</option>
+                                  <option value={2}>Level 2</option>
+                                  <option value={3}>Level 3</option>
+                                </select>
+                              </label>
+                            ))}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1537,10 +1696,7 @@ function ReportScreenshotImportPanel({
 
                     <div className="report-settings-fields">
                       <label>
-                        <span>
-                          Church
-                        </span>
-
+                        <span>Church</span>
                         <input
                           type="number"
                           min={0}
@@ -1548,37 +1704,21 @@ function ReportScreenshotImportPanel({
                           step={1}
                           aria-label="Defender church level"
                           placeholder="Not detected"
-                          value={
-                            editableDefenderModifierPatch.churchLevel ??
-                            ''
-                          }
+                          value={editableDefenderModifierPatch.churchLevel ?? ''}
                           onChange={(event) => {
-                            const raw =
-                              event.target.value
-
-                            setEditableDefenderModifierPatch(
-                              (current) => ({
-                                ...current,
-                                churchLevel:
-                                  raw === ''
-                                    ? undefined
-                                    : clampLevel(
-                                        Number(
-                                          raw,
-                                        ),
-                                        3,
-                                      ),
-                              }),
-                            )
+                            const raw = event.target.value
+                            setEditableDefenderModifierPatch((current) => ({
+                              ...current,
+                              churchLevel: raw === ''
+                                ? undefined
+                                : clampLevel(Number(raw), 3),
+                            }))
                           }}
                         />
                       </label>
 
                       <label>
-                        <span>
-                          Wall
-                        </span>
-
+                        <span>Wall</span>
                         <input
                           type="number"
                           min={0}
@@ -1586,30 +1726,147 @@ function ReportScreenshotImportPanel({
                           step={1}
                           aria-label="Detected defender wall level"
                           placeholder="Not detected"
-                          value={
-                            editableWallLevel ??
-                            ''
-                          }
+                          value={editableWallLevel ?? ''}
                           onChange={(event) => {
-                            const raw =
-                              event.target.value
-
+                            const raw = event.target.value
                             setEditableWallLevel(
                               raw === ''
                                 ? null
-                                : clampLevel(
-                                    Number(
-                                      raw,
-                                    ),
-                                    20,
-                                  ),
+                                : clampLevel(Number(raw), 20),
                             )
                           }}
                         />
                       </label>
+
+                      <label>
+                        <span>Hospital</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={10}
+                          step={1}
+                          aria-label="Defender hospital level"
+                          placeholder="Not detected"
+                          value={editableDefenderModifierPatch.hospitalLevel ?? ''}
+                          onChange={(event) => {
+                            const raw = event.target.value
+                            setEditableDefenderModifierPatch((current) => ({
+                              ...current,
+                              hospitalLevel: raw === ''
+                                ? undefined
+                                : clampLevel(Number(raw), 10),
+                            }))
+                          }}
+                        />
+                      </label>
+
+                      <label>
+                        <span>Clinic</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={10}
+                          step={1}
+                          aria-label="Defender clinic level"
+                          placeholder="Not detected"
+                          value={editableDefenderModifierPatch.clinicLevel ?? ''}
+                          onChange={(event) => {
+                            const raw = event.target.value
+                            setEditableDefenderModifierPatch((current) => ({
+                              ...current,
+                              clinicLevel: raw === ''
+                                ? undefined
+                                : clampLevel(Number(raw), 10),
+                            }))
+                          }}
+                        />
+                      </label>
+
+                      <label>
+                        <span>Iron Wall</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={5}
+                          step={1}
+                          aria-label="Defender iron wall level"
+                          placeholder="Not detected"
+                          value={editableDefenderModifierPatch.ironWallLevel ?? ''}
+                          onChange={(event) => {
+                            const raw = event.target.value
+                            setEditableDefenderModifierPatch((current) => ({
+                              ...current,
+                              ironWallLevel: raw === ''
+                                ? undefined
+                                : clampLevel(Number(raw), 5),
+                            }))
+                          }}
+                        />
+                      </label>
                     </div>
+
+                    {PALADIN_WEAPON_KEYS.some(
+                      (weapon) => editableDefenderPaladinWeaponPatch[weapon] !== undefined,
+                    ) && (
+                      <div className="report-paladin-detections">
+                        <strong>Paladin weapon</strong>
+                        {PALADIN_WEAPON_KEYS
+                          .filter((weapon) => editableDefenderPaladinWeaponPatch[weapon] !== undefined)
+                          .map((weapon) => (
+                            <label key={`defender-${weapon}`}>
+                              <span>{PALADIN_WEAPON_LABELS[weapon]}</span>
+                              <select
+                                aria-label={`Defender ${PALADIN_WEAPON_LABELS[weapon]} Paladin weapon level`}
+                                value={editableDefenderPaladinWeaponPatch[weapon] ?? 0}
+                                onChange={(event) =>
+                                  setEditableDefenderPaladinWeaponPatch((current) => ({
+                                    ...current,
+                                    [weapon]: clampLevel(Number(event.target.value), 3),
+                                  }))
+                                }
+                              >
+                                <option value={0}>None</option>
+                                <option value={1}>Level 1</option>
+                                <option value={2}>Level 2</option>
+                                <option value={3}>Level 3</option>
+                              </select>
+                            </label>
+                          ))}
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {analysis.advancedDetections.length > 0 && (
+                  <div className="report-advanced-detections">
+                    <div className="report-advanced-detections-heading">
+                      <strong>OCR 2.0 detections</strong>
+                      <span>
+                        Low confidence = review only; it is not auto-applied.
+                      </span>
+                    </div>
+
+                    <div className="report-advanced-detection-list">
+                      {analysis.advancedDetections.map((detection) => (
+                        <div
+                          className={`report-advanced-detection report-confidence-${detection.confidence}`}
+                          key={detection.key}
+                        >
+                          <div>
+                            <span>{detection.side}</span>
+                            <strong>{detection.label}</strong>
+                          </div>
+                          <span>{detection.value}</span>
+                          <small>
+                            {detection.confidence} · {detection.autoApplied
+                              ? 'auto apply'
+                              : 'review only'}
+                          </small>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="report-preview-toolbar">

@@ -9,9 +9,16 @@ export interface ReportPartyMetadata {
   coordinates: ReportCoordinates | null
 }
 
+export interface ReportTimestampMetadata {
+  localDateTime: string
+  rawText: string
+  timezone: string | null
+}
+
 export interface ReportMetadata {
   attacker: ReportPartyMetadata | null
   defender: ReportPartyMetadata | null
+  timestamp?: ReportTimestampMetadata | null
 }
 
 export const hasReportPartyMetadata = (
@@ -56,5 +63,10 @@ export const cloneReportMetadata = (
   return {
     attacker: cloneParty(metadata.attacker),
     defender: cloneParty(metadata.defender),
+    timestamp: metadata.timestamp
+      ? {
+          ...metadata.timestamp,
+        }
+      : null,
   }
 }

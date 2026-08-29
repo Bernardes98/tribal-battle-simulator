@@ -700,6 +700,7 @@ function SimulatorPage() {
   const handleReportAttackerApply = (
     importedArmy: Army,
     modifierPatch: Partial<AttackerModifiers>,
+    paladinWeaponPatch: Partial<PaladinWeaponLevels>,
   ) => {
     setAttacker({
       ...createEmptyArmy(),
@@ -713,12 +714,20 @@ function SimulatorPage() {
       }),
     )
 
+    setAttackerPaladinWeapons(
+      (current) => ({
+        ...current,
+        ...paladinWeaponPatch,
+      }),
+    )
+
     clearResults()
   }
 
   const handleReportDefenderApply = (
     importedArmy: Army,
     modifierPatch: Partial<DefenderModifiers>,
+    paladinWeaponPatch: Partial<PaladinWeaponLevels>,
   ) => {
     setDefender({
       ...createEmptyArmy(),
@@ -732,6 +741,13 @@ function SimulatorPage() {
       }),
     )
 
+    setDefenderPaladinWeapons(
+      (current) => ({
+        ...current,
+        ...paladinWeaponPatch,
+      }),
+    )
+
     clearResults()
   }
 
@@ -740,6 +756,8 @@ function SimulatorPage() {
     importedDefender: Army,
     attackerModifierPatch: Partial<AttackerModifiers>,
     defenderModifierPatch: Partial<DefenderModifiers>,
+    attackerPaladinWeaponPatch: Partial<PaladinWeaponLevels>,
+    defenderPaladinWeaponPatch: Partial<PaladinWeaponLevels>,
   ) => {
     setAttacker({
       ...createEmptyArmy(),
@@ -762,6 +780,20 @@ function SimulatorPage() {
       (current) => ({
         ...current,
         ...defenderModifierPatch,
+      }),
+    )
+
+    setAttackerPaladinWeapons(
+      (current) => ({
+        ...current,
+        ...attackerPaladinWeaponPatch,
+      }),
+    )
+
+    setDefenderPaladinWeapons(
+      (current) => ({
+        ...current,
+        ...defenderPaladinWeaponPatch,
       }),
     )
 

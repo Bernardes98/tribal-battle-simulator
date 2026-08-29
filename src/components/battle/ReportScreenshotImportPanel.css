@@ -1076,3 +1076,146 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* V58 — OCR 2.0 extended settings, confidence and Paladin recognition */
+.report-timestamp {
+  display: block;
+  margin-top: 2px;
+  color: #765235;
+  font-weight: 700;
+}
+
+.report-settings-fields select,
+.report-paladin-detections select {
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid #7b5532;
+  background: #ead2ad;
+  color: #2c1a0d;
+}
+
+.report-paladin-detections {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #b88d61;
+}
+
+.report-paladin-detections > strong {
+  grid-column: 1 / -1;
+  color: #53341b;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.report-paladin-detections label {
+  display: grid;
+  gap: 4px;
+}
+
+.report-paladin-detections label > span {
+  color: #6b482b;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.report-advanced-detections {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid #a77b50;
+  background: #d1a675;
+}
+
+.report-advanced-detections-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.report-advanced-detections-heading strong {
+  color: #452b16;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.report-advanced-detections-heading span {
+  color: #6d492d;
+  font-size: 8px;
+}
+
+.report-advanced-detection-list {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(170px, 1fr)
+    );
+  gap: 6px;
+}
+
+.report-advanced-detection {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 8px;
+  padding: 7px 8px;
+  border: 1px solid #8f6843;
+  background: #e3c69e;
+}
+
+.report-advanced-detection > div {
+  display: grid;
+  gap: 1px;
+}
+
+.report-advanced-detection > div > span {
+  color: #805c3c;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.report-advanced-detection > div > strong,
+.report-advanced-detection > span {
+  color: #36200f;
+  font-size: 8px;
+}
+
+.report-advanced-detection > small {
+  grid-column: 1 / -1;
+  color: #765135;
+  font-size: 7px;
+  text-transform: uppercase;
+}
+
+.report-advanced-detection.report-confidence-high {
+  border-left-width: 4px;
+}
+
+.report-advanced-detection.report-confidence-medium {
+  border-left-width: 4px;
+}
+
+.report-advanced-detection.report-confidence-low {
+  border-left-width: 4px;
+  border-style: dashed;
+}
+
+@media (max-width: 720px) {
+  .report-paladin-detections {
+    grid-template-columns: 1fr;
+  }
+
+  .report-advanced-detections-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.battle-tests.tsbuildinfo",
+    "types": [
+      "node",
+      "@playwright/test"
+    ],
+    "noEmit": true
+  },
+  "include": [
+    "src/domain/battle/**/*.ts",
+    "src/data/**/*.ts",
+    "src/types/**/*.ts",
+    "tests/battle-engine-regression.spec.ts",
+    "playwright.battle.config.ts"
+  ]
+}

@@ -179,6 +179,61 @@ const expectIdentity = async (
   )
 }
 
+
+const parseV58Text = async (
+  page: Page,
+  rawText: string,
+  reportType: 'spy' | 'battle' = 'battle',
+) => {
+  await page.goto('/')
+
+  return await page.evaluate(
+    async ({
+      rawText: sourceText,
+      reportType: sourceReportType,
+    }) => {
+      const importAdvanced = new Function(
+        'return import("/src/domain/import/reportAdvancedParser.ts")',
+      ) as () => Promise<{
+        parseReportAdvancedData: (
+          rawText: string,
+          reportType: 'spy' | 'battle',
+        ) => unknown
+      }>
+
+      const importModifiers = new Function(
+        'return import("/src/domain/import/reportModifierParser.ts")',
+      ) as () => Promise<{
+        parseReportModifiers: (
+          rawText: string,
+          reportType: 'spy' | 'battle',
+        ) => unknown
+      }>
+
+      const [advancedModule, modifierModule] =
+        await Promise.all([
+          importAdvanced(),
+          importModifiers(),
+        ])
+
+      return {
+        advanced: advancedModule.parseReportAdvancedData(
+          sourceText,
+          sourceReportType,
+        ),
+        modifiers: modifierModule.parseReportModifiers(
+          sourceText,
+          sourceReportType,
+        ),
+      }
+    },
+    {
+      rawText,
+      reportType,
+    },
+  )
+}
+
 test.describe(
   'Tribal Wars screenshot importer regression',
   () => {
@@ -534,3 +589,288 @@ test.describe(
     )
   },
 )
+
+test.describe(
+  'OCR 2.0 resolution regression',
+  () => {
+    for (const fileName of [
+      'spy-report-85.png',
+      'spy-report-125.png',
+    ]) {
+      test(
+        `keeps spy report recognition stable for ${fileName}`,
+        async ({ page }) => {
+          const importer = await uploadReport(
+            page,
+            fileName,
+          )
+
+          await expect(
+            importer.getByRole(
+              'heading',
+              { name: 'Spy Report' },
+            ),
+          ).toBeVisible()
+
+          await expect(
+            importer.locator('#Defender-spearman'),
+          ).toHaveValue('86')
+
+          await expect(
+            importer.locator('#Defender-swordsman'),
+          ).toHaveValue('20')
+        },
+      )
+    }
+
+    for (const fileName of [
+      'battle-report-85.png',
+      'battle-report-125.png',
+    ]) {
+      test(
+        `keeps battle report recognition stable for ${fileName}`,
+        async ({ page }) => {
+          const importer = await uploadReport(
+            page,
+            fileName,
+          )
+
+          await showAllUnits(importer)
+
+          await expect(
+            importer.getByRole(
+              'heading',
+              { name: 'Battle Report' },
+            ),
+          ).toBeVisible()
+
+          await expect(
+            importer.locator('#Attacker-axe'),
+          ).toHaveValue('3171')
+
+          await expect(
+            importer.locator('#Defender-swordsman'),
+          ).toHaveValue('34')
+        },
+      )
+    }
+  },
+)
+
+test.describe(
+  'OCR 2.0 advanced text parser regression',
+  () => {
+    test(
+      'reads hospital, clinic, iron wall and officer settings',
+      async ({ page }) => {
+        const parsed = await parseV58Text(
+          page,
+          `
+            Relatório de Batalha
+            Atacante
+            Grão-Mestre
+            Maestria em Armas Nível 4
+            Médico
+            Medicus
+            Defensor
+            Hospital Nível 9
+            Clínica Nível 6
+            Muralha de Ferro Nível 5
+          `,
+        ) as {
+          modifiers: {
+            attacker: Record<string, unknown>
+            defender: Record<string, unknown>
+          }
+        }
+
+        expect(parsed.modifiers.attacker).toMatchObject({
+          grandmaster: true,
+          weaponMasteryLevel: 4,
+          medicLevel: 1,
+          medicusLevel: 1,
+        })
+
+        expect(parsed.modifiers.defender).toMatchObject({
+          hospitalLevel: 9,
+          clinicLevel: 6,
+          ironWallLevel: 5,
+        })
+      },
+    )
+
+    test(
+      'reads Portuguese report timestamps',
+      async ({ page }) => {
+        const parsed = await parseV58Text(
+          page,
+          '19 de ago de 2026 10:01:46 Relatório de Batalha',
+        ) as {
+          advanced: {
+            timestamp: {
+              localDateTime: string
+            } | null
+          }
+        }
+
+        expect(
+          parsed.advanced.timestamp?.localDateTime,
+        ).toBe('2026-08-19T10:01:46')
+      },
+    )
+
+    test(
+      'reads English and numeric timestamps',
+      async ({ page }) => {
+        const english = await parseV58Text(
+          page,
+          'Aug 19, 2026 10:01:46 Battle Report',
+        ) as {
+          advanced: {
+            timestamp: {
+              localDateTime: string
+            } | null
+          }
+        }
+
+        const numeric = await parseV58Text(
+          page,
+          '19/08/2026 23:37:05 Spy Report',
+          'spy',
+        ) as {
+          advanced: {
+            timestamp: {
+              localDateTime: string
+            } | null
+          }
+        }
+
+        expect(
+          english.advanced.timestamp?.localDateTime,
+        ).toBe('2026-08-19T10:01:46')
+
+        expect(
+          numeric.advanced.timestamp?.localDateTime,
+        ).toBe('2026-08-19T23:37:05')
+      },
+    )
+
+    test(
+      'maps explicit Paladin weapon levels to the correct side',
+      async ({ page }) => {
+        const parsed = await parseV58Text(
+          page,
+          `
+            Battle Report
+            Attacker
+            Paladin weapon: Halberd of Guan Yu Level 3
+            Defender
+            Paladin weapon: Baptiste's Banner Level 2
+          `,
+        ) as {
+          advanced: {
+            attackerPaladinWeaponPatch: Record<string, number>
+            defenderPaladinWeaponPatch: Record<string, number>
+          }
+        }
+
+        expect(
+          parsed.advanced.attackerPaladinWeaponPatch,
+        ).toMatchObject({
+          spearman: 3,
+        })
+
+        expect(
+          parsed.advanced.defenderPaladinWeaponPatch,
+        ).toMatchObject({
+          heavyCavalry: 2,
+        })
+      },
+    )
+
+    test(
+      'does not auto-apply a Paladin weapon when its level is unreadable',
+      async ({ page }) => {
+        const parsed = await parseV58Text(
+          page,
+          `
+            Battle Report
+            Attacker
+            Paladin weapon: Thorgard's Battle Axe
+            Defender
+          `,
+        ) as {
+          advanced: {
+            attackerPaladinWeaponPatch: Record<string, number>
+            paladinWeapons: Array<{
+              unitId: string
+              level: number | null
+              confidence: string
+            }>
+          }
+        }
+
+        expect(
+          parsed.advanced.attackerPaladinWeaponPatch,
+        ).toEqual({})
+
+        expect(
+          parsed.advanced.paladinWeapons,
+        ).toContainEqual(
+          expect.objectContaining({
+            unitId: 'axe',
+            level: null,
+            confidence: 'low',
+          }),
+        )
+      },
+    )
+
+    test(
+      'captures labeled bonuses without guessing unlabeled percentages',
+      async ({ page }) => {
+        const parsed = await parseV58Text(
+          page,
+          `
+            Battle Report
+            Morale 87%
+            Weapon Mastery 8%
+            Attack modifier 121%
+            11%
+          `,
+        ) as {
+          advanced: {
+            bonuses: Array<{
+              label: string
+              percent: number
+            }>
+          }
+        }
+
+        expect(parsed.advanced.bonuses).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              label: 'Morale',
+              percent: 87,
+            }),
+            expect.objectContaining({
+              label: 'Weapon Mastery',
+              percent: 8,
+            }),
+            expect.objectContaining({
+              label: 'Attack modifier',
+              percent: 121,
+            }),
+          ]),
+        )
+
+        expect(
+          parsed.advanced.bonuses.some(
+            (bonus) => bonus.percent === 11,
+          ),
+        ).toBe(false)
+      },
+    )
+  },
+)
+

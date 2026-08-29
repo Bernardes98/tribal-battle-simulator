@@ -22,6 +22,19 @@ import {
   parseReportModifiers,
 } from './reportModifierParser'
 
+import {
+  parseReportAdvancedData,
+} from './reportAdvancedParser'
+
+import type {
+  ReportAdvancedDetection,
+} from './reportAdvancedParser'
+
+import type {
+  AttackerModifiers,
+  DefenderModifiers,
+} from '../../types/Battle'
+
 import type {
   ReportPartyMetadata,
 } from '../../types/ReportMetadata'
@@ -834,9 +847,128 @@ const detectSpyTotalRow = (
   )
 
   if (candidates.length === 0) {
+    /*
+     * Downscaled screenshots soften the tiny printed zeros enough that the
+     * strict 13-column detector can lose them. The two non-zero columns are
+     * still crisp, though, so use a second conservative pass that looks for
+     * compact multi-row digit bands below the unit icons.
+     *
+     * Keeping this as a fallback preserves the calibrated full-size behavior
+     * while making browser-scaled screenshots resolution-independent.
+     */
+    const sparseRows: Array<{
+      y: number
+      score: number
+    }> = []
+
+    const sparseStart = Math.max(
+      start,
+      Math.round(source.width * 0.43),
+    )
+
+    for (let y = sparseStart; y <= end; y++) {
+      const counts = getCellRowCounts(
+        imageData,
+        source.width,
+        y,
+        leftRatio,
+        rightRatio,
+        isDarkQuantityPixel,
+      )
+
+      const activeCells = counts.filter(
+        (count) => count >= 1 && count <= 17,
+      ).length
+
+      const darkPixels = counts.reduce(
+        (sum, count) =>
+          sum + (count <= 17 ? count : 0),
+        0,
+      )
+
+      sparseRows.push({
+        y,
+        score:
+          activeCells >= 2 && darkPixels <= 80
+            ? activeCells * 12 + darkPixels
+            : 0,
+      })
+    }
+
+    const sparseGroups: Array<{
+      top: number
+      bottom: number
+      score: number
+    }> = []
+
+    let sparseCurrent: {
+      top: number
+      bottom: number
+      score: number
+    } | null = null
+
+    for (const row of sparseRows) {
+      if (row.score <= 0) {
+        continue
+      }
+
+      if (
+        sparseCurrent &&
+        row.y <= sparseCurrent.bottom + 2
+      ) {
+        sparseCurrent.bottom = row.y
+        sparseCurrent.score += row.score
+        continue
+      }
+
+      if (sparseCurrent) {
+        sparseGroups.push(sparseCurrent)
+      }
+
+      sparseCurrent = {
+        top: row.y,
+        bottom: row.y,
+        score: row.score,
+      }
+    }
+
+    if (sparseCurrent) {
+      sparseGroups.push(sparseCurrent)
+    }
+
+    const sparseCandidates = sparseGroups.filter(
+      (group) =>
+        group.bottom - group.top + 1 >= 5 &&
+        group.score >= 120,
+    )
+
+    if (sparseCandidates.length === 0) {
+      return {
+        template: SPY_DEFENDER_TOTAL_ROW,
+        dynamic: false,
+      }
+    }
+
+    const sparseTotalRow = sparseCandidates.reduce(
+      (lowest, candidate) =>
+        candidate.bottom > lowest.bottom
+          ? candidate
+          : lowest,
+    )
+
+    const sparseCenter =
+      (sparseTotalRow.top + sparseTotalRow.bottom) / 2
+
     return {
-      template: SPY_DEFENDER_TOTAL_ROW,
-      dynamic: false,
+      template: {
+        leftRatio,
+        rightRatio,
+        centerYByWidth:
+          sparseCenter / source.width,
+        heightByWidth: 0.026,
+        profile: 'spy',
+      },
+      dynamic: true,
     }
   }
 
@@ -1364,7 +1496,7 @@ const readWallLevel = async (
   return null
 }
 
-const readAdvancedReportModifiers = async (
+const readAdvancedReportData = async (
   worker: Awaited<ReturnType<typeof createWorker>>,
   source: Awaited<ReturnType<typeof loadReportImage>>,
   reportType: TribalReportType,
@@ -1410,10 +1542,19 @@ const readAdvancedReportModifiers = async (
       fullTextRegion,
     )
 
-  return parseReportModifiers(
-    `${headerText}\n${result.data.text}`,
-    reportType,
-  )
+  const rawText =
+    `${headerText}\n${result.data.text}`
+
+  return {
+    modifiers: parseReportModifiers(
+      rawText,
+      reportType,
+    ),
+    advanced: parseReportAdvancedData(
+      rawText,
+      reportType,
+    ),
+  }
 }
 
 const confidenceFromScore = (
@@ -1430,6 +1571,75 @@ const confidenceFromScore = (
   return 'low'
 }
 
+
+const buildModifierDetections = (
+  attacker: Partial<AttackerModifiers>,
+  defender: Partial<DefenderModifiers>,
+): ReportAdvancedDetection[] => {
+  const detections: ReportAdvancedDetection[] = []
+
+  const add = (
+    key: string,
+    label: string,
+    side: 'attacker' | 'defender',
+    value: string,
+  ) => {
+    detections.push({
+      key,
+      label,
+      side,
+      value,
+      confidence: 'high',
+      autoApplied: true,
+    })
+  }
+
+  if (attacker.churchLevel !== undefined) {
+    add('attacker-church', 'Church', 'attacker', `Lv. ${attacker.churchLevel}`)
+  }
+
+  if (attacker.morale !== undefined) {
+    add('attacker-morale', 'Morale', 'attacker', `${attacker.morale}%`)
+  }
+
+  if (attacker.grandmaster !== undefined) {
+    add('attacker-grandmaster', 'Grandmaster', 'attacker', attacker.grandmaster ? 'Enabled' : 'Disabled')
+  }
+
+  if (attacker.weaponMasteryLevel !== undefined) {
+    add('attacker-weapon-mastery', 'Weapon Mastery', 'attacker', `Lv. ${attacker.weaponMasteryLevel}`)
+  }
+
+  if (attacker.medicLevel !== undefined) {
+    add('attacker-medic', 'Medic officer', 'attacker', attacker.medicLevel > 0 ? 'Enabled' : 'Disabled')
+  }
+
+  if (attacker.medicusLevel !== undefined) {
+    add('attacker-medicus', 'Medicus', 'attacker', attacker.medicusLevel > 0 ? 'Enabled' : 'Disabled')
+  }
+
+  if (defender.churchLevel !== undefined) {
+    add('defender-church', 'Church', 'defender', `Lv. ${defender.churchLevel}`)
+  }
+
+  if (defender.wallLevel !== undefined) {
+    add('defender-wall', 'Wall', 'defender', `Lv. ${defender.wallLevel}`)
+  }
+
+  if (defender.hospitalLevel !== undefined) {
+    add('defender-hospital', 'Hospital', 'defender', `Lv. ${defender.hospitalLevel}`)
+  }
+
+  if (defender.clinicLevel !== undefined) {
+    add('defender-clinic', 'Clinic', 'defender', `Lv. ${defender.clinicLevel}`)
+  }
+
+  if (defender.ironWallLevel !== undefined) {
+    add('defender-iron-wall', 'Iron Wall', 'defender', `Lv. ${defender.ironWallLevel}`)
+  }
+
+  return detections
+}
 
 const scoreArmyReading = (
   reading: ReportArmyReading,
@@ -1577,6 +1787,28 @@ export const analyzeReportScreenshot = async (
       detailedLayoutDetectedByText ||
       detailedLayoutDetectedByPixels
 
+    /*
+     * Keep the proven Portuguese-first worker for the calibrated baseline.
+     * Tesseract's language order affects classification of the tiny TW2
+     * bitmap digits, though: on scaled spy screenshots `por+eng` can drop or
+     * mutate digits that `eng+por` reads correctly. Switch order only for
+     * non-reference spy screenshots, after the report type was already
+     * detected from the original header.
+     */
+    const scaledSpyReport =
+      reportType === 'spy' &&
+      (
+        source.width < 629 ||
+        source.width > 739
+      )
+
+    if (scaledSpyReport) {
+      await worker.reinitialize(
+        'eng+por',
+        OEM.LSTM_ONLY,
+      )
+    }
+
     await worker.setParameters({
       tessedit_char_whitelist:
         '0123456789.',
@@ -1618,7 +1850,7 @@ export const analyzeReportScreenshot = async (
         92,
       )
 
-      const metadata =
+      const partyMetadata =
         await readSpyMetadata(
           worker,
           source,
@@ -1630,16 +1862,23 @@ export const analyzeReportScreenshot = async (
         95,
       )
 
-      const detectedModifiers =
-        await readAdvancedReportModifiers(
+      const detectedReportData =
+        await readAdvancedReportData(
           worker,
           source,
           reportType,
           headerResult.data.text,
         )
 
+      const metadata = {
+        ...partyMetadata,
+        timestamp:
+          detectedReportData.advanced.timestamp,
+      }
+
       const defenderWallLevel =
-        detectedModifiers
+        detectedReportData
+          .modifiers
           .defender
           .wallLevel ??
         null
@@ -1704,9 +1943,22 @@ export const analyzeReportScreenshot = async (
         defender,
         defenderWallLevel,
         attackerModifierPatch:
-          detectedModifiers.attacker,
+          detectedReportData.modifiers.attacker,
         defenderModifierPatch:
-          detectedModifiers.defender,
+          detectedReportData.modifiers.defender,
+        attackerPaladinWeaponPatch:
+          detectedReportData.advanced.attackerPaladinWeaponPatch,
+        defenderPaladinWeaponPatch:
+          detectedReportData.advanced.defenderPaladinWeaponPatch,
+        advancedDetections: [
+          ...buildModifierDetections(
+            detectedReportData.modifiers.attacker,
+            detectedReportData.modifiers.defender,
+          ),
+          ...detectedReportData.advanced.detections,
+        ],
+        detectedBonuses:
+          detectedReportData.advanced.bonuses,
         metadata,
         warnings,
         sourceWidth: source.width,
@@ -1844,7 +2096,7 @@ export const analyzeReportScreenshot = async (
       84,
     )
 
-    const metadata =
+    const partyMetadata =
       await readBattleMetadata(
         worker,
         source,
@@ -1871,23 +2123,30 @@ export const analyzeReportScreenshot = async (
       96,
     )
 
-    const detectedModifiers =
-      await readAdvancedReportModifiers(
+    const detectedReportData =
+      await readAdvancedReportData(
         worker,
         source,
         reportType,
         headerResult.data.text,
       )
 
+    const metadata = {
+      ...partyMetadata,
+      timestamp:
+        detectedReportData.advanced.timestamp,
+    }
+
     const defenderWallLevel =
       specializedWallLevel ??
-      detectedModifiers
+      detectedReportData
+        .modifiers
         .defender
         .wallLevel ??
       null
 
     const defenderModifierPatch = {
-      ...detectedModifiers.defender,
+      ...detectedReportData.modifiers.defender,
       ...(defenderWallLevel !==
       null
         ? {
@@ -1984,8 +2243,21 @@ export const analyzeReportScreenshot = async (
       defender,
       defenderWallLevel,
       attackerModifierPatch:
-        detectedModifiers.attacker,
+        detectedReportData.modifiers.attacker,
       defenderModifierPatch,
+      attackerPaladinWeaponPatch:
+        detectedReportData.advanced.attackerPaladinWeaponPatch,
+      defenderPaladinWeaponPatch:
+        detectedReportData.advanced.defenderPaladinWeaponPatch,
+      advancedDetections: [
+        ...buildModifierDetections(
+          detectedReportData.modifiers.attacker,
+          defenderModifierPatch,
+        ),
+        ...detectedReportData.advanced.detections,
+      ],
+      detectedBonuses:
+        detectedReportData.advanced.bonuses,
       metadata,
       warnings,
       sourceWidth: source.width,

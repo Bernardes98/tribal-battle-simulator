@@ -1,0 +1,66 @@
+{
+  "winner": "defender",
+  "attackStrength": 0,
+  "defenseStrength": 0,
+  "attacker": {
+    "losses": {},
+    "revived": {},
+    "survivors": {
+      "nobleman": 1
+    },
+    "lostUnits": 0,
+    "revivedUnits": 0,
+    "survivingUnits": 1,
+    "lostProvisions": 0
+  },
+  "defender": {
+    "losses": {},
+    "revived": {},
+    "survivors": {
+      "spearman": 50
+    },
+    "lostUnits": 0,
+    "revivedUnits": 0,
+    "survivingUnits": 50,
+    "lostProvisions": 0
+  },
+  "groups": [
+    {
+      "group": "infantry",
+      "attackStrength": 0,
+      "defenseStrength": 0,
+      "attackerLossRate": 0,
+      "defenderLossRate": 0
+    },
+    {
+      "group": "cavalry",
+      "attackStrength": 0,
+      "defenseStrength": 0,
+      "attackerLossRate": 0,
+      "defenderLossRate": 0
+    },
+    {
+      "group": "archer",
+      "attackStrength": 0,
+      "defenseStrength": 0,
+      "attackerLossRate": 0,
+      "defenderLossRate": 0
+    }
+  ],
+  "siege": {
+    "wall": {
+      "startingLevel": 0,
+      "preBattleLevel": 0,
+      "postBattleLevel": 0,
+      "finalLevel": 0
+    },
+    "catapult": {
+      "target": "villageHeadquarters",
+      "startingLevel": 20,
+      "postLevel": 20,
+      "attackStrength": 0,
+      "targetHitPoints": 27,
+      "damageLevels": 0
+    }
+  }
+}

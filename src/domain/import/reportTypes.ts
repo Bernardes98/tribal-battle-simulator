@@ -2,9 +2,14 @@ import type {
   Army,
   AttackerModifiers,
   DefenderModifiers,
+  PaladinWeaponLevels,
 } from '../../types/Battle'
 import type { UnitId } from '../../types/Unit'
 import type { ReportMetadata } from '../../types/ReportMetadata'
+import type {
+  ReportAdvancedDetection,
+  ReportDetectedBonus,
+} from './reportAdvancedParser'
 
 export type TribalReportType =
   | 'spy'
@@ -37,20 +42,12 @@ export interface ReportScreenshotAnalysis {
   attacker: ReportArmyReading | null
   defender: ReportArmyReading
   defenderWallLevel: number | null
-  attackerModifierPatch: Partial<
-    Pick<
-      AttackerModifiers,
-      | 'churchLevel'
-      | 'morale'
-    >
-  >
-  defenderModifierPatch: Partial<
-    Pick<
-      DefenderModifiers,
-      | 'churchLevel'
-      | 'wallLevel'
-    >
-  >
+  attackerModifierPatch: Partial<AttackerModifiers>
+  defenderModifierPatch: Partial<DefenderModifiers>
+  attackerPaladinWeaponPatch: Partial<PaladinWeaponLevels>
+  defenderPaladinWeaponPatch: Partial<PaladinWeaponLevels>
+  advancedDetections: ReportAdvancedDetection[]
+  detectedBonuses: ReportDetectedBonus[]
   metadata: ReportMetadata
   warnings: string[]
   sourceWidth: number

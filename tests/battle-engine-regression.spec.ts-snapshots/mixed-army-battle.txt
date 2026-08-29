@@ -1,0 +1,77 @@
+{
+  "winner": "attacker",
+  "attackStrength": 132660,
+  "defenseStrength": 83700,
+  "attacker": {
+    "losses": {
+      "axe": 627,
+      "lightCavalry": 157,
+      "mountedArcher": 119,
+      "ram": 42
+    },
+    "revived": {},
+    "survivors": {
+      "axe": 573,
+      "lightCavalry": 193,
+      "mountedArcher": 101,
+      "ram": 38
+    },
+    "lostUnits": 945,
+    "revivedUnits": 0,
+    "survivingUnits": 905,
+    "lostProvisions": 2060
+  },
+  "defender": {
+    "losses": {
+      "spearman": 900,
+      "swordsman": 700,
+      "archer": 500,
+      "heavyCavalry": 120
+    },
+    "revived": {},
+    "survivors": {},
+    "lostUnits": 2220,
+    "revivedUnits": 0,
+    "survivingUnits": 0,
+    "lostProvisions": 2820
+  },
+  "groups": [
+    {
+      "group": "infantry",
+      "attackStrength": 54160,
+      "defenseStrength": 35140,
+      "attackerLossRate": 0.522618,
+      "defenderLossRate": 1
+    },
+    {
+      "group": "cavalry",
+      "attackStrength": 45500,
+      "defenseStrength": 26700,
+      "attackerLossRate": 0.449521,
+      "defenderLossRate": 1
+    },
+    {
+      "group": "archer",
+      "attackStrength": 33000,
+      "defenseStrength": 21860,
+      "attackerLossRate": 0.539143,
+      "defenderLossRate": 1
+    }
+  ],
+  "siege": {
+    "wall": {
+      "startingLevel": 0,
+      "preBattleLevel": 0,
+      "postBattleLevel": 0,
+      "finalLevel": 0
+    },
+    "catapult": {
+      "target": "villageHeadquarters",
+      "startingLevel": 20,
+      "postLevel": 20,
+      "attackStrength": 0,
+      "targetHitPoints": 27,
+      "damageLevels": 0
+    }
+  }
+}
