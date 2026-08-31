@@ -587,6 +587,75 @@ test.describe(
         )
       },
     )
+
+    test(
+      'keeps detailed battle defender quantities separate from loss rows',
+      async ({ page }) => {
+        const importer = await uploadReport(
+          page,
+          'battle-report-detailed-defender.png',
+        )
+
+        await expect(
+          importer.getByRole(
+            'heading',
+            { name: 'Battle Report' },
+          ),
+        ).toBeVisible()
+
+        await showAllUnits(importer)
+
+        await expect(
+          importer.locator('#Attacker-axe'),
+        ).toHaveValue('1944')
+
+        await expect(
+          importer.locator('#Attacker-lightCavalry'),
+        ).toHaveValue('192')
+
+        await expect(
+          importer.locator('#Attacker-mountedArcher'),
+        ).toHaveValue('140')
+
+        await expect(
+          importer.locator('#Attacker-paladin'),
+        ).toHaveValue('1')
+
+        await expect(
+          importer.locator('#Defender-spearman'),
+        ).toHaveValue('2259')
+
+        await expect(
+          importer.locator('#Defender-swordsman'),
+        ).toHaveValue('2331')
+
+        await expect(
+          importer.locator('#Defender-archer'),
+        ).toHaveValue('10')
+
+        await expect(
+          importer.locator('#Defender-paladin'),
+        ).toHaveValue('1')
+
+        const defenderZeroUnits = [
+          'axe',
+          'lightCavalry',
+          'mountedArcher',
+          'heavyCavalry',
+          'ram',
+          'catapult',
+          'berserker',
+          'trebuchet',
+          'nobleman',
+        ]
+
+        for (const unitId of defenderZeroUnits) {
+          await expect(
+            importer.locator(`#Defender-${unitId}`),
+          ).toHaveValue('0')
+        }
+      },
+    )
   },
 )
 

@@ -507,10 +507,42 @@ const findLossRowCenter = (
     })
   }
 
+  /*
+   * The loss row is always below the initial troop quantity row. On some
+   * sepia/brown TW2 themes the dark quantity glyphs can also satisfy the
+   * broad red-pixel predicate and score almost as highly as the real red
+   * loss text. Ranking only by colour evidence can therefore mistake the
+   * quantity row for the loss row; the subsequent quantity lookup then
+   * moves upward into the unit icons.
+   *
+   * Keep colour evidence as the main signal, but prefer candidates near the
+   * lower part of the narrow loss-row search band. This is scale-independent
+   * and preserves the existing calibrated layouts while correctly separating
+   * quantity/loss rows in detailed reports with several defender unit types.
+   */
+  const targetCenter =
+    sourceWidth * (maximumYByWidth - 0.010)
+
   const candidates = groupScoredRows(
     scoredRows,
   ).sort(
-    (left, right) => right.score - left.score,
+    (left, right) => {
+      const leftDistance = Math.abs(
+        left.center - targetCenter,
+      )
+
+      const rightDistance = Math.abs(
+        right.center - targetCenter,
+      )
+
+      const leftRank =
+        left.score - leftDistance * 6
+
+      const rightRank =
+        right.score - rightDistance * 6
+
+      return rightRank - leftRank
+    },
   )
 
   return candidates[0]?.center ?? null
